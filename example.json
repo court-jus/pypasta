@@ -1,0 +1,34 @@
+{
+  "scale_name": "minor",
+  "chord_progression": [1, 3, 4, 6],
+  "playing": true,
+  "tracks": {
+    "0": {
+      "type": "chord",
+      "pitch": 60,
+      "rythm": 7,
+      "pattern": 60,
+      "basevel": 100,
+      "midi_channel": 7,
+      "mute": false
+    },
+    "1": {
+      "type": "arp",
+      "pitch": 40,
+      "rythm": 100,
+      "pattern": 100,
+      "basevel": 100,
+      "midi_channel": 4,
+      "mute": false
+    },
+    "2": {
+      "type": "arp",
+      "pitch": 85,
+      "rythm": 117,
+      "pattern": 10,
+      "basevel": 100,
+      "midi_channel": 5,
+      "mute": false
+    }
+  }
+}

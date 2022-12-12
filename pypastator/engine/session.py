@@ -4,13 +4,21 @@ from constants import BAR
 class Session:
     def __init__(self):
         self.scale_name = "major"
-        self.chord_progression = [1, 3, 4, 6]
+        self.chord_progression = [1]
         self.current_chord = 0
-        self.tracks = {
-            0: Track(0)
-        }
-        self.playing = False
+        self.tracks = {}
+        self.playing = True
         self.cc_controls = {}
+
+    def load(self, data):
+        for loadable_key in ("scale_name", "chord_progression", "playing"):
+            if loadable_key in data:
+                setattr(self, loadable_key, data[loadable_key])
+        for track_id, track in data.get("tracks", {}).items():
+            track_id = int(track_id)
+            t = Track(track_id)
+            t.load(track)
+            self.tracks[track_id] = t
 
     def midi_tick(self, ticks, timestamp):
         if not self.playing:
@@ -18,7 +26,6 @@ class Session:
         relative_ticks = ticks - self.playing
         if relative_ticks % BAR == 0:
             self.current_chord = int(relative_ticks / BAR) % len(self.chord_progression)
-            print("bar", self.current_chord, self.playing, relative_ticks)
         out_evts = []
         for track in self.tracks.values():
             out_evts.extend(track.midi_tick(relative_ticks, timestamp, self.chord_progression[self.current_chord]))

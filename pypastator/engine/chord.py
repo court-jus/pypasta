@@ -33,7 +33,7 @@ RYTHM_PATTERNS = [
 SCALE = [0, 2, 3, 5, 7, 8, 10]
 CHORD = [1, 3, 5, 7]
 
-class Arp:
+class Chord:
     def __init__(self):
         self.pitch = 0
         self.rythm = 0
@@ -41,9 +41,9 @@ class Arp:
         self.basevel = 0
         self.pos = 0
         self.midi_channel = 0
-        self.prevnote = None
+        self.prevnotes = []
         self.mute = True
-
+    
     def load(self, data):
         for loadable_key in ("pitch", "rythm", "pattern", "basevel", "mute", "midi_channel"):
             if loadable_key in data:
@@ -79,29 +79,31 @@ class Arp:
             positions.append(duration + positions[-1])
         tick = ticks % rlength
         if tick in positions:
-            note, vel = self.get_note(tick, chord)
+            notes, vel = self.get_notes(tick, chord)
             self.pos += 1
-            if self.prevnote and (self.mute or note is not None):
-                result.append((timestamp, "off", self.midi_channel, self.prevnote, 0))
-            if note is not None:
+            if self.prevnotes and (self.mute or len(notes) > 0):
+                for prevnote in self.prevnotes:
+                    result.append((timestamp, "off", self.midi_channel, prevnote, 0))
+                self.prevnotes = []
+            for note in notes:
                 if not self.mute:
                     result.append((timestamp, "on", self.midi_channel, note, vel))
-                self.prevnote = note
+                self.prevnotes.append(note)
         return result
 
 
-    def get_note(self, tick, chord):
+    def get_notes(self, tick, chord):
         pattern = NOTE_PATTERNS[int(self.pattern * (len(NOTE_PATTERNS) - 1) / 127)]
-        chord_degree = pattern[self.pos % len(pattern)]
-        if not chord_degree:
-            return None, None
-        octave = self.pitch // 12
-        scale_degree = (CHORD[(chord_degree - 1) % len(CHORD)] - 1 + chord - 1) % len(SCALE)
-        note = SCALE[scale_degree] + 12 * octave
+        notes = []
+        for degree in pattern:
+            octave = self.pitch // 12
+            scale_degree = (CHORD[(degree - 1) % len(CHORD)] - 1 + chord - 1) % len(SCALE)
+            note = SCALE[scale_degree] + 12 * octave
+
+            print("t", tick, "ch", chord, "pa", pattern, "cd", degree, "o", octave, "sd", scale_degree, "no", note)
+            notes.append(note)
         vel = int(self.basevel * 90 / 127)
         if tick == 0:
             vel = int(vel * ACCENT)
         vel = max(1, min(vel, 127))
-
-        print("t", tick, "ch", chord, "pa", pattern, "cd", chord_degree, "o", octave, "sd", scale_degree, "no", note, "ve", vel)
-        return note, vel
+        return notes, vel

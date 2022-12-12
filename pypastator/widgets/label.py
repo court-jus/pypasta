@@ -17,18 +17,19 @@ class Label:
         x=WIDGETS_MARGIN,
         y=WIDGETS_MARGIN,
         value=False,
+        draw=True,
     ):
         self.label = label
         self.fcolor = fcolor
         self.fcolor_selected = fcolor_selected
         self.bcolor = bcolor
         self.bcolor_selected = bcolor_selected
-        self.value = value
         self.font = pygame.font.SysFont(None, FONT_SIZE)
         self.width, self.height = w, h
 
         self.rect = pygame.Rect(0, 0, self.width, self.height)
         self.rect.center = (x + int(self.width / 2), y)
+        self.set_value(value, draw)
 
 
     def draw(self):
@@ -46,3 +47,7 @@ class Label:
     def hide(self):
         pygame.display.get_surface().fill(BLACK, self.rect)
 
+    def set_value(self, value, draw=True):
+        self.value = value
+        if draw:
+            self.draw()

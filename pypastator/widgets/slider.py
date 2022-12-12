@@ -16,6 +16,7 @@ class Slider:
         y=WIDGETS_MARGIN,
         label=None,
         value=0,
+        draw=True,
     ):
         self.fcolor = fcolor
         self.bcolor = bcolor
@@ -24,7 +25,6 @@ class Slider:
             y,
         )
         self.width, self.height = w, h
-        self.value = value
         self.font = pygame.font.SysFont(None, FONT_SIZE)
 
         self.rect = pygame.Rect(0, 0, self.width, self.height)
@@ -32,8 +32,9 @@ class Slider:
         self.label = None
         if label:
             self.label = Label(
-                label, fcolor=fcolor, bcolor=bcolor, w=SLIDER_LABEL_SIZE, h=h, x=x, y=self.rect.center[1]
+                label, fcolor=fcolor, bcolor=bcolor, w=SLIDER_LABEL_SIZE, h=h, x=x, y=self.rect.center[1], draw=draw,
             )
+        self.set_value(value, draw)
 
     def draw(self):
         if self.label is not None:
@@ -57,3 +58,8 @@ class Slider:
         if self.label is not None:
             self.label.hide()
         pygame.display.get_surface().fill(BLACK, self.rect)
+
+    def set_value(self, value, draw=True):
+        self.value = value
+        if draw:
+            self.draw()

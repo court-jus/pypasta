@@ -18,6 +18,7 @@ class Led:
         y=WIDGETS_MARGIN,
         label=None,
         value=True,
+        draw=True,
     ):
         self.fcolor = fcolor
         self.bcolor_on = GREEN
@@ -28,7 +29,6 @@ class Led:
             y,
         )
         self.width, self.height = w, h
-        self.value = value
         self.font = pygame.font.SysFont(None, FONT_SIZE)
 
         self.rect = pygame.Rect(0, 0, self.width, self.height)
@@ -36,8 +36,9 @@ class Led:
         self.label = None
         if label:
             self.label = Label(
-                label, fcolor=fcolor, bcolor=bcolor, w=KNOB_LABEL_SIZE, h=h, x=x, y=self.rect.center[1]
+                label, fcolor=fcolor, bcolor=bcolor, w=KNOB_LABEL_SIZE, h=h, x=x, y=self.rect.center[1], draw=draw,
             )
+        self.set_value(value, draw)
 
     def draw(self):
         if self.label is not None:
@@ -46,3 +47,8 @@ class Led:
         surf = pygame.display.get_surface()
         pygame.draw.circle(surf, self.bcolor_on if self.value else self.bcolor_off, self.rect.center, radius)
         pygame.draw.circle(surf, self.fcolor, self.rect.center, radius, width=1)
+
+    def set_value(self, value, draw=True):
+        self.value = value
+        if draw:
+            self.draw()

@@ -18,6 +18,7 @@ class Knob:
         y=WIDGETS_MARGIN,
         label=None,
         value=0,
+        draw=True,
     ):
         self.fcolor = fcolor
         self.bcolor = bcolor
@@ -26,7 +27,6 @@ class Knob:
             y,
         )
         self.width, self.height = w, h
-        self.value = value
         self.font = pygame.font.SysFont(None, FONT_SIZE)
 
         self.rect = pygame.Rect(0, 0, self.width, self.height)
@@ -34,8 +34,9 @@ class Knob:
         self.label = None
         if label:
             self.label = Label(
-                label, fcolor=fcolor, bcolor=bcolor, w=KNOB_LABEL_SIZE, h=h, x=x, y=self.rect.center[1]
+                label, fcolor=fcolor, bcolor=bcolor, w=KNOB_LABEL_SIZE, h=h, x=x, y=self.rect.center[1], draw=draw,
             )
+        self.set_value(value, draw)
 
     def draw(self):
         if self.label is not None:
@@ -48,3 +49,8 @@ class Knob:
         dest_x = math.cos(line_angle) * radius + self.rect.center[0]
         dest_y = math.sin(line_angle) * radius + self.rect.center[1]
         pygame.draw.line(surf, self.fcolor, self.rect.center, (dest_x, dest_y))
+
+    def set_value(self, value, draw=True):
+        self.value = value
+        if draw:
+            self.draw()

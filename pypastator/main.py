@@ -1,6 +1,8 @@
 import heapq
 import random
 
+import json
+
 import pygame.font
 import pygame.midi
 from constants import (ALL_NOTES_OFF, ALL_SOUND_OFF, CCMAX, CCMIN, CLOCK,
@@ -23,12 +25,20 @@ class Pastator:
         self.clock = pygame.time.Clock()
         self.session = Session()
 
-    def handle_in_event(self, evt):
-        [[typ, data1, data2, data3], timestamp] = evt
+    def load(self, filename):
+        with open(filename, "r") as fp:
+            data = json.load(fp)
+            self.session.load(data)
+
+    def handle_clock_in_event(self, evt):
+        typ = evt[0][0]
         if typ == CLOCK:
             self.midi_tick()
             self.ticks += 1
-        elif typ == PLAY:
+
+    def handle_ctrl_in_event(self, evt):
+        [[typ, data1, data2, data3], timestamp] = evt
+        if typ == PLAY:
             self.session.playing = self.ticks
         elif typ == STOP:
             self.session.playing = False
@@ -38,16 +48,16 @@ class Pastator:
             note_name = pygame.midi.midi_to_ansi_note(note)
             velocity = data2
             if typ == NOTEON:
-                print(timestamp, "receive note_on", note_name, "vel", velocity)
+                print("Received Note ON evt", timestamp, note_name, "vel", velocity)
             else:
-                print(timestamp, "receive note_off", note_name,"vel",velocity)
+                print("Received Note OFF evt", note_name,"vel",velocity)
         elif typ >= CCMIN and typ <= CCMAX:
             cchannel = typ - 176
             cc = data1
             value = data2
             self.session.handle_cc(cchannel, cc, value)
         else:
-            print(evt)
+            print("Unkown event", evt)
 
     def run(self):
         self.running = True
@@ -64,15 +74,15 @@ class Pastator:
                     else:
                         print("Key", ui_evt)
                 elif ui_evt.type != pygame.MOUSEMOTION:
-                    print(ui_evt)
+                    print("Unknown UI event", ui_evt)
             if self.clock_device is not None:
                 if self.clock_device.poll():
                     for evt in self.clock_device.read(10):
-                        self.handle_in_event(evt)
+                        self.handle_clock_in_event(evt)
             if self.ctrl_device is not None:
                 if self.ctrl_device.poll():
                     for evt in self.ctrl_device.read(10):
-                        self.handle_in_event(evt)
+                        self.handle_ctrl_in_event(evt)
             self.handle_out_events()
             pygame.display.flip()
         self.all_sound_off()
@@ -96,7 +106,7 @@ class Pastator:
             evt_channel = evt[2]
             if evt_type == "on" and self.output_device is not None:
                 note, velocity = evt[3:5]
-                print(timestamp, "play", pygame.midi.midi_to_ansi_note(note), velocity)
+                print("Play", timestamp, evt_channel, pygame.midi.midi_to_ansi_note(note), velocity)
                 self.output_device.note_on(note, velocity, evt_channel)
             elif evt_type == "off" and self.output_device is not None:
                 note = evt[3]
@@ -111,9 +121,12 @@ def main():
 
     print("=================")
 
-    clock_device_name = "MC-101"
-    output_device_name = "MC-101"
-    ctrl_device_name = "Launch Control XL"
+    #clock_device_name = "MC-101"
+    #output_device_name = "MC-101"
+    #ctrl_device_name = "Launch Control XL"
+    clock_device_name = "OP-Z MIDI 1"
+    output_device_name = "OP-Z MIDI 1"
+    ctrl_device_name = "OP-Z MIDI 1"
     clock_device = None
     ctrl_device = None
     output_device = None
@@ -135,18 +148,22 @@ def main():
                 print(f" - Output [{name.decode()}] available but unused")
 
     print("Devices used:")
-    print(
-        f" - Clock - {pygame.midi.get_device_info(clock_device.device_id)[1].decode()}"
-    )
-    print(
-        f" - Controller - {pygame.midi.get_device_info(ctrl_device.device_id)[1].decode()}"
-    )
-    print(
-        f" - Sound output - {pygame.midi.get_device_info(output_device.device_id)[1].decode()}"
-    )
+    if clock_device:
+        print(
+            f" - Clock - {pygame.midi.get_device_info(clock_device.device_id)[1].decode()}"
+        )
+    if ctrl_device:
+        print(
+            f" - Controller - {pygame.midi.get_device_info(ctrl_device.device_id)[1].decode()}"
+        )
+    if output_device:
+        print(
+            f" - Sound output - {pygame.midi.get_device_info(output_device.device_id)[1].decode()}"
+        )
 
     pasta = Pastator(clock_device, ctrl_device, output_device)
     pasta.all_sound_off()
+    pasta.load("example.json")
     pasta.run()
 
     print("================")

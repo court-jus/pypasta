@@ -1,3 +1,4 @@
+import time
 import heapq
 import random
 
@@ -35,15 +36,17 @@ class Pastator:
         if typ == CLOCK:
             self.midi_tick()
             self.ticks += 1
-
-    def handle_ctrl_in_event(self, evt):
-        [[typ, data1, data2, data3], timestamp] = evt
-        if typ == PLAY:
+        elif typ == PLAY:
             self.session.playing = self.ticks
         elif typ == STOP:
             self.session.playing = False
             self.all_sound_off()
-        elif typ in (NOTEON, NOTEOFF):
+        else:
+            print("Unkown clock event", evt)
+
+    def handle_ctrl_in_event(self, evt):
+        [[typ, data1, data2, data3], timestamp] = evt
+        if typ in (NOTEON, NOTEOFF):
             note = data1
             note_name = pygame.midi.midi_to_ansi_note(note)
             velocity = data2
@@ -57,7 +60,7 @@ class Pastator:
             value = data2
             self.session.handle_cc(cchannel, cc, value)
         else:
-            print("Unkown event", evt)
+            print("Unkown ctrl event", evt)
 
     def run(self):
         self.running = True
@@ -121,12 +124,12 @@ def main():
 
     print("=================")
 
-    #clock_device_name = "MC-101"
-    #output_device_name = "MC-101"
-    #ctrl_device_name = "Launch Control XL"
-    clock_device_name = "OP-Z MIDI 1"
-    output_device_name = "OP-Z MIDI 1"
-    ctrl_device_name = "OP-Z MIDI 1"
+    clock_device_name = "MC-101"
+    output_device_name = "MC-101"
+    ctrl_device_name = "Launch Control XL"
+    # clock_device_name = "OP-Z MIDI 1"
+    # output_device_name = "OP-Z MIDI 1"
+    # ctrl_device_name = "OP-Z MIDI 1"
     clock_device = None
     ctrl_device = None
     output_device = None

@@ -1,6 +1,7 @@
 from constants import FONT_SIZE, KNOB_LABEL_SIZE, KNOB_SIZE, SLIDER_LABEL_SIZE, SLIDER_WIDTH, WIDGETS_MARGIN
 from engine.arp import Arp
 from engine.chord import Chord
+from engine.strum import Strum
 from widgets.led import Led
 from widgets.slider import Slider
 from widgets.knob import Knob
@@ -27,6 +28,15 @@ class Track:
             }
         elif track_type == "chord":
             self.engine = Chord()
+            self.cc_controls = {
+                8 + self.track_id: (Knob(y=y, x=sliders_right + knob_size * 2, label="Vel.", value=self.engine.basevel), self.engine.set_basevel),
+                16 + self.track_id: (Knob(y=y, x=sliders_right + knob_size, label="Pat.", value=self.engine.pattern), self.engine.set_pattern),
+                24 + self.track_id: (Knob(y=y, x=sliders_right, label="Rythm", value=self.engine.rythm), self.engine.set_rythm),
+                32 + self.track_id: (Slider(y=y, x= FONT_SIZE * 2, label="Pitch", value=self.engine.pitch), self.engine.set_pitch),
+                40 + self.track_id: (Led(y=y, value=True), self.engine.set_mute),
+            }
+        elif track_type == "strum":
+            self.engine = Strum()
             self.cc_controls = {
                 8 + self.track_id: (Knob(y=y, x=sliders_right + knob_size * 2, label="Vel.", value=self.engine.basevel), self.engine.set_basevel),
                 16 + self.track_id: (Knob(y=y, x=sliders_right + knob_size, label="Pat.", value=self.engine.pattern), self.engine.set_pattern),

@@ -5,28 +5,28 @@
   "tracks": {
     "0": {
       "type": "chord",
-      "pitch": 45,
+      "pitch": 60,
       "rythm": 7,
-      "pattern": 70,
-      "basevel": 7,
-      "midi_channel": 10,
+      "pattern": 60,
+      "basevel": 100,
+      "midi_channel": 7,
       "mute": true
     },
     "1": {
       "type": "arp",
-      "pitch": 73,
-      "rythm": 20,
-      "pattern": 60,
-      "basevel": 50,
-      "midi_channel": 12,
+      "pitch": 40,
+      "rythm": 100,
+      "pattern": 100,
+      "basevel": 100,
+      "midi_channel": 4,
       "mute": true
     },
     "2": {
       "type": "strum",
-      "pitch": 53,
-      "rythm": 64,
-      "pattern": 127,
-      "basevel": 80,
+      "pitch": 85,
+      "rythm": 117,
+      "pattern": 10,
+      "basevel": 100,
       "midi_channel": 13,
       "mute": false
     }

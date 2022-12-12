@@ -1,6 +1,17 @@
 from engine.track import Track
 from constants import BAR
 
+DEFAULT_TRACK = {
+    "type": "arp",
+    "pitch": 40,
+    "rythm": 100,
+    "pattern": 100,
+    "basevel": 100,
+    "midi_channel": 10,
+    "mute": True
+}
+
+
 class Session:
     def __init__(self):
         self.scale_name = "major"
@@ -44,5 +55,7 @@ class Session:
             if track_id in self.tracks:
                 self.tracks[track_id].menu()
             else:
-                self.tracks[track_id] = Track(track_id)
+                t = Track(track_id)
+                t.load(DEFAULT_TRACK)
+                self.tracks[track_id] = t
             print("track", cc - 48)

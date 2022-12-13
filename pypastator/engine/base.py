@@ -1,81 +1,33 @@
+import pygame.midi
+
+from .field import Field, BooleanField, EnumField
 from constants import (
     ACCENT,
-    DHALF,
-    DQUARTER,
-    DEIGHTH,
-    EIGHTH,
-    FULL,
-    HALF,
-    QUARTER,
-    SIXTEENTH,
+    NOTE_PATTERNS,
+    RYTHM_PATTERNS,
+    SCALE_NAMES,
+    SCALES,
+    CHORDS,
 )
-
-NOTE_PATTERNS = [
-    (3, 1, 1),
-    (3, 1, 2),
-    (3, 2, 1),
-    (3, 2, 2),
-    (3, 2, 3, 4),
-    (3, 3, 2),
-    (3, 3, 3, 4),
-    (1, 1, 1),
-    (1, 1, 2),
-    (1, 2, 2),
-    (1, 2, 3, 3),
-    (1, 2, 3, 4),
-    (1, 3, 2),
-    (1, 3, 3),
-    (1, 3, 3, 4),
-    (1, 2, 3, 4, 5),
-]
-
-RYTHM_PATTERNS = [
-    (FULL,),
-    (HALF, HALF),
-    (QUARTER, DHALF),
-    (QUARTER, QUARTER, HALF),
-    (QUARTER, QUARTER, QUARTER, QUARTER),
-    (HALF, EIGHTH, DQUARTER),
-    (QUARTER, QUARTER, EIGHTH, EIGHTH, QUARTER),
-    (QUARTER, DQUARTER, EIGHTH, EIGHTH, EIGHTH),
-    (EIGHTH, DEIGHTH, EIGHTH, QUARTER, SIXTEENTH, SIXTEENTH, EIGHTH),
-    (
-        SIXTEENTH,
-        SIXTEENTH,
-        SIXTEENTH,
-        SIXTEENTH,
-        SIXTEENTH,
-        SIXTEENTH,
-        SIXTEENTH,
-        SIXTEENTH,
-        SIXTEENTH,
-        SIXTEENTH,
-        SIXTEENTH,
-        SIXTEENTH,
-        SIXTEENTH,
-        SIXTEENTH,
-        SIXTEENTH,
-        SIXTEENTH,
-    ),
-]
-
-SCALE = [0, 2, 3, 5, 7, 8, 10]
-CHORD = [1, 3, 5, 7, 9]
 
 
 class BaseEngine:
-    def __init__(self):
-        self.pitch = 0
-        self.rythm = 0
-        self.pattern = 0
-        self.basevel = 0
+    def __init__(self, track):
+        super().__init__()
+        self.track = track
+        # Settings
+        self.pitch = Field()
+        self.rythm = Field()
+        self.pattern = Field()
+        self.basevel = Field()
+        self.midi_channel = Field(min_value=0, max_value=15)
+        self.active = BooleanField(default=True)
+        self.accentuation = Field(default=ACCENT)
+        self.related_to = EnumField(choices=["scale", "chord"])
+        # Internal stuff
         self.pos = 0
-        self.midi_channel = 0
         self.prevnotes = []
-        self.mute = True
-        self.scale = SCALE
-        self.chord = CHORD
-        self.accentuation = ACCENT
+        self.chord_number = 1
 
     def load(self, data):
         for loadable_key in (
@@ -83,56 +35,80 @@ class BaseEngine:
             "rythm",
             "pattern",
             "basevel",
-            "mute",
             "midi_channel",
+            "active",
+            "accentuation",
         ):
             if loadable_key in data:
-                setattr(self, loadable_key, data[loadable_key])
+                field = getattr(self, loadable_key)
+                if isinstance(field, Field):
+                    field.value = data[loadable_key]
+                else:
+                    setattr(self, loadable_key, data[loadable_key])
 
-    def set_pitch(self, value):
-        self.pitch = value
-        return value
+    def save(self):
+        result = {}
+        for savable_key in (
+            "pitch",
+            "rythm",
+            "pattern",
+            "basevel",
+            "midi_channel",
+            "active",
+            "accentuation",
+        ):
+            field = getattr(self, savable_key)
+            if isinstance(field, Field):
+                result[savable_key] = field.value
+            else:
+                result[savable_key] = field
+        return result
 
-    def set_rythm(self, value):
-        self.rythm = value
-        return value
 
-    def set_pattern(self, value):
-        self.pattern = value
-        return value
+    @property
+    def pattern_str(self):
+        note_names = [pygame.midi.midi_to_ansi_note(note) for note in self.get_notes()]
+        return ", ".join(note_names)
 
-    def set_basevel(self, value):
-        self.basevel = value
-        return value
+    @property
+    def rythm_str(self):
+        rpat = self.get_rythm_pattern()
+        if not all([int(r / 6) == r / 6 for r in rpat]):
+            return str()
+        rpat = [int(r / 6) for r in rpat]
+        return "".join(["o" + ("." * (r - 1) if r > 1 else "") for r in rpat])
 
-    def set_mute(self, value):
-        if value == 127:
-            self.mute = not self.mute
-        return not self.mute
+    @property
+    def related_to_str(self):
+        return self.related_to.str_value()
 
     def midi_tick(self, ticks, timestamp, chord_number):
+        midi_channel = self.midi_channel.value
+        self.chord_number = chord_number
         result = []
         rpattern = self.get_rythm_pattern()
         rlength = sum(rpattern)
         tick = ticks % rlength
         positions = self.get_positions()
         stop_positions = self.get_stop_positions()
-        if self.prevnotes and (tick in stop_positions or self.mute):
+        if self.prevnotes and (tick in stop_positions or not self.active.value):
             for prevnote in self.prevnotes:
-                result.append((timestamp, "off", self.midi_channel, prevnote, 0))
+                result.append((timestamp, "off", midi_channel, prevnote, 0))
             self.prevnotes = []
+        if not self.active.value:
+            return result
         if tick in positions:
-            notes = self.get_notes(tick, chord_number)
+            notes = self.get_notes()
             vel = self.get_vel(tick)
             self.pos += 1
             for note in notes:
-                if not self.mute:
-                    result.append((timestamp, "on", self.midi_channel, note, vel))
+                if self.active.value:
+                    result.append((timestamp, "on", midi_channel, note, vel))
                 self.prevnotes.append(note)
         return result
 
     def get_rythm_pattern(self):
-        return RYTHM_PATTERNS[int(self.rythm * (len(RYTHM_PATTERNS) - 1) / 127)]
+        return RYTHM_PATTERNS[int(self.rythm.value * (len(RYTHM_PATTERNS) - 1) / 127)]
 
     def get_positions(self):
         rpattern = self.get_rythm_pattern()
@@ -145,39 +121,35 @@ class BaseEngine:
         return self.get_positions()
 
     def get_pattern(self):
-        return NOTE_PATTERNS[int(self.pattern * (len(NOTE_PATTERNS) - 1) / 127)]
+        return NOTE_PATTERNS[int(self.pattern.value * (len(NOTE_PATTERNS) - 1) / 127)]
 
-    def get_notes(self, tick, chord_number):
+    def get_notes(self):
         pattern = self.get_pattern()
+        scale_notes = SCALES[self.track.session.scale.value]
+        chord_notes = CHORDS[self.track.session.chord.value]
         notes = []
         for degree in pattern:
-            octave = self.pitch // 12
+            octave = self.pitch.value // 12
+            if degree > max(chord_notes):
+                octave += 1
             scale_degree = (
-                self.chord[(degree - 1) % len(self.chord)] - 1 + chord_number - 1
-            ) % len(self.scale)
-            note = self.scale[scale_degree] + 12 * octave
-
-            print(
-                "t",
-                tick,
-                "ch",
-                chord_number,
-                "pa",
-                pattern,
-                "cd",
-                degree,
-                "o",
-                octave,
-                "sd",
-                scale_degree,
-                "no",
-                note,
-            )
+                chord_notes[(degree - 1) % len(chord_notes)] - 1 + self.chord_number - 1
+            ) % len(scale_notes)
+            note = scale_notes[scale_degree] + 12 * octave
             notes.append(note)
         return notes
 
     def get_vel(self, tick):
-        vel = int(self.basevel * 90 / 127)
+        vel = int(self.basevel.value * 90 / 127)
         if tick == 0:
-            vel = int(vel * self.accentuation)
+            vel = int(vel * self.accentuation.value)
         return max(1, min(vel, 127))
+
+    def stop(self):
+        timestamp = pygame.midi.time()
+        midi_channel = self.midi_channel.value
+        result = []
+        if self.prevnotes:
+            for prevnote in self.prevnotes:
+                result.append((timestamp, "off", midi_channel, prevnote, 0))
+        return result

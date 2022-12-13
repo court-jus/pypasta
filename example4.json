@@ -1,0 +1,16 @@
+{
+  "scale_name": "minor",
+  "chord_progression": [1],
+  "playing": true,
+  "tracks": {
+    "0": {
+      "type": "arp",
+      "pitch": 56,
+      "rythm": 127,
+      "pattern": 127,
+      "basevel": 40,
+      "midi_channel": 11,
+      "mute": false
+    }
+  }
+}

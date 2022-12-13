@@ -62,6 +62,19 @@ class Pastator:
         else:
             print("Unkown ctrl event", evt)
 
+    def handle_ui_event(self, ui_evt):
+        if ui_evt.type == pygame.QUIT:
+            self.running = False
+        elif ui_evt.type == pygame.KEYDOWN:
+            if ui_evt.key == pygame.K_ESCAPE:
+                self.running = False
+            else:
+                print("Key", ui_evt)
+        elif ui_evt.type == pygame.MOUSEBUTTONDOWN:
+            self.session.handle_click(ui_evt.pos)
+        elif ui_evt.type != pygame.MOUSEMOTION:
+            print("Unknown UI event", ui_evt)
+
     def run(self):
         self.running = True
         while self.running:
@@ -69,15 +82,7 @@ class Pastator:
             self.clock.tick()
             ui_evts = pygame.event.get()
             for ui_evt in ui_evts:
-                if ui_evt.type == pygame.QUIT:
-                    self.running = False
-                elif ui_evt.type == pygame.KEYDOWN:
-                    if ui_evt.key == pygame.K_ESCAPE:
-                        self.running = False
-                    else:
-                        print("Key", ui_evt)
-                elif ui_evt.type != pygame.MOUSEMOTION:
-                    print("Unknown UI event", ui_evt)
+                self.handle_ui_event(ui_evt)
             if self.clock_device is not None:
                 if self.clock_device.poll():
                     for evt in self.clock_device.read(10):

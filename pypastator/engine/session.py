@@ -59,3 +59,7 @@ class Session:
                 t.load(DEFAULT_TRACK)
                 self.tracks[track_id] = t
             print("track", cc - 48)
+
+    def handle_click(self, pos):
+        for track in self.tracks.values():
+            track.handle_click(pos)

@@ -6,8 +6,9 @@ from constants import (DARK_GRAY, FONT_SIZE, KNOB_ANGLE, KNOB_LABEL_SIZE,
                          KNOB_SIZE, LIGHT_GRAY, WIDGETS_MARGIN, GREEN, RED)
 from widgets.label import Label
 
+from widgets import BaseWidget
 
-class Led:
+class Led(BaseWidget):
     def __init__(
         self,
         fcolor=LIGHT_GRAY,
@@ -52,3 +53,8 @@ class Led:
         self.value = value
         if draw:
             self.draw()
+
+    def handle_click(self, pos, callback):
+        if self.rect.collidepoint(pos):
+            new_value = callback(127)
+            self.set_value(new_value)

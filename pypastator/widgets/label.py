@@ -3,8 +3,9 @@ import pygame
 from constants import (BUTTON_WIDTH, DARK_GRAY, FONT_SIZE, LIGHT_GRAY,
                          WIDGETS_MARGIN, GREEN, BLACK)
 
+from widgets import BaseWidget
 
-class Label:
+class Label(BaseWidget):
     def __init__(
         self,
         label,

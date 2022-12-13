@@ -4,8 +4,9 @@ from constants import (DARK_GRAY, FONT_SIZE, LIGHT_GRAY, SLIDER_LABEL_SIZE,
                          SLIDER_WIDTH, WIDGETS_MARGIN, BLACK)
 from widgets.label import Label
 
+from widgets import BaseWidget
 
-class Slider:
+class Slider(BaseWidget):
     def __init__(
         self,
         fcolor=LIGHT_GRAY,
@@ -63,3 +64,10 @@ class Slider:
         self.value = value
         if draw:
             self.draw()
+
+    def handle_click(self, pos, callback):
+        if self.rect.collidepoint(pos):
+            relative_click_position = pos[0] - self.rect.x
+            equivalent_cc_value = relative_click_position * 127 / self.rect.width
+            new_value = callback(equivalent_cc_value)
+            self.set_value(new_value)

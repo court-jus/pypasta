@@ -5,9 +5,9 @@ import pygame
 from constants import (DARK_GRAY, FONT_SIZE, KNOB_ANGLE, KNOB_LABEL_SIZE,
                          KNOB_SIZE, LIGHT_GRAY, WIDGETS_MARGIN)
 from widgets.label import Label
+from widgets import BaseWidget
 
-
-class Knob:
+class Knob(BaseWidget):
     def __init__(
         self,
         fcolor=LIGHT_GRAY,
@@ -54,3 +54,16 @@ class Knob:
         self.value = value
         if draw:
             self.draw()
+
+    def handle_click(self, pos, callback):
+        if self.rect.collidepoint(pos):
+            cx, cy = self.rect.center
+            rx = (pos[0] - cx) / (self.rect.height / 2)
+            ry = (pos[1] - cy) / (self.rect.height / 2)
+            rad = math.atan2(rx, ry)
+            equivalent_cc_value = int((rad ) * 127 / 1.8 / math.pi)
+            if equivalent_cc_value < 0:
+                equivalent_cc_value = 127 - equivalent_cc_value
+            print(equivalent_cc_value, "KC", cx, cy, rx, ry, rad, rad * (180 / math.pi))
+            new_value = callback(equivalent_cc_value)
+            self.set_value(new_value)

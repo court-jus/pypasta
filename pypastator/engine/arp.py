@@ -6,8 +6,8 @@ class Arp(BaseEngine):
     def get_notes(self):
         pattern = self.get_pattern()
         scale_notes = SCALES[self.track.session.scale.value]
-        chord_notes = CHORDS[self.track.session.chord.value]
-        chord_degree = pattern[self.pos % len(pattern)]
+        chord_notes = self.track.session.current_chord.get_value()
+        chord_degree = pattern[self.pos.get_value() % len(pattern)]
         if not chord_degree:
             return []
         octave = self.pitch.value // 12

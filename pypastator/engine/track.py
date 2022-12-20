@@ -24,7 +24,9 @@ class Track:
         self.session = session
         self.engine = None
         self.engine_type = EnumField(choices=["arp", "chord", "strum"])
-        self.engine_type.hook(lambda val: self.set_type(self.engine_type_str), "track_set_type")
+        self.engine_type.hook(
+            lambda val: self.set_type(self.engine_type_str), "track_set_type"
+        )
         sliders_right = (
             WIDGETS_MARGIN * 4 + FONT_SIZE * 3 + SLIDER_WIDTH + SLIDER_LABEL_SIZE
         )
@@ -72,7 +74,9 @@ class Track:
         self.cc_controls[16 + self.track_id] = self.engine.pattern.set_value
         self.cc_controls[24 + self.track_id] = self.engine.rythm.set_value
         self.cc_controls[32 + self.track_id] = self.engine.pitch.set_value
-        self.cc_controls[40 + self.track_id] = lambda v: self.engine.active.increment() if v == 127 else False
+        self.cc_controls[40 + self.track_id] = (
+            lambda v: self.engine.active.increment() if v == 127 else False
+        )
 
     def load(self, data):
         self.set_type(data.get("type", "arp"))

@@ -25,14 +25,17 @@ class Strum(BaseEngine):
 
     def get_notes(self):
         pattern = self.get_pattern()
-        chord_degree = pattern[self.pos % len(pattern)]
+        chord_degree = pattern[self.pos.get_value() % len(pattern)]
         if not chord_degree:
             return []
         octave = self.pitch.value // 12
         scale = self.track.session.scale.get_value()
-        chord = self.track.session.chord.get_value()
+        chord_notes = self.track.session.current_chord.get_value()
         scale_degree = (
-            chord[(chord_degree - 1) % len(chord)] - 1 + self.chord_number - 1
+            chord_notes[(chord_degree - 1) % len(chord_notes)]
+            - 1
+            + self.chord_number
+            - 1
         ) % len(scale)
         note = scale[scale_degree] + 12 * octave
 

@@ -52,7 +52,16 @@ class Menu:
         }
         topy += WIDGET_LINE * 2
         self.track_widgets = {
-            "engine_type": Label(text="Eng.", y=topy, x=LEFT_COL + SLIDER_WIDTH / 2 + WIDGETS_MARGIN + SLIDER_LABEL_SIZE + WIDGETS_MARGIN, draw=False),
+            "engine_type": Label(
+                text="Eng.",
+                y=topy,
+                x=LEFT_COL
+                + SLIDER_WIDTH / 2
+                + WIDGETS_MARGIN
+                + SLIDER_LABEL_SIZE
+                + WIDGETS_MARGIN,
+                draw=False,
+            ),
         }
         self.engine_widgets = {
             "track_id": Label(text="Trk #", y=topy, x=WIDGETS_MARGIN, draw=False),
@@ -65,7 +74,18 @@ class Menu:
                 stripes=True,
                 draw=False,
             ),
-            "related_to": Label(text="RTo", y=topy, x=LEFT_COL + SLIDER_WIDTH / 2 + WIDGETS_MARGIN + SLIDER_LABEL_SIZE + WIDGETS_MARGIN + BUTTON_WIDTH + WIDGETS_MARGIN, draw=False),
+            "related_to": Label(
+                text="RTo",
+                y=topy,
+                x=LEFT_COL
+                + SLIDER_WIDTH / 2
+                + WIDGETS_MARGIN
+                + SLIDER_LABEL_SIZE
+                + WIDGETS_MARGIN
+                + BUTTON_WIDTH
+                + WIDGETS_MARGIN,
+                draw=False,
+            ),
             "pattern_str": Label(
                 text="P.",
                 y=topy + WIDGET_LINE * 1,
@@ -96,7 +116,11 @@ class Menu:
             ),
         }
         self.active_widget = None
-        self.widgets_order = ["engine.midi_channel", "track.engine_type", "engine.related_to"]
+        self.widgets_order = [
+            "engine.midi_channel",
+            "track.engine_type",
+            "engine.related_to",
+        ]
 
         # Hook session widgets
         self.session_widgets["scale"].hook(
@@ -115,7 +139,7 @@ class Menu:
         )
         self.session_widgets["chord"].hook(
             self.session,
-            "chord",
+            "chord_type",
             "chord_to_chord",
             set_text=True,
             value_getter=lambda: self.session.chord_str,
@@ -138,8 +162,20 @@ class Menu:
         self.visible = True
         self.engine_widgets["track_id"].set_text(f"Trk {track_id}")
         self.engine_widgets["midi_channel"].hook(track.engine, "midi_channel", "menu")
-        self.track_widgets["engine_type"].hook(track, "engine_type", "menu", set_text=True, value_getter=lambda: track.engine_type_str)
-        self.engine_widgets["related_to"].hook(track.engine, "related_to", "menu", set_text=True, value_getter=lambda: track.engine.related_to_str)
+        self.track_widgets["engine_type"].hook(
+            track,
+            "engine_type",
+            "menu",
+            set_text=True,
+            value_getter=lambda: track.engine_type_str,
+        )
+        self.engine_widgets["related_to"].hook(
+            track.engine,
+            "related_to",
+            "menu",
+            set_text=True,
+            value_getter=lambda: track.engine.related_to_str,
+        )
         self.engine_widgets["pattern_str"].hook(
             track.engine,
             "pattern",
@@ -156,7 +192,7 @@ class Menu:
         )
         self.engine_widgets["pattern_str"].hook(
             self.session,
-            "chord",
+            "chord_type",
             "chord_to_pattern_str",
             set_text=True,
             value_getter=lambda: track.engine.pattern_str,
@@ -165,6 +201,20 @@ class Menu:
             track.engine,
             "pitch",
             "pitch_to_pattern_str",
+            set_text=True,
+            value_getter=lambda: track.engine.pattern_str,
+        )
+        self.engine_widgets["pattern_str"].hook(
+            self.session,
+            "current_chord",
+            "current_chord_to_pattern_str",
+            set_text=True,
+            value_getter=lambda: track.engine.pattern_str,
+        )
+        self.engine_widgets["pattern_str"].hook(
+            track.engine,
+            "pos",
+            "pos_to_pattern_str",
             set_text=True,
             value_getter=lambda: track.engine.pattern_str,
         )
@@ -231,11 +281,11 @@ class Menu:
     def handle_cc(self, cc, value):
         if not self.visible:
             return
-        if cc == 3 and value == 0:
+        if cc == 3:
             self.activate_next()
-        elif cc == 2 and value == 0:
+        elif cc == 2:
             self.activate_next(-1)
-        elif cc == 0 and value == 0:
+        elif cc == 0:
             self.increment()
-        elif cc == 1 and value == 0:
+        elif cc == 1:
             self.increment(-1)

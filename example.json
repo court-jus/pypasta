@@ -4,24 +4,6 @@
   "playing": true,
   "tracks": {
     "0": {
-      "type": "chord",
-      "pitch": 45,
-      "rythm": 7,
-      "pattern": 70,
-      "basevel": 7,
-      "midi_channel": 10,
-      "mute": true
-    },
-    "1": {
-      "type": "arp",
-      "pitch": 73,
-      "rythm": 20,
-      "pattern": 60,
-      "basevel": 50,
-      "midi_channel": 12,
-      "mute": true
-    },
-    "2": {
       "type": "arp",
       "pitch": 44,
       "rythm": 120,

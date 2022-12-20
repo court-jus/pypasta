@@ -25,7 +25,7 @@ class BaseEngine:
         self.accentuation = Field(default=ACCENT)
         self.related_to = EnumField(choices=["scale", "chord"])
         # Internal stuff
-        self.pos = 0
+        self.pos = Field(max_value=None)
         self.prevnotes = []
         self.chord_number = 1
 
@@ -64,7 +64,6 @@ class BaseEngine:
                 result[savable_key] = field
         return result
 
-
     @property
     def pattern_str(self):
         note_names = [pygame.midi.midi_to_ansi_note(note) for note in self.get_notes()]
@@ -98,9 +97,9 @@ class BaseEngine:
         if not self.active.value:
             return result
         if tick in positions:
+            self.pos.increment()
             notes = self.get_notes()
             vel = self.get_vel(tick)
-            self.pos += 1
             for note in notes:
                 if self.active.value:
                     result.append((timestamp, "on", midi_channel, note, vel))
@@ -126,7 +125,7 @@ class BaseEngine:
     def get_notes(self):
         pattern = self.get_pattern()
         scale_notes = SCALES[self.track.session.scale.value]
-        chord_notes = CHORDS[self.track.session.chord.value]
+        chord_notes = self.track.session.current_chord.get_value()
         notes = []
         for degree in pattern:
             octave = self.pitch.value // 12

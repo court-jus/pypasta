@@ -8,9 +8,7 @@ class BaseWidget:
     def handle_click(self, pos, callback):
         pass
 
-    def hook(
-        self, instance, attrname, hook_name, set_text=False, value_getter=None
-    ):
+    def hook(self, instance, attrname, hook_name, set_text=False, value_getter=None):
         if hook_name in self.hooked_to:
             self.unhook(hook_name)
 
@@ -27,7 +25,7 @@ class BaseWidget:
             field.hook(cb, hook_name)
             self.hooked_to[hook_name] = [instance, attrname]
 
-    def unhook(self, hook_name = None):
+    def unhook(self, hook_name=None):
         if hook_name is None:
             for hook_name, [instance, attrname] in self.hooked_to.items():
                 field = getattr(instance, attrname)

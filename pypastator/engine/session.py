@@ -1,5 +1,9 @@
 import pygame.midi
 
+import json
+from faker import Faker
+from slugify import slugify
+
 from constants import (
     FONT_SIZE,
     BASE_WIDGET_HEIGHT,
@@ -78,6 +82,22 @@ class Session:
             ]
         )
 
+    def save(self):
+        fake = Faker()
+        data = {
+            "tracks": {
+                track.track_id: track.engine.save()
+                for track in self.tracks.values()
+            }
+        }
+        for loadable_key in ("scale_name", "chord_progression", "playing"):
+            data.update({loadable_key: getattr(self, loadable_key)})
+        track_name = fake.catch_phrase()
+        data["title"] = track_name
+        filename = slugify(track_name) + ".json"
+        with open(filename, "w") as fp:
+            json.dump(data, fp, indent=2)
+
     def add_track(self, track_id, data=DEFAULT_TRACK):
         t = Track(track_id, self)
         t.load(data)
@@ -131,6 +151,8 @@ class Session:
                 self.cc_mode = "menu"
             elif cc == 5:
                 self.cc_mode = "chords"
+            elif cc == 7:
+                self.save()
             return
 
         if self.cc_mode == "menu":

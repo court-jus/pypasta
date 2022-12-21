@@ -47,7 +47,9 @@ class BaseEngine:
                     setattr(self, loadable_key, data[loadable_key])
 
     def save(self):
-        result = {}
+        result = {
+            "type": self.track.engine_type.get_value()
+        }
         for savable_key in (
             "pitch",
             "rythm",

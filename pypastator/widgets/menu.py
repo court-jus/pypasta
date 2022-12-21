@@ -144,6 +144,13 @@ class Menu:
             set_text=True,
             value_getter=lambda: self.session.chord_str,
         )
+        self.session_widgets["chord"].hook(
+            self.session,
+            "current_chord",
+            "current_chord_to_chord",
+            set_text=True,
+            value_getter=lambda: self.session.chord_str,
+        )
 
     def hide(self):
         self.visible = False

@@ -55,11 +55,11 @@ class Session:
 
     @property
     def chord_str(self):
-        scale_notes = SCALES[self.scale.value]
-        chord_notes = CHORDS[self.chord_type.value]
+        scale_notes = self.scale.get_value()
+        chord_notes = [note_in_chord - 1 for note_in_chord in self.current_chord.get_value()]
         notes = []
         for degree in chord_notes:
-            scale_degree = (degree - 1 + self.progression_pos - 1) % len(scale_notes)
+            scale_degree = degree % len(scale_notes)
             note = scale_notes[scale_degree] + 12
             notes.append(note)
         return ", ".join([pygame.midi.midi_to_ansi_note(note)[:-1] for note in notes])

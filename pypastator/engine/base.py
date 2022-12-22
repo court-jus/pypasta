@@ -27,14 +27,14 @@ class BaseEngine:
         super().__init__()
         self.track = track
         # Settings
-        self.pitch = Field()
-        self.gravity = Field(default=12)
-        self.rythm = Field()
-        self.pattern = Field()
-        self.basevel = Field()
+        self.pitch = Field(smooth=True)
+        self.gravity = Field(default=12, smooth=True)
+        self.rythm = Field(smooth=True)
+        self.pattern = Field(smooth=True)
+        self.basevel = Field(smooth=True)
         self.midi_channel = Field(min_value=0, max_value=15)
         self.active = BooleanField(default=True)
-        self.accentuation = Field(default=ACCENT)
+        self.accentuation = Field(default=ACCENT, smooth=True)
         self.related_to = EnumField(choices=["scale", "chord"])
         # Internal stuff
         self.pos = Field(max_value=None)

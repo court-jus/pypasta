@@ -5,16 +5,20 @@ Should be used when a specific attribute can be hooked to a widget.
 Field handles the "model to view" part through callbacks.
 """
 
+SMOOTH_SMALL_LEAP = 0.05
+SMOOTH_BIG_LEAP = 0.1
+
 
 class Field:
     """
     Definition of a field.
     """
 
-    def __init__(self, default=0, min_value=0, max_value=127):
+    def __init__(self, default=0, min_value=0, max_value=127, smooth=False):
         self.value = default
         self.min_value = min_value
         self.max_value = max_value
+        self.smooth = smooth
         self.callbacks = {}
 
     def hook(self, callback, hookname):
@@ -32,17 +36,35 @@ class Field:
             return
         self.callbacks.pop(hookname)
 
-    def set_value(self, value):
+    def set_value(self, value, force=False):
         """
         Set this field's value and call the hooks.
         """
+        if force or not self.smooth:
+            self.value = value
+        else:
+            self.smoothly_set_value(value)
         if self.min_value is not None:
-            value = max(self.min_value, value)
+            self.value = max(self.min_value, self.value)
         if self.max_value is not None:
-            value = min(self.max_value, value)
-        self.value = value
+            self.value = min(self.max_value, self.value)
         for callback in self.callbacks.values():
             callback(self.value)
+
+    def smoothly_set_value(self, new_value):
+        """
+        Approches new_value but without making too big leaps.
+        """
+        # Use defaults if min/max are note set
+        applied_min = self.min_value if self.min_value is not None else 0
+        applied_max = self.max_value if self.max_value is not None else 127
+        small_leap = int((applied_max - applied_min) * SMOOTH_SMALL_LEAP)
+        leap_to_do = abs(new_value - self.value)
+        if leap_to_do <= small_leap:
+            self.value = new_value
+            return
+        leap_to_do = int(leap_to_do * SMOOTH_BIG_LEAP)
+        self.value -= leap_to_do
 
     def increment(self, increment=1):
         """
@@ -98,7 +120,7 @@ class EnumField(Field):
         super().__init__(*a, default=default, **kw)
         self.choices = choices if choices is not None else []
 
-    def set_value(self, value):
+    def set_value(self, value, **_kw):
         """
         Set this field's value.
         """

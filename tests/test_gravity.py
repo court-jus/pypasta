@@ -23,8 +23,8 @@ def fixture_session():
     Test session
     """
     test_session = Session(None)
-    test_session.scale.set_value(0)  # major
-    test_session.chord_type.set_value(0)  # triad
+    test_session.scale.set_value(0, force=True)  # major
+    test_session.chord_type.set_value(0, force=True)  # triad
     return test_session
 
 
@@ -42,8 +42,8 @@ def fixture_engine(track):
     Test engine
     """
     test_engine = BaseEngineForTest(track)
-    test_engine.pitch.set_value(60)
-    test_engine.gravity.set_value(0)
+    test_engine.pitch.set_value(60, force=True)
+    test_engine.gravity.set_value(0, force=True)
     return test_engine
 
 
@@ -61,8 +61,8 @@ def test_tessitura_calculation(engine, pitch, gravity, lower, higher):
     """
     Test how we compute higher/lower bounds based on pitch and gravity.
     """
-    engine.pitch.set_value(pitch)
-    engine.gravity.set_value(gravity)
+    engine.pitch.set_value(pitch, force=True)
+    engine.gravity.set_value(gravity, force=True)
     assert engine.get_tessitura() == (lower, higher)
 
 
@@ -80,6 +80,6 @@ def test_notes_choice(engine, pitch, gravity, notes):
     """
     Test how we use higher/lower bounds to choose playable notes.
     """
-    engine.pitch.set_value(pitch)
-    engine.gravity.set_value(gravity)
+    engine.pitch.set_value(pitch, force=True)
+    engine.gravity.set_value(gravity, force=True)
     assert engine.get_notes() == notes

@@ -2,17 +2,19 @@
   "tracks": {
     "0": {
       "type": "arp",
-      "pitch": 57,
+      "pitch": 39,
+      "gravity": 12,
       "rythm": 105,
       "pattern": 85,
       "basevel": 71,
       "midi_channel": 11,
-      "active": true,
+      "active": 0,
       "accentuation": 1.5
     },
     "1": {
       "type": "strum",
-      "pitch": 54,
+      "pitch": 62,
+      "gravity": 12,
       "rythm": 63,
       "pattern": 89,
       "basevel": 78,
@@ -21,31 +23,34 @@
       "accentuation": 1.5
     },
     "2": {
-      "type": "chord",
-      "pitch": 92,
-      "rythm": 100,
-      "pattern": 100,
-      "basevel": 64,
+      "type": "arp",
+      "pitch": 84,
+      "gravity": 37,
+      "rythm": 55,
+      "pattern": 120,
+      "basevel": 100,
       "midi_channel": 12,
       "active": true,
       "accentuation": 1.5
     },
     "3": {
       "type": "arp",
-      "pitch": 70,
-      "rythm": 127,
+      "pitch": 65,
+      "gravity": 49,
+      "rythm": 60,
       "pattern": 127,
-      "basevel": 86,
+      "basevel": 101,
       "midi_channel": 13,
       "active": true,
       "accentuation": 1.5
     },
     "4": {
       "type": "arp",
-      "pitch": 37,
-      "rythm": 106,
+      "pitch": 45,
+      "gravity": 46,
+      "rythm": 107,
       "pattern": 100,
-      "basevel": 127,
+      "basevel": 96,
       "midi_channel": 13,
       "active": true,
       "accentuation": 1.5

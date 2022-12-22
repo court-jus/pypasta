@@ -120,7 +120,7 @@ class EnumField(Field):
         super().__init__(*a, default=default, **kw)
         self.choices = choices if choices is not None else []
 
-    def set_value(self, value, **_kw):
+    def set_value(self, value, force=False):
         """
         Set this field's value.
         """

@@ -41,16 +41,65 @@ class Track:
         knob_size = KNOB_SIZE + WIDGET_LABEL_SIZE + WIDGETS_MARGIN * 2
         topy = WIDGETS_MARGIN + (BASE_WIDGET_HEIGHT + WIDGETS_MARGIN) * self.track_id
         if "pytest" in sys.modules:
-            self.widgets = {}
+            self.controls = []
         else:
-            self.widgets = {
-                "basevel": Knob(y=topy, x=sliders_right + knob_size * 2, label="Vel."),
-                "pattern": Knob(y=topy, x=sliders_right + knob_size, label="Pat."),
-                "rythm": Knob(y=topy, x=sliders_right, label="Rythm"),
-                "pitch": Slider(y=topy, x=sliders_left, label="Pitch"),
-                "active": Led(y=topy, x=WIDGETS_MARGIN * 2 + LED_SIZE, emoji="🔈"),
-            }
-        self.cc_controls = {}
+            self.controls = [
+                {
+                    "widget": Knob(y=topy, x=sliders_right + knob_size * 2, label="1"),
+                    "current_page": 0,
+                    "pages": [
+                        {
+                            "label": "Vel.",
+                            "attrname": "basevel",
+                        },
+                        {
+                            "label": "Grvt",
+                            "attrname": "gravity",
+                        },
+                    ],
+                },
+                {
+                    "widget": Knob(y=topy, x=sliders_right + knob_size, label="2"),
+                    "current_page": 0,
+                    "pages": [
+                        {
+                            "label": "Pat.",
+                            "attrname": "pattern",
+                        }
+                    ],
+                },
+                {
+                    "widget": Knob(y=topy, x=sliders_right, label="3"),
+                    "current_page": 0,
+                    "pages": [
+                        {
+                            "label": "Rythm",
+                            "attrname": "rythm",
+                        }
+                    ],
+                },
+                {
+                    "widget": Slider(y=topy, x=sliders_left, label="4"),
+                    "current_page": 0,
+                    "pages": [
+                        {
+                            "label": "Pitch",
+                            "attrname": "pitch",
+                        }
+                    ],
+                },
+                {
+                    "widget": Led(y=topy, x=WIDGETS_MARGIN * 2 + LED_SIZE, emoji="🔈"),
+                    "current_page": 0,
+                    "pages": [
+                        {
+                            "attrname": "active",
+                            "setter": "increment",
+                            "cc_value_match": lambda cc_value: cc_value == 127,
+                        }
+                    ],
+                },
+            ]
         self.engine_type.hook(self.set_type, "track_set_type")
 
     @property
@@ -70,7 +119,7 @@ class Track:
             data = self.engine.save()
             for evt in self.engine.stop():
                 self.session.pasta.emit_out_event(evt)
-            for widget in self.widgets.values():
+            for widget in [ctrl["widget"] for ctrl in self.controls]:
                 widget.unhook()
         if engine_type == ENGINE_TYPE_ARP:
             self.engine = Arp(self)
@@ -84,24 +133,27 @@ class Track:
             if self.session.menu.visible:
                 self.session.menu.show(self, "track.engine_type")
 
+    def setup_control(self, ctrl):
+        """
+        Setup a control based on its current_page.
+        """
+        widget = ctrl["widget"]
+        page = ctrl["pages"][ctrl["current_page"]]
+        label = page.get("label")
+        attrname = page["attrname"]
+        if label:
+            widget.set_label(label)
+        widget.hook(self.engine, attrname, "engine_to_controls")
+        field = getattr(self.engine, attrname)
+        setter = page.get("setter", "set_value")
+        widget.on_click = getattr(field, setter)
+
     def engine_to_controls(self):
         """
         Based on the engine type, hook controls.
         """
-        for attrname, widget in self.widgets.items():
-            widget.hook(self.engine, attrname, "engine_to_controls")
-        self.cc_controls[8 + self.track_id] = self.engine.basevel.set_value
-        self.cc_controls[16 + self.track_id] = self.engine.pattern.set_value
-        self.cc_controls[24 + self.track_id] = self.engine.rythm.set_value
-        self.cc_controls[32 + self.track_id] = self.engine.pitch.set_value
-        self.cc_controls[40 + self.track_id] = (
-            lambda v: self.engine.active.increment() if v == 127 else False
-        )
-        self.widgets["basevel"].on_click = self.engine.basevel.set_value
-        self.widgets["pattern"].on_click = self.engine.pattern.set_value
-        self.widgets["rythm"].on_click = self.engine.rythm.set_value
-        self.widgets["pitch"].on_click = self.engine.pitch.set_value
-        self.widgets["active"].on_click = self.engine.active.increment
+        for ctrl in self.controls:
+            self.setup_control(ctrl)
 
     def load(self, data):
         """
@@ -124,13 +176,27 @@ class Track:
         """
         Handle Midi CC event.
         """
-        if cc_number in self.cc_controls:
-            callback = self.cc_controls[cc_number]
-            callback(value)
+        if cc_number in (2, 3):
+            page_change = cc_number * 2 - 5  # 2 -> -1, 3 -> 1
+            for ctrl in self.controls:
+                previous = ctrl["current_page"]
+                next = (ctrl["current_page"] + page_change) % len(ctrl["pages"])
+                if previous != next:
+                    ctrl["current_page"] = next
+                    self.setup_control(ctrl)
+        elif (cc_number - self.track_id) % 8 == 0:
+            ctrl = self.controls[int((cc_number - self.track_id) / 8) - 1]
+            page = ctrl["pages"][ctrl["current_page"]]
+            if "cc_value_match" in page and not page["cc_value_match"](value):
+                return
+            attrname = page["attrname"]
+            field = getattr(self.engine, attrname)
+            setter = page.get("setter", "set_value")
+            getattr(field, setter)(value)
 
     def handle_click(self, pos):
         """
         Pass click event to this track's widgets.
         """
-        for widget in self.widgets.values():
+        for widget in [ctrl["widget"] for ctrl in self.controls]:
             widget.handle_click(pos)

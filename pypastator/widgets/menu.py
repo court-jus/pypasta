@@ -217,6 +217,13 @@ class Menu:
             value_getter=lambda: track.engine.pattern_str,
         )
         self.track_widgets["pattern_str"].hook(
+            track.engine,
+            "gravity",
+            "gravity_to_pattern_str",
+            set_text=True,
+            value_getter=lambda: track.engine.pattern_str,
+        )
+        self.track_widgets["pattern_str"].hook(
             self.session,
             "current_chord",
             "current_chord_to_pattern_str",

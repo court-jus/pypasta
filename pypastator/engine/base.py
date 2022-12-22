@@ -5,6 +5,7 @@ import pygame.midi
 
 from pypastator.constants import ACCENT, NOTE_PATTERNS, RYTHM_PATTERNS, SCALES
 from pypastator.engine.field import BooleanField, EnumField, Field
+from pypastator.engine.utils import spread_notes
 
 LOADABLE_KEYS = (
     "pitch",
@@ -71,8 +72,12 @@ class BaseEngine:
         """
         Get str representation of the melodic pattern.
         """
-        lowest, highest = [f"{pygame.midi.midi_to_ansi_note(note):4}" for note in self.get_tessitura()]
-        note_names = ", ".join([f"{pygame.midi.midi_to_ansi_note(note):4}" for note in self.get_notes()])
+        lowest, highest = [
+            f"{pygame.midi.midi_to_ansi_note(note):4}" for note in self.get_tessitura()
+        ]
+        note_names = ", ".join(
+            [f"{pygame.midi.midi_to_ansi_note(note):4}" for note in self.get_notes()]
+        )
         return f"{lowest} < {note_names} < {highest}"
 
     @property
@@ -165,7 +170,7 @@ class BaseEngine:
         """
         Get the lowest/highest playable notes.
         """
-        delta = int(self.gravity.get_value() / 2)
+        delta = int(self.gravity.get_value() / 4)
         center = self.pitch.get_value()
         if center - delta < 0:
             center = delta
@@ -199,7 +204,8 @@ class BaseEngine:
             if degree > max(chord_notes):
                 octave += 1
             notes.append(int(note))
-        return notes
+        # Now spread the notes into the whole allowed tessitura
+        return spread_notes(notes, lowest, highest)
 
     def get_vel(self, tick):
         """

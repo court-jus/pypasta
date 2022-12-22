@@ -25,7 +25,8 @@ from pypastator.widgets.message import Message
 
 DEFAULT_TRACK = {
     "type": "arp",
-    "pitch": 40,
+    "pitch": 60,
+    "gravity": 12,
     "rythm": 100,
     "pattern": 100,
     "basevel": 100,
@@ -277,7 +278,7 @@ class Session:
             print(f"Ignored CC on channel {cchannel}, {cc_number}, {value}")
             return
 
-        if 8 <= cc_number < 48:
+        if 8 <= cc_number < 48 or (cc_number in (2, 3) and value == 127):
             self._handle_track_cc(cc_number, value)
         else:
             self._handle_global_cc(cc_number, value)

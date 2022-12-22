@@ -12,7 +12,6 @@ class Labeled(BaseWidget):
     """
 
     def __init__(self, *a, **kw):
-        self.label_text = None
         self.label = None
         super().__init__(*a, **kw)
 
@@ -27,7 +26,6 @@ class Labeled(BaseWidget):
         """
         Init code specific to this widget.
         """
-        self.label_text = label
         if label:
             self.label = Label(
                 text=label,
@@ -41,6 +39,14 @@ class Labeled(BaseWidget):
             )
             self.pos_x += WIDGET_LABEL_SIZE + WIDGETS_MARGIN
             self.rect.centerx += WIDGET_LABEL_SIZE + WIDGETS_MARGIN
+
+    def set_label(self, new_label):
+        """
+        Change this widget's label.
+        """
+        self.label.set_text(new_label)
+        if self.visible:
+            self.draw()
 
     def show(self):
         """

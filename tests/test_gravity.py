@@ -6,6 +6,7 @@ import pytest
 from pypastator.engine.base import BaseEngine
 from pypastator.engine.session import Session
 from pypastator.engine.track import Track
+from pypastator.engine.utils import spread_notes
 
 
 class BaseEngineForTest(BaseEngine):
@@ -51,10 +52,10 @@ def fixture_engine(track):
     "pitch, gravity, lower, higher",
     [
         (60, 0, 60, 60),
-        (60, 12, 54, 66),
-        (0, 12, 0, 12),
-        (3, 24, 0, 24),
-        (125, 10, 117, 127),
+        (60, 24, 54, 66),
+        (0, 24, 0, 12),
+        (3, 48, 0, 24),
+        (125, 20, 117, 127),
     ],
 )
 def test_tessitura_calculation(engine, pitch, gravity, lower, higher):
@@ -70,10 +71,10 @@ def test_tessitura_calculation(engine, pitch, gravity, lower, higher):
     "pitch, gravity, notes",
     [
         (60, 0, [60, 64, 55]),
-        (60, 12, [60, 64, 55]),
-        (0, 12, [0, 4, 7]),
-        (3, 24, [0, 4, 7]),
-        (125, 10, [120, 124, 127]),
+        (60, 24, [60, 64, 55]),
+        (0, 24, [0, 4, 7]),
+        (3, 48, [0, 16, 19]),
+        (125, 20, [120, 124, 127]),
     ],
 )
 def test_notes_choice(engine, pitch, gravity, notes):
@@ -83,3 +84,20 @@ def test_notes_choice(engine, pitch, gravity, notes):
     engine.pitch.set_value(pitch, force=True)
     engine.gravity.set_value(gravity, force=True)
     assert engine.get_notes() == notes
+
+
+@pytest.mark.parametrize(
+    "notes, lowest, highest, result", [
+        ([60, 64, 67], 48, 95, [48, 76, 91]),
+        ([60, 64, 67], 60, 60, [60, 64, 55]),
+        ([60, 64, 67], 54, 66, [60, 64, 55]),
+        ([60, 64, 67], 0, 12, [0, 4, 7]),
+        ([60, 64, 67], 0, 24, [0, 16, 19]),
+        ([60, 64, 67], 117, 127, [120, 124, 127]),
+    ]
+)
+def test_spread_notes(notes, lowest, highest, result):
+    """
+    Test notes spreading algorithm.
+    """
+    assert spread_notes(notes, lowest, highest) == result

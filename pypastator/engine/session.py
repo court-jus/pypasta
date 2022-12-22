@@ -2,6 +2,7 @@
 Session holds all the details for the current song.
 """
 import json
+import sys
 
 import pygame.midi
 from faker import Faker
@@ -66,15 +67,19 @@ class Session:
         self.cc_mode = "menu"
         self.cc_controls = {}
         self.menu_buttons = {}
-        self.message = Message()
-        self.menu = Menu(self)
+        if "pytest" not in sys.modules:
+            self.message = Message()
+            self.menu = Menu(self)
 
     @property
     def scale_str(self):
         """
         Get a str representation of the scale.
         """
-        return f"{pygame.midi.midi_to_ansi_note(self.root_note + 12)[:-1]} {SCALE_NAMES[self.scale.value]}"
+        return (
+            f"{pygame.midi.midi_to_ansi_note(self.root_note + 12)[:-1]}"
+            f"{SCALE_NAMES[self.scale.value]}"
+        )
 
     def get_scale_notes(self):
         """

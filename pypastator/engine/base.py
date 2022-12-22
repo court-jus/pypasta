@@ -28,6 +28,7 @@ class BaseEngine:
         self.track = track
         # Settings
         self.pitch = Field()
+        self.gravity = Field(default=12)
         self.rythm = Field()
         self.pattern = Field()
         self.basevel = Field()
@@ -70,8 +71,9 @@ class BaseEngine:
         """
         Get str representation of the melodic pattern.
         """
-        note_names = [pygame.midi.midi_to_ansi_note(note) for note in self.get_notes()]
-        return ", ".join(note_names)
+        lowest, highest = [f"{pygame.midi.midi_to_ansi_note(note):4}" for note in self.get_tessitura()]
+        note_names = ", ".join([f"{pygame.midi.midi_to_ansi_note(note):4}" for note in self.get_notes()])
+        return f"{lowest} < {note_names} < {highest}"
 
     @property
     def rythm_str(self):
@@ -159,6 +161,18 @@ class BaseEngine:
         """
         return NOTE_PATTERNS[int(self.pattern.value * (len(NOTE_PATTERNS) - 1) / 127)]
 
+    def get_tessitura(self):
+        """
+        Get the lowest/highest playable notes.
+        """
+        delta = int(self.gravity.get_value() / 2)
+        center = self.pitch.get_value()
+        if center - delta < 0:
+            center = delta
+        if center + delta > 127:
+            center = 127 - delta
+        return (center - delta, center + delta)
+
     def get_notes(self):
         """
         Get playable notes.
@@ -166,16 +180,25 @@ class BaseEngine:
         pattern = self.get_pattern()
         scale_notes = SCALES[self.track.session.scale.value]
         chord_notes = self.track.session.current_chord.get_value()
+        lowest, highest = self.get_tessitura()
         notes = []
         for degree in pattern:
-            octave = self.pitch.value // 12
-            if degree > max(chord_notes):
-                octave += 1
+            octave = self.pitch.get_value() // 12
             scale_degree = (
                 chord_notes[(degree - 1) % len(chord_notes)] - 1 + self.chord_number - 1
             ) % len(scale_notes)
             note = scale_notes[scale_degree] + 12 * octave
-            notes.append(note)
+            if note < lowest:
+                note += (((lowest - note) // 12) + 1) * 12
+            if note > highest:
+                note -= (((note - highest) // 12) + 1) * 12
+            if note < lowest:
+                # note is outside of our tessitura, find the closest equivalent
+                if lowest - note > (note + 12 - lowest):
+                    note += 12
+            if degree > max(chord_notes):
+                octave += 1
+            notes.append(int(note))
         return notes
 
     def get_vel(self, tick):

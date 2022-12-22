@@ -31,6 +31,7 @@ BASE_WIDGET_HEIGHT = 24
 BASE_WIDGET_WIDTH = 80
 SMALL_FONT_NAME = "JuliaMono-Bold.ttf"
 SMALL_FONT_SIZE = 20
+MESSAGE_FONT_SIZE = 14
 WIDGETS_MARGIN = 10
 BUTTON_WIDTH = 80
 SLIDER_WIDTH = 400
@@ -53,6 +54,11 @@ BEAT = QUARTER
 BAR = FULL
 
 # Patterns
+# Those number represent positions in the chord
+# For example, in a triad:
+# - 1 is the root
+# - 2 is the third
+# - 3 is the fifth
 NOTE_PATTERNS = [
     (3, 1, 1),
     (3, 1, 2),
@@ -64,6 +70,7 @@ NOTE_PATTERNS = [
     (1, 1, 1),
     (1, 1, 2),
     (1, 2, 2),
+    (1, 2, 3),
     (1, 2, 3, 3),
     (1, 2, 3, 4),
     (1, 3, 2),
@@ -82,7 +89,7 @@ RYTHM_PATTERNS = [
     (QUARTER, QUARTER, QUARTER, QUARTER),
     (QUARTER, QUARTER, EIGHTH, EIGHTH, QUARTER),
     (QUARTER, DQUARTER, EIGHTH, EIGHTH, EIGHTH),
-    (EIGHTH, DEIGHTH, EIGHTH, QUARTER, SIXTEENTH, SIXTEENTH, EIGHTH),
+    (EIGHTH, QUARTER, EIGHTH, QUARTER, SIXTEENTH, SIXTEENTH, EIGHTH),
     (EIGHTH, EIGHTH, EIGHTH, EIGHTH, EIGHTH, EIGHTH, EIGHTH, EIGHTH),
     (
         SIXTEENTH,
@@ -107,10 +114,19 @@ RYTHM_PATTERNS = [
 # Other
 ACCENT = 1.5
 SCALE_NAMES = ["major", "minor"]
+# Here the numbers represent semitones from the root
+# - 3 is a minor third
+# - 4 is a major third
+# - ...
 SCALES = [
     [0, 2, 4, 5, 7, 9, 11],
-    [0, 3, 4, 5, 7, 8, 10],
+    [0, 2, 3, 5, 7, 8, 10],
 ]
+# Here the numbers represent positions in the scale:
+# - 1 is the root
+# - 3 is the third
+# - 5 is the fifth
+# - ...
 CHORDS = [
     [1, 3, 5],
     [1, 3, 5, 7],

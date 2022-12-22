@@ -105,7 +105,7 @@ class EnumField(Field):
         if value < 0 or value >= len(self.choices):
             return
         self.value = value
-        for callback in self.callbacks.values():
+        for callback in list(self.callbacks.values()):
             callback(self.value)
 
     def increment(self, increment=1):
@@ -140,6 +140,16 @@ class ListField(Field):
             max_value=None,
             **kw
         )
+
+    def get_value(self, index=None):
+        """
+        Get value.
+
+        If index is specified, return the value in the list at this index.
+        """
+        if index is not None:
+            return self.value[index]
+        return self.value
 
     def increment(self, _increment=1):
         """

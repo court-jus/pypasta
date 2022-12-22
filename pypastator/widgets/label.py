@@ -2,8 +2,8 @@
 Text widget.
 """
 import pygame
-from pypastator.constants import DARK_GRAY, GREEN
 
+from pypastator.constants import DARK_GRAY, FONT_SIZE, GREEN
 from pypastator.widgets import BaseWidget
 
 
@@ -16,6 +16,7 @@ class Label(BaseWidget):
         self.text = None
         self.fcolor_selected = None
         self.bcolor_selected = None
+        kw.setdefault("font_size", FONT_SIZE)
         super().__init__(*a, **kw)
 
     def widget_init(self, *a, **kw):

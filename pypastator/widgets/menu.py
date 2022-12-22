@@ -257,18 +257,24 @@ class Menu:
         self.track_widgets[widget].highlight()
         self.active_widget = widget_id
 
-    def activate_next(self, increment=1):
+    def activate_next(self):
         """
-        Activate next/prev widget in order.
+        Activate next widget in order.
+
+        Return True if the next widget was activated.
+        If the currently activated widget is the last one, return False instead
         """
         if self.active_widget is None:
             widget = self.widgets_order[0]
-        else:
-            widget = self.widgets_order[
-                (self.widgets_order.index(self.active_widget) + increment)
-                % len(self.widgets_order)
-            ]
+        elif self.widgets_order.index(self.active_widget) + 1 == len(
+            self.widgets_order
+        ):
+            return False
+        widget = self.widgets_order[
+            (self.widgets_order.index(self.active_widget) + 1) % len(self.widgets_order)
+        ]
         self.activate_widget(widget)
+        return True
 
     def increment(self, increment=1):
         """
@@ -277,7 +283,11 @@ class Menu:
         if self.active_widget is None or self.current_track is None:
             return
         widget = self.active_widget.split(".")[1]
-        field = getattr(self.current_track.engine, widget) if hasattr(self.current_track.engine, widget) else getattr(self.current_track, widget)
+        field = (
+            getattr(self.current_track.engine, widget)
+            if hasattr(self.current_track.engine, widget)
+            else getattr(self.current_track, widget)
+        )
         if isinstance(field, Field):
             field.increment(increment)
 
@@ -296,11 +306,7 @@ class Menu:
         """
         if not self.visible:
             return
-        if cc_number == 3:
-            self.activate_next()
-        elif cc_number == 2:
-            self.activate_next(-1)
-        elif cc_number == 0:
+        if cc_number == 0:
             self.increment()
         elif cc_number == 1:
             self.increment(-1)

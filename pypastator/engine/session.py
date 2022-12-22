@@ -15,10 +15,12 @@ from pypastator.constants import (
     SCALES,
     WIDGETS_MARGIN,
 )
-from pypastator.engine.field import EnumField, ListField
+from pypastator.engine.field import EnumField, Field, ListField
 from pypastator.engine.track import Track
+from pypastator.engine.utils import int_to_roman
 from pypastator.widgets.led import Led
 from pypastator.widgets.menu import Menu
+from pypastator.widgets.message import Message
 
 DEFAULT_TRACK = {
     "type": "arp",
@@ -30,6 +32,8 @@ DEFAULT_TRACK = {
     "active": False,
 }
 
+LOADABLE_KEYS = ("scale_name", "root_note", "chord_progression", "playing", "title")
+
 
 class Session:
     """
@@ -39,16 +43,21 @@ class Session:
     def __init__(self, pasta):
         self.pasta = pasta
         self.scale_name = "major"
-        self.chords_mode = "manual"
-        self.chord_progression = [1]
+        self.root_note = 0
+        self.chords_mode = "progression"
+        self.chord_progression = ListField()
+        self.chord_progression.set_value([1])
         self.progression_pos = 0
         self.title = ""
         self.scale = EnumField(choices=SCALES)
+        self.scale.set_value(SCALE_NAMES.index(self.scale_name))
         self.chord_type = EnumField(choices=CHORDS)
         self.current_chord = ListField()
         self.current_chord.set_value(
             [
-                degree_in_chord + self.chord_progression[self.progression_pos] - 1
+                degree_in_chord
+                + self.chord_progression.get_value(self.progression_pos)
+                - 1
                 for degree_in_chord in self.chord_type.get_value()
             ]
         )
@@ -57,6 +66,7 @@ class Session:
         self.cc_mode = "menu"
         self.cc_controls = {}
         self.menu_buttons = {}
+        self.message = Message()
         self.menu = Menu(self)
 
     @property
@@ -64,14 +74,22 @@ class Session:
         """
         Get a str representation of the scale.
         """
-        return SCALE_NAMES[self.scale.value]
+        return f"{pygame.midi.midi_to_ansi_note(self.root_note + 12)[:-1]} {SCALE_NAMES[self.scale.value]}"
+
+    def get_scale_notes(self):
+        """
+        Get the notes in current scale.
+        """
+        return [
+            self.root_note + note_in_scale for note_in_scale in self.scale.get_value()
+        ]
 
     @property
     def chord_str(self):
         """
         Get a str representation of the chord.
         """
-        scale_notes = self.scale.get_value()
+        scale_notes = self.get_scale_notes()
         chord_notes = [
             note_in_chord - 1 for note_in_chord in self.current_chord.get_value()
         ]
@@ -80,21 +98,36 @@ class Session:
             scale_degree = degree % len(scale_notes)
             note = scale_notes[scale_degree] + 12
             notes.append(note)
-        return ", ".join([pygame.midi.midi_to_ansi_note(note)[:-1] for note in notes])
+        if self.chords_mode == "progression":
+            chord_name = int_to_roman(
+                self.chord_progression.get_value(self.progression_pos)
+            )
+        else:
+            chord_name = ", ".join(map(str, chord_notes))
+        return f"[{chord_name}]: " + ", ".join(
+            [pygame.midi.midi_to_ansi_note(note)[:-1] for note in notes]
+        )
 
     def load(self, data):
         """
         Load Session from data.
         """
-        for loadable_key in ("scale_name", "chord_progression", "playing", "title"):
+        for loadable_key in LOADABLE_KEYS:
             if loadable_key in data:
-                setattr(self, loadable_key, data[loadable_key])
+                field = getattr(self, loadable_key)
+                if isinstance(field, Field):
+                    field.set_value(data[loadable_key])
+                else:
+                    setattr(self, loadable_key, data[loadable_key])
         for track_id, track in data.get("tracks", {}).items():
             track_id = int(track_id)
             self.add_track(track_id, track)
+        self.scale.set_value(SCALE_NAMES.index(self.scale_name))
         self.current_chord.set_value(
             [
-                degree_in_chord + self.chord_progression[self.progression_pos] - 1
+                degree_in_chord
+                + self.chord_progression.get_value(self.progression_pos)
+                - 1
                 for degree_in_chord in self.chord_type.get_value()
             ]
         )
@@ -111,8 +144,12 @@ class Session:
                 track.track_id: track.engine.save() for track in self.tracks.values()
             }
         }
-        for loadable_key in ("scale_name", "chord_progression", "playing", "title"):
-            data.update({loadable_key: getattr(self, loadable_key)})
+        for loadable_key in LOADABLE_KEYS:
+            field = getattr(self, loadable_key)
+            if isinstance(field, Field):
+                data.update({loadable_key: field.get_value()})
+            else:
+                data.update({loadable_key: field})
 
         track_name = self.title
         if not track_name:
@@ -121,7 +158,7 @@ class Session:
         filename = slugify(track_name) + ".json"
         with open(filename, "w", encoding="utf8") as file_pointer:
             json.dump(data, file_pointer, indent=2)
-        print(f"Song [{track_name}] saved as [{filename}]")
+        self.message.say(f"Song [{track_name}] saved as [{filename}]")
 
     def add_track(self, track_id, data=None):
         """
@@ -138,21 +175,25 @@ class Session:
             emoji="⚙️",
             on_click=lambda v: self.toggle_menu(track_id),
         )
+        self.message.say(f"Track [{track_id}] added")
 
     def midi_tick(self, ticks, timestamp):
         """
         Handle Midi tick event.
         """
+        self.message.midi_tick(ticks, timestamp)
         if not self.playing:
             return []
         relative_ticks = ticks - self.playing
-        if relative_ticks % BAR == 0 and self.chords_mode != "manual":
+        if relative_ticks % BAR == 0 and self.chords_mode == "progression":
             self.progression_pos = int(relative_ticks / BAR) % len(
-                self.chord_progression
+                self.chord_progression.get_value()
             )
             self.current_chord.set_value(
                 [
-                    degree_in_chord + self.chord_progression[self.progression_pos] - 1
+                    degree_in_chord
+                    + self.chord_progression.get_value(self.progression_pos)
+                    - 1
                     for degree_in_chord in self.chord_type.get_value()
                 ]
             )
@@ -162,7 +203,7 @@ class Session:
                 track.midi_tick(
                     relative_ticks,
                     timestamp,
-                    self.chord_progression[self.progression_pos],
+                    self.chord_progression.get_value(self.progression_pos),
                 )
             )
         return out_evts
@@ -185,8 +226,12 @@ class Session:
         if 4 <= cc_number < 8:
             if cc_number == 4:
                 self.cc_mode = "menu"
+                self.message.say("[Menu] mode")
+                self.chords_mode = "progression"
             elif cc_number == 5:
                 self.cc_mode = "chords"
+                self.message.say("[Chords] mode")
+                self.chords_mode = "manual"
             elif cc_number == 7:
                 self.save()
         elif self.cc_mode == "menu":
@@ -235,13 +280,20 @@ class Session:
     def toggle_menu(self, track_id):
         """
         Hide/Show menu for a specific track.
+
+        If menu is already shown for said track, activate its next widget.
         """
-        if self.menu.visible:
-            self.menu_buttons[self.menu.current_track.track_id].set_value(False)
         if self.menu.visible and self.menu.current_track.track_id == track_id:
+            next_widget_activated = self.menu.activate_next()
+            if not next_widget_activated:
+                self.menu_buttons[self.menu.current_track.track_id].set_value(False)
+                self.menu.hide()
+        elif self.menu.visible:
+            self.menu_buttons[self.menu.current_track.track_id].set_value(False)
             self.menu.hide()
+            self.menu.show(self.tracks[track_id])
+            self.menu_buttons[self.menu.current_track.track_id].set_value(True)
         else:
-            self.menu.hide()
             self.menu.show(self.tracks[track_id])
             self.menu_buttons[self.menu.current_track.track_id].set_value(True)
 

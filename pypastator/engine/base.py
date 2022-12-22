@@ -214,7 +214,7 @@ class BaseArp(BaseEngine):
 
     def get_notes(self):
         pattern = self.get_pattern()
-        scale = self.track.session.scale.get_value()
+        scale = self.track.session.get_scale_notes()
         chord_notes = self.track.session.current_chord.get_value()
         chord_degree = pattern[self.pos.get_value() % len(pattern)]
         if not chord_degree:

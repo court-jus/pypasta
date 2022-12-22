@@ -52,13 +52,19 @@
     }
   },
   "scale_name": "minor",
-  "root_note": 0,
+  "root_note": 2,
   "chord_progression": [
     1,
     1,
-    6,
+    1,
+    1,
     4,
     4,
+    1,
+    1,
+    5,
+    4,
+    1,
     5
   ],
   "playing": true,

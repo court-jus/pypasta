@@ -38,6 +38,7 @@ class BaseWidget:
         on_click=None,
         value=None,
         visible=True,
+        font_size=FONT_SIZE,
         **kw,
     ):
         self.hooked_to = {}
@@ -55,7 +56,8 @@ class BaseWidget:
             self.pos_x + int(self.width / 2),
             self.pos_y + int(self.height / 2),
         )
-        self.font = pygame.font.Font(FONT_NAME, FONT_SIZE)
+        self.font_size = font_size
+        self.font = pygame.font.Font(FONT_NAME, self.font_size)
         self.small_font = pygame.font.Font(SMALL_FONT_NAME, SMALL_FONT_SIZE)
         self.emoji_font = pygame.font.Font(EMOJI_FONT_NAME, EMOJI_FONT_SIZE)
         self.widget_init(*a, **kw)

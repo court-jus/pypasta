@@ -6,6 +6,17 @@ import pygame.midi
 from pypastator.constants import ACCENT, NOTE_PATTERNS, RYTHM_PATTERNS, SCALES
 from pypastator.engine.field import BooleanField, EnumField, Field
 
+LOADABLE_KEYS = (
+    "pitch",
+    "gravity",
+    "rythm",
+    "pattern",
+    "basevel",
+    "midi_channel",
+    "active",
+    "accentuation",
+)
+
 
 class BaseEngine:
     """
@@ -33,15 +44,7 @@ class BaseEngine:
         """
         Load from data.
         """
-        for loadable_key in (
-            "pitch",
-            "rythm",
-            "pattern",
-            "basevel",
-            "midi_channel",
-            "active",
-            "accentuation",
-        ):
+        for loadable_key in LOADABLE_KEYS:
             if loadable_key in data:
                 field = getattr(self, loadable_key)
                 if isinstance(field, Field):
@@ -54,15 +57,7 @@ class BaseEngine:
         Get data to save this engine.
         """
         result = {"type": self.track.engine_type.get_value()}
-        for savable_key in (
-            "pitch",
-            "rythm",
-            "pattern",
-            "basevel",
-            "midi_channel",
-            "active",
-            "accentuation",
-        ):
+        for savable_key in LOADABLE_KEYS:
             field = getattr(self, savable_key)
             if isinstance(field, Field):
                 result[savable_key] = field.value
@@ -213,21 +208,5 @@ class BaseArp(BaseEngine):
     """
 
     def get_notes(self):
-        pattern = self.get_pattern()
-        scale = self.track.session.get_scale_notes()
-        chord_notes = self.track.session.current_chord.get_value()
-        chord_degree = pattern[self.pos.get_value() % len(pattern)]
-        if not chord_degree:
-            return []
-        octave = self.pitch.value // 12
-        if chord_degree > 7:
-            octave += 1
-        scale_degree = (
-            chord_notes[(chord_degree - 1) % len(chord_notes)]
-            - 1
-            + self.chord_number
-            - 1
-        ) % len(scale)
-        note = scale[scale_degree] + 12 * octave
-
-        return [note]
+        notes = super().get_notes()
+        return [notes[self.pos.get_value() % len(notes)]]

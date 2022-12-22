@@ -1,20 +1,20 @@
-# -*- coding: utf-8 -*-
+"""
+A simple script to test fonts.
+"""
 
 import pygame
-import sys
 
-
-unistr = "Pitch♛"
+UNICODE_STR = "Pitch♛"
 pygame.font.init()
 srf = pygame.display.set_mode((500, 500))
 f = pygame.font.Font("seguisym.ttf", 64)
 print(f)
-srf.blit(f.render(unistr, True, (255, 0, 0)), (0, 0))
+srf.blit(f.render(UNICODE_STR, True, (255, 0, 0)), (0, 0))
 pygame.display.flip()
 
-while True:
-    srf.blit(f.render(unistr, True, (255, 255, 255)), (0, 0))
+RUNNING = True
+while RUNNING:
+    srf.blit(f.render(UNICODE_STR, True, (255, 255, 255)), (0, 0))
     for e in pygame.event.get():
         if e.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
+            RUNNING = False

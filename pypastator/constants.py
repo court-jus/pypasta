@@ -1,3 +1,6 @@
+"""
+Constants used in Pastator.
+"""
 import math
 
 # Midi events types
@@ -25,14 +28,14 @@ EMOJI_FONT_NAME = "NotoEmoji-Bold.ttf"
 FONT_SIZE = 20
 EMOJI_FONT_SIZE = 18
 BASE_WIDGET_HEIGHT = 24
+BASE_WIDGET_WIDTH = 80
 SMALL_FONT_NAME = "JuliaMono-Bold.ttf"
 SMALL_FONT_SIZE = 20
 WIDGETS_MARGIN = 10
 BUTTON_WIDTH = 80
 SLIDER_WIDTH = 400
-SLIDER_LABEL_SIZE = 80
 KNOB_SIZE = BASE_WIDGET_HEIGHT
-KNOB_LABEL_SIZE = 80
+WIDGET_LABEL_SIZE = 80
 LED_SIZE = BASE_WIDGET_HEIGHT
 
 # Melodic constants
@@ -120,3 +123,5 @@ CHORDS = [
     [1, 3, 6],
     [1, 3, 6, 7],
 ]
+ENGINE_TYPE_ARP, ENGINE_TYPE_CHORD, ENGINE_TYPE_STRUM = (0, 1, 2)
+ENGINE_TYPES = ["arp", "chord", "strum"]

@@ -1,4 +1,9 @@
-from constants import BAR
+"""
+Definition of presets to be used in the software.
+
+This was copied from a legacy version of the code and is unused for now.
+"""
+from pypastator.constants import BAR
 
 PRESETS = {
     "bass": [

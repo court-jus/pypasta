@@ -1,33 +1,33 @@
-import time
-import heapq
-import random
+"""
+Pastator.
 
+Pastator is a multi-channel Midi Arpegiator.
+"""
+import heapq
 import json
 
 import pygame.font
 import pygame.midi
-from constants import (
+
+from pypastator.constants import (
     ALL_NOTES_OFF,
     ALL_SOUND_OFF,
     CCMAX,
     CCMIN,
     CLOCK,
-    KNOB_LABEL_SIZE,
-    KNOB_SIZE,
     NOTEOFF,
     NOTEON,
-    SIXTEENTH,
-    SLIDER_LABEL_SIZE,
-    SLIDER_WIDTH,
-    WIDGETS_MARGIN,
     PLAY,
     STOP,
 )
-from engine.session import Session
-from engine.base import BaseEngine
+from pypastator.engine.session import Session
 
 
 class Pastator:
+    """
+    Pastator handles pygame GUI and manages the Midi engines.
+    """
+
     def __init__(self, clock_device, ctrl_device, output_device):
         self.out_evts = []
         self.clock_device = clock_device
@@ -42,11 +42,17 @@ class Pastator:
         self.session = Session(self)
 
     def load(self, filename):
-        with open(filename, "r") as fp:
-            data = json.load(fp)
+        """
+        Load a song.
+        """
+        with open(filename, "r", encoding="utf8") as file_pointer:
+            data = json.load(file_pointer)
             self.session.load(data)
 
     def handle_clock_in_event(self, evt):
+        """
+        Handle Midi clock event.
+        """
         typ = evt[0][0]
         if typ == CLOCK:
             self.midi_tick()
@@ -60,7 +66,10 @@ class Pastator:
             print("Unkown clock event", evt)
 
     def handle_ctrl_in_event(self, evt):
-        [[typ, data1, data2, data3], timestamp] = evt
+        """
+        Handle Midi CC event.
+        """
+        [[typ, data1, data2, _], timestamp] = evt
         if typ in (NOTEON, NOTEOFF):
             note = data1
             note_name = pygame.midi.midi_to_ansi_note(note)
@@ -69,15 +78,18 @@ class Pastator:
                 print("Received Note ON evt", timestamp, note_name, "vel", velocity)
             else:
                 print("Received Note OFF evt", note_name, "vel", velocity)
-        elif typ >= CCMIN and typ <= CCMAX:
+        elif CCMIN <= typ <= CCMAX:
             cchannel = typ - 176
-            cc = data1
+            cc_number = data1
             value = data2
-            self.session.handle_cc(cchannel, cc, value)
+            self.session.handle_cc(cchannel, cc_number, value)
         else:
             print("Unkown ctrl event", evt)
 
     def handle_ui_event(self, ui_evt):
+        """
+        Handle UI events (keyboard/mouse).
+        """
         if ui_evt.type == pygame.QUIT:
             self.running = False
         elif ui_evt.type == pygame.KEYDOWN:
@@ -89,6 +101,9 @@ class Pastator:
             self.session.handle_click(ui_evt.pos)
 
     def run(self):
+        """
+        Main loop.
+        """
         self.running = True
         while self.running:
             pygame.event.pump()
@@ -109,23 +124,35 @@ class Pastator:
         self.all_sound_off()
 
     def all_sound_off(self):
+        """
+        Turn off all the notes on all Midi channels.
+        """
         if self.output_device is not None:
             for channel in range(16):
                 self.output_device.write_short(CCMIN + channel, ALL_NOTES_OFF)
                 self.output_device.write_short(CCMIN + channel, ALL_SOUND_OFF)
 
     def midi_tick(self):
+        """
+        Pass Midi tick events to session and get the outgoing events.
+        """
         timestamp = pygame.midi.time()
         for evt in self.session.midi_tick(self.ticks, timestamp):
             heapq.heappush(self.out_evts, evt)
 
     def handle_out_events(self):
+        """
+        Handle outgoing events.
+        """
         timestamp = pygame.midi.time()
         while self.out_evts and self.out_evts[0][0] <= timestamp:
             evt = heapq.heappop(self.out_evts)
             self.emit_out_event(evt)
 
     def emit_out_event(self, evt):
+        """
+        Emit an outgoing event to a Midi channel.
+        """
         # timestamp = pygame.midi.time()
         evt_type = evt[1]
         evt_channel = evt[2]
@@ -139,7 +166,9 @@ class Pastator:
 
 
 def main():
-
+    """
+    Main entry point for the software.
+    """
     pygame.midi.init()
     pygame.display.init()
     pygame.font.init()
@@ -159,8 +188,8 @@ def main():
     output_device = None
     print("MIDI Devices detected:")
     for i in range(pygame.midi.get_count()):
-        r = pygame.midi.get_device_info(i)
-        interf, name, is_input, is_output, is_opened = r
+        device_info = pygame.midi.get_device_info(i)
+        name, is_input, is_output = device_info[1:4]
         if is_input:
             if name.decode() == clock_device_name:
                 clock_device = pygame.midi.Input(i)
@@ -187,54 +216,17 @@ def main():
         )
     if ctrl_out_device:
         print(
-            f" - Controller (out) - {pygame.midi.get_device_info(ctrl_out_device.device_id)[1].decode()}"
+            " - Controller (out) - "
+            f"{pygame.midi.get_device_info(ctrl_out_device.device_id)[1].decode()}"
         )
     if output_device:
         print(
             f" - Sound output - {pygame.midi.get_device_info(output_device.device_id)[1].decode()}"
         )
-    """
-    note = 61
-    #print(note)
-    channel = 15
-    velocity = 15
-    print(channel, note)
-    ctrl_out_device.note_on(note, velocity=velocity, channel=channel)
-    time.sleep(0.01)
-    ctrl_out_device.note_off(note, velocity=velocity, channel=channel)
-
-    ctrl_out_device.write([[[176, 0, 0], 0]])
-    for led in range(48):
-        print(led)
-        ctrl_out_device.write_sys_ex(pygame.midi.time(), [240, 0, 32, 41, 2, 17, 120, 0, led, 15, 247])
-        time.sleep(0.2)
-    ctrl_out_device.write_sys_ex(pygame.midi.time(), [240, 0, 32, 41, 2, 17, 120, 0, 41, 11, 247])
-    for vel in range(128):
-        ctrl_out_device.write_sys_ex(pygame.midi.time(), [240, 0, 32, 41, 2, 17, 120, 0, 43, vel, 247])
-        time.sleep(0.05)
-    time.sleep(0.1)
-    ctrl_out_device.write([[[176, 0, 0], 0]])
-    """
     pasta = Pastator(clock_device, ctrl_device, output_device)
     pasta.all_sound_off()
     pasta.load("example.json")
     pasta.run()
-
-    """
-    e = BaseEngine()
-    print(e.pattern)
-    e.pattern = 50
-    print(e.pattern)
-    def macobac(newvla):
-        print("macoba", newvla)
-    e.hook("pattern", macobac)
-    e.pattern = 75
-    print(e.pattern)
-    e.unhook("pattern", macobac)
-    e.pattern = 100
-    print(e.pattern)
-    """
-
     print("================")
 
 

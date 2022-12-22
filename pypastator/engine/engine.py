@@ -1,6 +1,8 @@
-import math
+# pylint: skip-file
+# import math
 import random
-from presets import SCALES, CHORDS
+
+from presets import CHORDS, SCALES
 
 
 def get_candidate_notes(

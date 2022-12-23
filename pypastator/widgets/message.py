@@ -25,7 +25,7 @@ class Message(Label):
         super().__init__(*a, **kw)
         self.say(self.text)
 
-    def midi_tick(self, _ticks, timestamp):
+    def midi_tick(self, timestamp):
         """
         Handle Midi tick.
 

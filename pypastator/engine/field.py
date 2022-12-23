@@ -14,19 +14,26 @@ class Field:
     Definition of a field.
     """
 
-    def __init__(self, default=0, min_value=0, max_value=127, smooth=False):
+    def __init__(
+        self, default=0, min_value=0, max_value=127, smooth=False, debug=False
+    ):
         self.value = default
+        self.modulation = 0
         self.min_value = min_value
         self.max_value = max_value
         self.smooth = smooth
+        self.debug = debug
         self.callbacks = {}
 
-    def hook(self, callback, hookname):
+    def hook(self, callback, hookname, send_modulation=False):
         """
         Add this callback to be called when this field's value changes.
         """
-        self.callbacks[hookname] = callback
-        callback(self.value)
+        self.callbacks[hookname] = (callback, send_modulation)
+        if send_modulation:
+            callback(self.get_value(), self.modulation)
+        else:
+            callback(self.get_value())
 
     def unhook(self, hookname):
         """
@@ -48,8 +55,11 @@ class Field:
             self.value = max(self.min_value, self.value)
         if self.max_value is not None:
             self.value = min(self.max_value, self.value)
-        for callback in self.callbacks.values():
-            callback(self.value)
+        for callback, send_modulation in self.callbacks.values():
+            if send_modulation:
+                callback(self.get_value(), self.modulation)
+            else:
+                callback(self.get_value())
 
     def smoothly_set_value(self, new_value):
         """
@@ -64,7 +74,10 @@ class Field:
             self.value = new_value
             return
         leap_to_do = int(leap_to_do * SMOOTH_BIG_LEAP)
-        self.value -= leap_to_do
+        if self.value > new_value:
+            self.value -= leap_to_do
+        else:
+            self.value += leap_to_do
 
     def increment(self, increment=1):
         """
@@ -87,13 +100,37 @@ class Field:
         """
         Get the str representation of this field's value.
         """
-        return str(self.value)
+        return str(self.get_value())
 
     def get_value(self):
         """
         Get this field value.
         """
+        modulated_value = self.value + self.modulation
+        if self.min_value is not None:
+            modulated_value = max(self.min_value, modulated_value)
+        if self.max_value is not None:
+            modulated_value = min(self.max_value, modulated_value)
+        if self.debug:
+            print(modulated_value)
+        return modulated_value
+
+    def get_unmodulated_value(self):
+        """
+        Return raw value, without modulation.
+        """
         return self.value
+
+    def set_modulation(self, value):
+        """
+        Set modulation for this field (LFO for example).
+        """
+        self.modulation = value
+        for callback, send_modulation in self.callbacks.values():
+            if send_modulation:
+                callback(self.get_value(), self.modulation)
+            else:
+                callback(self.get_value())
 
 
 class BooleanField(Field):
@@ -109,6 +146,12 @@ class BooleanField(Field):
         Alternate between True and False.
         """
         self.set_value(not self.value)
+
+    def get_value(self):
+        """
+        Get this field value.
+        """
+        return self.value
 
 
 class EnumField(Field):
@@ -127,8 +170,11 @@ class EnumField(Field):
         if value < 0 or value >= len(self.choices):
             return
         self.value = value
-        for callback in list(self.callbacks.values()):
-            callback(self.value)
+        for callback, send_modulation in list(self.callbacks.values()):
+            if send_modulation:
+                callback(self.value, self.modulation)
+            else:
+                callback(self.value)
 
     def increment(self, increment=1):
         """

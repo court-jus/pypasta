@@ -48,6 +48,7 @@ class BaseWidget:
         self.rect = None
         self.text = None
         self.value = value
+        self.modulation = 0
         self.pos_x, self.pos_y = x, y
         self.width, self.height = w, h
         self.visible = visible
@@ -93,17 +94,18 @@ class BaseWidget:
         if hook_name in self.hooked_to:
             self.unhook(hook_name)
 
-        def callback(value):
+        def callback(value, modulation):
             if value_getter:
                 value = value_getter()
             if set_text and self.text != str(value):
                 self.set_text(str(value))
             elif not set_text and self.value != value:
                 self.set_value(value)
+            self.set_modulation(modulation)
 
         field = getattr(instance, attrname)
         if isinstance(field, Field):
-            field.hook(callback, hook_name)
+            field.hook(callback, hook_name, send_modulation=True)
             self.hooked_to[hook_name] = [instance, attrname]
 
     def unhook(self, hook_name=None):
@@ -128,6 +130,14 @@ class BaseWidget:
         Set this widget's value.
         """
         self.value = value
+        if self.visible:
+            self.draw()
+
+    def set_modulation(self, modulation):
+        """
+        Set the modulation value so it can be displayed along the value.
+        """
+        self.modulation = modulation
         if self.visible:
             self.draw()
 

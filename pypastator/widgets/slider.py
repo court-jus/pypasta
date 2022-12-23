@@ -5,7 +5,7 @@ Shows its value inside.
 """
 import pygame
 
-from pypastator.constants import SLIDER_WIDTH
+from pypastator.constants import GREEN, SLIDER_WIDTH
 from pypastator.widgets.labeled import Labeled
 
 
@@ -51,6 +51,11 @@ class Slider(Labeled):
                     (line_pos, self.rect.top),
                     (line_pos, self.rect.bottom - 1),
                 )
+        if self.modulation:
+            line_pos = self.pos_x + int(
+                (self.value - self.modulation) * self.width / self.ratio
+            )
+            pygame.draw.circle(surf, GREEN, (line_pos, self.rect.bottom - 3), 3)
         surf.blit(txt, txtrect)
         surf.fill(self.fcolor, cursor)
         super().draw()

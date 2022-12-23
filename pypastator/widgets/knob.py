@@ -5,7 +5,7 @@ import math
 
 import pygame
 
-from pypastator.constants import KNOB_ANGLE, KNOB_SIZE
+from pypastator.constants import BLACK, GREEN, KNOB_ANGLE, KNOB_SIZE
 from pypastator.widgets.labeled import Labeled
 
 
@@ -25,6 +25,7 @@ class Knob(Labeled):
         """
         radius = KNOB_SIZE / 2
         surf = pygame.display.get_surface()
+        surf.fill(BLACK, self.rect)
         pygame.draw.circle(surf, self.bcolor, self.rect.center, radius)
         pygame.draw.circle(surf, self.fcolor, self.rect.center, radius, width=1)
         rad = (self.value or 0) * 1.8 * math.pi / 127
@@ -32,6 +33,12 @@ class Knob(Labeled):
         dest_x = math.cos(line_angle) * radius + self.rect.center[0]
         dest_y = math.sin(line_angle) * radius + self.rect.center[1]
         pygame.draw.line(surf, self.fcolor, self.rect.center, (dest_x, dest_y))
+        if self.modulation:
+            origin_rad = ((self.value - self.modulation) or 0) * 1.8 * math.pi / 127
+            origin_line_angle = origin_rad + 0.1 * math.pi + KNOB_ANGLE
+            dest_x = math.cos(origin_line_angle) * (radius - 3) + self.rect.center[0]
+            dest_y = math.sin(origin_line_angle) * (radius - 3) + self.rect.center[1]
+            pygame.draw.circle(surf, GREEN, (dest_x, dest_y), 3)
         super().draw()
 
     def get_click_value(self, pos):

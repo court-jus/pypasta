@@ -187,7 +187,7 @@ class Session:
         """
         Handle Midi tick event.
         """
-        self.message.midi_tick(ticks, timestamp)
+        self.message.midi_tick(timestamp)
         if not self.playing:
             return []
         relative_ticks = ticks - self.playing

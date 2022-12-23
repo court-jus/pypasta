@@ -153,12 +153,10 @@ class Pastator:
         """
         Emit an outgoing event to a Midi channel.
         """
-        # timestamp = pygame.midi.time()
         evt_type = evt[1]
         evt_channel = evt[2]
         if evt_type == "on" and self.output_device is not None:
             note, velocity = evt[3:5]
-            # print("Play",timestamp,evt_channel,pygame.midi.midi_to_ansi_note(note),velocity,)
             self.output_device.note_on(note, velocity, evt_channel)
         elif evt_type == "off" and self.output_device is not None:
             note = evt[3]

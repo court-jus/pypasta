@@ -87,14 +87,15 @@ def test_notes_choice(engine, pitch, gravity, notes):
 
 
 @pytest.mark.parametrize(
-    "notes, lowest, highest, result", [
+    "notes, lowest, highest, result",
+    [
         ([60, 64, 67], 48, 95, [48, 76, 91]),
         ([60, 64, 67], 60, 60, [60, 64, 55]),
         ([60, 64, 67], 54, 66, [60, 64, 55]),
         ([60, 64, 67], 0, 12, [0, 4, 7]),
         ([60, 64, 67], 0, 24, [0, 16, 19]),
         ([60, 64, 67], 117, 127, [120, 124, 127]),
-    ]
+    ],
 )
 def test_spread_notes(notes, lowest, highest, result):
     """

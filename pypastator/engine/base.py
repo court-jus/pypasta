@@ -3,7 +3,7 @@ Base for all musical engines.
 """
 import pygame.midi
 
-from pypastator.constants import ACCENT, NOTE_PATTERNS, RYTHM_PATTERNS, SCALES
+from pypastator.constants import ACCENT, NOTE_PATTERNS, RYTHM_PATTERNS
 from pypastator.engine.field import BooleanField, EnumField, Field
 from pypastator.engine.utils import spread_notes
 
@@ -50,7 +50,7 @@ class BaseEngine:
             if loadable_key in data:
                 field = getattr(self, loadable_key)
                 if isinstance(field, Field):
-                    field.value = data[loadable_key]
+                    field.set_value(data[loadable_key], force=True)
                 else:
                     setattr(self, loadable_key, data[loadable_key])
 
@@ -112,7 +112,7 @@ class BaseEngine:
 
         Return event list.
         """
-        midi_channel = self.midi_channel.value
+        midi_channel = self.midi_channel.get_value()
         self.chord_number = chord_number
         result = []
         rpattern = self.get_rythm_pattern()
@@ -121,19 +121,19 @@ class BaseEngine:
         positions = self.get_positions()
         stop_positions = self.get_stop_positions()
         if self.currently_playing_notes and (
-            tick in stop_positions or not self.active.value
+            tick in stop_positions or not self.active.get_value()
         ):
             for prevnote in self.currently_playing_notes:
                 result.append((timestamp, "off", midi_channel, prevnote, 0))
             self.currently_playing_notes = []
-        if not self.active.value:
+        if not self.active.get_value():
             return result
         if tick in positions:
             self.pos.increment()
             notes = self.get_notes()
             vel = self.get_vel(tick)
             for note in notes:
-                if self.active.value:
+                if self.active.get_value():
                     result.append((timestamp, "on", midi_channel, note, vel))
                 self.currently_playing_notes.append(note)
         return result
@@ -142,7 +142,9 @@ class BaseEngine:
         """
         Get rythmic pattern.
         """
-        return RYTHM_PATTERNS[int(self.rythm.value * (len(RYTHM_PATTERNS) - 1) / 127)]
+        return RYTHM_PATTERNS[
+            int(self.rythm.get_value() * (len(RYTHM_PATTERNS) - 1) / 127)
+        ]
 
     def get_positions(self):
         """
@@ -164,7 +166,9 @@ class BaseEngine:
         """
         Get melodic pattern.
         """
-        return NOTE_PATTERNS[int(self.pattern.value * (len(NOTE_PATTERNS) - 1) / 127)]
+        return NOTE_PATTERNS[
+            int(self.pattern.get_value() * (len(NOTE_PATTERNS) - 1) / 127)
+        ]
 
     def get_tessitura(self):
         """
@@ -183,7 +187,7 @@ class BaseEngine:
         Get playable notes.
         """
         pattern = self.get_pattern()
-        scale_notes = SCALES[self.track.session.scale.value]
+        scale_notes = self.track.session.scale.get_value()
         chord_notes = self.track.session.current_chord.get_value()
         lowest, highest = self.get_tessitura()
         notes = []
@@ -213,9 +217,9 @@ class BaseEngine:
 
         This is used to generate accentuation based on beat.
         """
-        vel = int(self.basevel.value * 90 / 127)
+        vel = int(self.basevel.get_value() * 90 / 127)
         if tick == 0:
-            vel = int(vel * self.accentuation.value)
+            vel = int(vel * self.accentuation.get_value())
         return max(1, min(vel, 127))
 
     def stop(self):
@@ -223,7 +227,7 @@ class BaseEngine:
         Send Note OFF event for all currently playing notes.
         """
         timestamp = pygame.midi.time()
-        midi_channel = self.midi_channel.value
+        midi_channel = self.midi_channel.get_value()
         result = []
         if self.currently_playing_notes:
             for prevnote in self.currently_playing_notes:

@@ -18,6 +18,7 @@ from pypastator.constants import (
 from pypastator.engine.arp import Arp
 from pypastator.engine.chord import Chord
 from pypastator.engine.field import EnumField
+from pypastator.engine.lfo import get_lfo
 from pypastator.engine.strum import Strum
 from pypastator.widgets.knob import Knob
 from pypastator.widgets.led import Led
@@ -63,7 +64,7 @@ class Track:
                     "current_page": 0,
                     "pages": [
                         {
-                            "label": "Pat.",
+                            "label": "Voic.",
                             "attrname": "pattern",
                         }
                     ],
@@ -101,6 +102,7 @@ class Track:
                 },
             ]
         self.engine_type.hook(self.set_type, "track_set_type")
+        self.lfos = []
 
     @property
     def engine_type_str(self):
@@ -155,6 +157,13 @@ class Track:
         for ctrl in self.controls:
             self.setup_control(ctrl)
 
+    def load_lfos(self, data):
+        """
+        Load LFO setup from data.
+        """
+        for lfo_data in data:
+            self.add_lfo(**lfo_data)
+
     def load(self, data):
         """
         Load a track from data.
@@ -163,11 +172,14 @@ class Track:
         self.engine_type.set_value(engine_type)
         self.engine.load(data)
         self.engine_to_controls()
+        self.load_lfos(data.get("lfos", []))
 
     def midi_tick(self, ticks, timestamp, chord):
         """
         Handle Midi tick event.
         """
+        for lfo in self.lfos:
+            lfo.midi_tick(ticks)
         if self.engine is not None:
             return self.engine.midi_tick(ticks, timestamp, chord)
         return []
@@ -179,10 +191,10 @@ class Track:
         if cc_number in (2, 3):
             page_change = cc_number * 2 - 5  # 2 -> -1, 3 -> 1
             for ctrl in self.controls:
-                previous = ctrl["current_page"]
-                next = (ctrl["current_page"] + page_change) % len(ctrl["pages"])
-                if previous != next:
-                    ctrl["current_page"] = next
+                previous_page = ctrl["current_page"]
+                next_page = (ctrl["current_page"] + page_change) % len(ctrl["pages"])
+                if previous_page != next_page:
+                    ctrl["current_page"] = next_page
                     self.setup_control(ctrl)
         elif (cc_number - self.track_id) % 8 == 0:
             ctrl = self.controls[int((cc_number - self.track_id) / 8) - 1]
@@ -200,3 +212,14 @@ class Track:
         """
         for widget in [ctrl["widget"] for ctrl in self.controls]:
             widget.handle_click(pos)
+
+    def add_lfo(self, waveform="squarish", attrname="vel", depth=0, rate=1, **kw):
+        """
+        Add an LFO modulating attribute 'attrname'.
+        """
+        field = getattr(self.engine, attrname)
+        setter = getattr(field, "set_modulation")
+        lfo = get_lfo(setter, waveform=waveform, **kw)
+        lfo.rate.set_value(rate, force=True)
+        lfo.depth.set_value(depth, force=True)
+        self.lfos.append(lfo)

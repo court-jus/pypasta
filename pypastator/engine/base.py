@@ -1,11 +1,21 @@
 """
 Base for all musical engines.
 """
+import sys
+
 import pygame.midi
 
-from pypastator.constants import ACCENT, NOTE_PATTERNS, RYTHM_PATTERNS
+from pypastator.constants import (
+    ACCENT,
+    NOTE_PATTERNS,
+    RYTHM_PATTERNS,
+    WIDGET_LINE,
+    WIDGETS_MARGIN,
+)
 from pypastator.engine.field import BooleanField, EnumField, Field
 from pypastator.engine.utils import spread_notes
+from pypastator.widgets.gui.base import WithMenu
+from pypastator.widgets.gui.engine import EngineDetailsGUI, MainEngineGUI
 
 LOADABLE_KEYS = (
     "pitch",
@@ -19,7 +29,7 @@ LOADABLE_KEYS = (
 )
 
 
-class BaseEngine:
+class BaseEngine(WithMenu):
     """
     Base engine.
     """
@@ -41,6 +51,42 @@ class BaseEngine:
         self.pos = Field(max_value=None)
         self.currently_playing_notes = []
         self.chord_number = 1
+        if "pytest" not in sys.modules:
+            self.init_menus()
+
+    def init_menus(self):
+        """
+        Initialize engine menu.
+        """
+        self.main_menu = MainEngineGUI(
+            self, pos_y=WIDGETS_MARGIN + self.track.track_id * WIDGET_LINE
+        )
+        self.main_menu.show()
+        details = EngineDetailsGUI(self, pos_y=300 + WIDGET_LINE * 2 + WIDGETS_MARGIN)
+        self.sub_menus.append(details)
+
+    def next_page(self, go_back=False):
+        """
+        Show next page
+        """
+        if not self.sub_menus:
+            return False
+        active_menu = self.get_active_menu()
+        self.sub_menus[active_menu].hide()
+        if isinstance(active_menu, bool):
+            self.sub_menus[0].show()
+            self.sub_menus[0].activate_widget(self.sub_menus[0].default_widget)
+            return True
+        next_menu = active_menu + (-1 if go_back else 1)
+        if next_menu > len(self.sub_menus) - 1 or next_menu < 0:
+            self.sub_menus[0].show()
+            self.sub_menus[0].activate_widget(self.sub_menus[0].default_widget)
+            return False
+        self.sub_menus[next_menu].show()
+        self.sub_menus[next_menu].activate_widget(
+            self.sub_menus[next_menu].default_widget
+        )
+        return True
 
     def load(self, data):
         """
@@ -53,12 +99,26 @@ class BaseEngine:
                     field.set_value(data[loadable_key], force=True)
                 else:
                     setattr(self, loadable_key, data[loadable_key])
+        for menu in self.sub_menus:
+            menu.hide()
+        if "visible_menu" in data:
+            self.sub_menus[data["visible_menu"]].show()
+            if "active_widget" in data:
+                self.sub_menus[data["visible_menu"]].activate_widget(
+                    data["active_widget"]
+                )
 
     def save(self):
         """
         Get data to save this engine.
         """
-        result = {"type": self.track.engine_type.get_value()}
+        result = {
+            "type": self.track.engine_type.get_value(),
+            "visible_menu": self.get_visible_menu(),
+            "active_widget": self.sub_menus[self.get_visible_menu()].active_widget
+            if self.get_visible_menu() is not None
+            else None,
+        }
         for savable_key in LOADABLE_KEYS:
             field = getattr(self, savable_key)
             if isinstance(field, Field):
@@ -233,6 +293,13 @@ class BaseEngine:
             for prevnote in self.currently_playing_notes:
                 result.append((timestamp, "off", midi_channel, prevnote, 0))
         return result
+
+    def close(self):
+        """
+        Stop all notes, unhook menus' widgets and hide.
+        """
+        super().close()
+        return self.stop()
 
 
 class BaseArp(BaseEngine):

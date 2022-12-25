@@ -10,17 +10,17 @@ from slugify import slugify
 
 from pypastator.constants import (
     BAR,
-    BASE_WIDGET_HEIGHT,
     CHORDS,
+    MENU_CC_NEXT_PAGE,
+    MENU_CC_PREV_PAGE,
     SCALE_NAMES,
     SCALES,
-    WIDGETS_MARGIN,
 )
 from pypastator.engine.field import EnumField, Field, ListField
 from pypastator.engine.track import Track
 from pypastator.engine.utils import int_to_roman
-from pypastator.widgets.led import Led
-from pypastator.widgets.menu import Menu
+from pypastator.widgets.gui.base import WithMenu
+from pypastator.widgets.gui.session import SessionGUI
 from pypastator.widgets.message import Message
 
 DEFAULT_TRACK = {
@@ -37,12 +37,13 @@ DEFAULT_TRACK = {
 LOADABLE_KEYS = ("scale_name", "root_note", "chord_progression", "playing", "title")
 
 
-class Session:
+class Session(WithMenu):
     """
     Definition of a Session.
     """
 
     def __init__(self, pasta):
+        super().__init__()
         self.pasta = pasta
         self.scale_name = "major"
         self.root_note = 0
@@ -64,13 +65,15 @@ class Session:
             ]
         )
         self.tracks = {}
+        self.selected_track = None
         self.playing = True
         self.cc_mode = "menu"
         self.cc_controls = {}
-        self.menu_buttons = {}
         if "pytest" not in sys.modules:
             self.message = Message()
-            self.menu = Menu(self)
+            self.main_menu = SessionGUI(self, 300)
+            self.main_menu.show()
+            self.main_menu.activate_widget(self.main_menu.default_widget)
 
     @property
     def scale_str(self):
@@ -174,14 +177,52 @@ class Session:
         track = Track(track_id, self)
         track.load(track_data)
         self.tracks[track_id] = track
-        topy = WIDGETS_MARGIN + (BASE_WIDGET_HEIGHT + WIDGETS_MARGIN) * track_id
-        self.menu_buttons[track_id] = Led(
-            y=topy,
-            value=False,
-            emoji="⚙️",
-            on_click=lambda v: self.toggle_menu(track_id),
-        )
         self.message.say(f"Track [{track_id}] added")
+        self.select_track(track_id)
+
+    def select_track(self, track_id):
+        """
+        Select this track for modification.
+
+        TODO: maybe use a Field instead of setting the widget value directly.
+        """
+        if self.selected_track is not None:
+            self.tracks[self.selected_track].engine.main_menu.widgets["menu"].set_value(
+                False
+            )
+        self.selected_track = track_id
+        self.tracks[self.selected_track].engine.main_menu.widgets["menu"].set_value(
+            True
+        )
+
+    def next_page(self, go_back=False):
+        """
+        Go to track menu if going down, else engine menu.
+        """
+        session_active = self.get_active_menu()
+        track_active = None
+        engine_active = None
+        cur_track = None
+        cur_engine = None
+        if self.selected_track is not None:
+            cur_track = self.tracks[self.selected_track]
+            track_active = cur_track.get_active_menu()
+            cur_engine = cur_track.engine
+            if cur_engine is not None:
+                engine_active = cur_track.engine.get_active_menu()
+        res = False
+        if session_active is not False or (
+            engine_active is not None and not isinstance(engine_active, bool)
+        ):
+            self.deactivate_active_menu()
+            res = cur_engine.next_page(go_back)
+        if res is False:
+            if track_active:
+                cur_track.deactivate_active_menu()
+            if cur_engine:
+                cur_engine.deactivate_active_menu()
+            self.main_menu.show()
+            self.main_menu.activate_widget(self.main_menu.default_widget)
 
     def midi_tick(self, ticks, timestamp):
         """
@@ -214,13 +255,6 @@ class Session:
             )
         return out_evts
 
-    def _handle_track_cc(self, cc_number, value):
-        """
-        Pass Midi CC event to tracks.
-        """
-        for track in self.tracks.values():
-            track.handle_cc(cc_number, value)
-
     def _handle_global_cc(self, cc_number, value):
         """
         Handle Midi CC events that are not related to tracks.
@@ -229,17 +263,16 @@ class Session:
             return
 
         # Switch buttons "mode"
-        if 4 <= cc_number < 8:
-            if cc_number == 4:
-                self.cc_mode = "menu"
-                self.message.say("[Menu] mode")
-                self.chords_mode = "progression"
-            elif cc_number == 5:
-                self.cc_mode = "chords"
-                self.message.say("[Chords] mode")
-                self.chords_mode = "manual"
-            elif cc_number == 7:
-                self.save()
+        if cc_number == 6:
+            self.cc_mode = "menu"
+            self.message.say("[Menu] mode")
+            self.chords_mode = "progression"
+        elif cc_number == 5:
+            self.cc_mode = "chords"
+            self.message.say("[Chords] mode")
+            self.chords_mode = "manual"
+        elif cc_number == 7:
+            self.save()
         elif self.cc_mode == "menu":
             self._handle_menu_cc(cc_number)
         elif self.cc_mode == "chords":
@@ -249,13 +282,9 @@ class Session:
         """
         Handle menu navigation via CC events.
         """
-        if cc_number < 4:
-            self.menu.handle_cc(cc_number)
-        elif 48 <= cc_number < 56:
+        if 48 <= cc_number < 56:
             track_id = cc_number - 48
-            if track_id in self.tracks:
-                self.toggle_menu(track_id)
-            else:
+            if track_id not in self.tracks:
                 self.add_track(track_id)
 
     def _handle_chords_cc(self, cc_number):
@@ -270,48 +299,32 @@ class Session:
                 ]
             )
 
-    def handle_cc(self, cchannel, cc_number, value):
+    def handle_cc(self, cc_channel, cc_number, cc_value):
         """
         Handle Midi CC event.
         """
-        if cchannel != 15:
-            print(f"Ignored CC on channel {cchannel}, {cc_number}, {value}")
+        super().handle_cc(cc_channel, cc_number, cc_value)
+        for track in self.tracks.values():
+            track.handle_cc(cc_channel, cc_number, cc_value)
+        if cc_channel != 15:
+            print(f"Ignored CC on channel {cc_channel}, {cc_number}, {cc_value}")
             return
 
-        if 8 <= cc_number < 48 or (cc_number in (2, 3) and value == 127):
-            self._handle_track_cc(cc_number, value)
-        else:
-            self._handle_global_cc(cc_number, value)
+        if cc_value == 127:
+            if cc_number == MENU_CC_NEXT_PAGE:
+                self.next_page()
+            elif cc_number == MENU_CC_PREV_PAGE:
+                self.next_page(go_back=True)
 
-    def toggle_menu(self, track_id):
-        """
-        Hide/Show menu for a specific track.
-
-        If menu is already shown for said track, activate its next widget.
-        """
-        if self.menu.visible and self.menu.current_track.track_id == track_id:
-            next_widget_activated = self.menu.activate_next()
-            if not next_widget_activated:
-                self.menu_buttons[self.menu.current_track.track_id].set_value(False)
-                self.menu.hide()
-        elif self.menu.visible:
-            self.menu_buttons[self.menu.current_track.track_id].set_value(False)
-            self.menu.hide()
-            self.menu.show(self.tracks[track_id])
-            self.menu_buttons[self.menu.current_track.track_id].set_value(True)
-        else:
-            self.menu.show(self.tracks[track_id])
-            self.menu_buttons[self.menu.current_track.track_id].set_value(True)
+        self._handle_global_cc(cc_number, cc_value)
 
     def handle_click(self, pos):
         """
         Handle click event based on its position.
         """
+        super().handle_click(pos)
         for track in self.tracks.values():
             track.handle_click(pos)
-        for menu_button in self.menu_buttons.values():
-            menu_button.handle_click(pos)
-        self.menu.handle_click(pos)
 
     def stop(self):
         """

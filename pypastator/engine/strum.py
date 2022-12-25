@@ -4,6 +4,7 @@ The Strum engine
 It does play all the notes like the Chord engine but
 strums them.
 """
+from pypastator.constants import DEFAULT_STRUMMING
 from pypastator.engine.base import BaseArp
 
 
@@ -16,7 +17,7 @@ class Strum(BaseArp):
         rpattern = self.get_rythm_pattern()
         notes_pattern = self.get_pattern()
         base_positions = [0]
-        strumming = 3
+        strumming = DEFAULT_STRUMMING
         for duration in rpattern[:-1]:
             base_positions.append(duration + base_positions[-1])
         positions = []

@@ -79,10 +79,10 @@ class Pastator:
             else:
                 print("Received Note OFF evt", note_name, "vel", velocity)
         elif CCMIN <= typ <= CCMAX:
-            cchannel = typ - 176
+            cc_channel = typ - 176
             cc_number = data1
-            value = data2
-            self.session.handle_cc(cchannel, cc_number, value)
+            cc_value = data2
+            self.session.handle_cc(cc_channel, cc_number, cc_value)
         else:
             print("Unkown ctrl event", evt)
 

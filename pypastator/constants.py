@@ -14,6 +14,20 @@ ALL_NOTES_OFF = 123
 ALL_SOUND_OFF = 120
 PLAY = 250
 STOP = 252
+# Channel used for menu control via Midi CC
+MENU_CC_CHANNEL = 15
+# Midi CC numbers for menu control
+MENU_CC_PREV_PAGE = 1
+MENU_CC_NEXT_PAGE = 0
+MENU_CC_INCR = 2
+MENU_CC_DECR = 3
+MENU_CC_NEXT_WIDGET = 4
+ENGINE_CC_BASEVEL = 0
+ENGINE_CC_PATTERN = 1
+ENGINE_CC_RYTHM = 2
+ENGINE_CC_PITCH = 3
+ENGINE_CC_MUTE = 4
+ENGINE_CC_SELECT = 5
 
 # UI constants
 KNOB_ANGLE = math.pi
@@ -38,6 +52,9 @@ SLIDER_WIDTH = 400
 KNOB_SIZE = BASE_WIDGET_HEIGHT
 WIDGET_LABEL_SIZE = 80
 LED_SIZE = BASE_WIDGET_HEIGHT
+WIDGET_LINE = BASE_WIDGET_HEIGHT + WIDGETS_MARGIN
+LEFT_COL = WIDGETS_MARGIN * 2 + BUTTON_WIDTH
+BIG_LABEL_W = SLIDER_WIDTH + BUTTON_WIDTH + WIDGETS_MARGIN
 
 # Melodic constants
 # Durations
@@ -52,6 +69,7 @@ DHALF = HALF * 1.5
 FULL = 96
 BEAT = QUARTER
 BAR = FULL
+DEFAULT_STRUMMING = 3
 
 # Patterns
 # Those number represent positions in the chord
@@ -63,6 +81,7 @@ NOTE_PATTERNS = [
     (3, 1, 1),
     (3, 1, 2),
     (3, 2, 1),
+    (3, 2, 1, 2),
     (3, 2, 2),
     (3, 2, 3, 4),
     (3, 3, 2),

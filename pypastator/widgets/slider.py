@@ -5,7 +5,7 @@ Shows its value inside.
 """
 import pygame
 
-from pypastator.constants import GREEN, SLIDER_WIDTH
+from pypastator.constants import BLACK, GREEN, SLIDER_WIDTH
 from pypastator.widgets.labeled import Labeled
 
 
@@ -21,7 +21,7 @@ class Slider(Labeled):
         super().__init__(*a, **kw)
 
     def widget_init(self, *a, **kw):
-        self.ratio = kw.pop("ratio", 127)
+        self.ratio = kw.pop("ratio", 128)
         self.stripes = kw.pop("stripes", False)
         super().widget_init(*a, **kw)
 
@@ -31,12 +31,13 @@ class Slider(Labeled):
         """
         brect = pygame.Rect(0, 0, self.width - 2, self.height - 2)
         brect.center = self.rect.center
-        txt = self.font.render(str(self.value), True, self.fcolor)
+        txt = self.font.render(str(self.value), True, BLACK)
         txtrect = txt.get_rect()
         txtrect.center = self.rect.center
         cursor = pygame.Rect(0, 0, 5, self.height)
+        cell_size = self.rect.width / self.ratio
         cursor.center = (
-            self.pos_x + int((self.value or 0) * self.width / self.ratio),
+            int(cell_size * (self.value or 0) + self.pos_x + 0.5 * cell_size),
             self.rect.center[1],
         )
         surf = pygame.display.get_surface()
@@ -44,7 +45,7 @@ class Slider(Labeled):
         surf.fill(self.bcolor, brect)
         if self.stripes:
             for i in range(self.ratio):
-                line_pos = int((self.rect.width / self.ratio * (i + 0.5)) + self.pos_x)
+                line_pos = int(cell_size * i + self.pos_x + 0.5 * cell_size)
                 pygame.draw.line(
                     surf,
                     self.fcolor,
@@ -56,17 +57,13 @@ class Slider(Labeled):
                 (self.value - self.modulation) * self.width / self.ratio
             )
             pygame.draw.circle(surf, GREEN, (line_pos, self.rect.bottom - 3), 3)
-        surf.blit(txt, txtrect)
         surf.fill(self.fcolor, cursor)
+        surf.blit(txt, txtrect)
         super().draw()
 
     def get_click_value(self, pos):
         """
         Return value related to where the user clicked.
         """
-        relative_click_position = pos[0] - self.rect.x
-        pos_shift = (self.rect.width / self.ratio) / 2
-        equivalent_cc_value = int(
-            (relative_click_position + pos_shift) * 127 / self.rect.width
-        )
-        return equivalent_cc_value
+        relative_click_position = (pos[0] - self.rect.x) / self.width * self.ratio
+        return min(self.ratio, int(relative_click_position))

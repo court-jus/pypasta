@@ -13,9 +13,10 @@ from pypastator.constants import (
     WIDGETS_MARGIN,
 )
 from pypastator.engine.field import BooleanField, EnumField, Field
+from pypastator.engine.lfo import get_lfo
 from pypastator.engine.utils import spread_notes
 from pypastator.widgets.gui.base import WithMenu
-from pypastator.widgets.gui.engine import EngineDetailsGUI, MainEngineGUI
+from pypastator.widgets.gui.engine import LFOGUI, EngineDetailsGUI, MainEngineGUI
 
 LOADABLE_KEYS = (
     "pitch",
@@ -47,6 +48,7 @@ class BaseEngine(WithMenu):
         self.active = BooleanField(default=True)
         self.accentuation = Field(default=ACCENT, smooth=True)
         self.related_to = EnumField(choices=["scale", "chord"])
+        self.lfos = []
         # Internal stuff
         self.pos = Field(max_value=None)
         self.currently_playing_notes = []
@@ -62,8 +64,12 @@ class BaseEngine(WithMenu):
             self, pos_y=WIDGETS_MARGIN + self.track.track_id * WIDGET_LINE
         )
         self.main_menu.show()
-        details = EngineDetailsGUI(self, pos_y=300 + WIDGET_LINE * 2 + WIDGETS_MARGIN)
+        pos_y = 300  # Top of the menus
+        pos_y += WIDGET_LINE * 2 + WIDGETS_MARGIN  # Size of the session menu
+        details = EngineDetailsGUI(self, pos_y=pos_y)
         self.sub_menus.append(details)
+        lfos = LFOGUI(self, pos_y=pos_y)
+        self.sub_menus.append(lfos)
 
     def next_page(self, go_back=False):
         """
@@ -107,6 +113,7 @@ class BaseEngine(WithMenu):
                 self.sub_menus[data["visible_menu"]].activate_widget(
                     data["active_widget"]
                 )
+        self.load_lfos(data.get("lfos", []))
 
     def save(self):
         """
@@ -172,6 +179,8 @@ class BaseEngine(WithMenu):
 
         Return event list.
         """
+        for lfo in self.lfos:
+            lfo.midi_tick(ticks)
         midi_channel = self.midi_channel.get_value()
         self.chord_number = chord_number
         result = []
@@ -300,6 +309,26 @@ class BaseEngine(WithMenu):
         """
         super().close()
         return self.stop()
+
+    # LFOs
+    def load_lfos(self, data):
+        """
+        Load LFO setup from data.
+        """
+        for lfo_data in data:
+            self.add_lfo(**lfo_data)
+
+    def add_lfo(self, waveform="squarish", attrname="basevel", depth=0, rate=1, **kw):
+        """
+        Add an LFO modulating attribute 'attrname'.
+        """
+        field = getattr(self, attrname)
+        setter = getattr(field, "set_modulation")
+        lfo = get_lfo(setter, waveform=waveform, **kw)
+        lfo.dest_name.set_value(attrname, force=True)
+        lfo.rate.set_value(rate, force=True)
+        lfo.depth.set_value(depth, force=True)
+        self.lfos.append(lfo)
 
 
 class BaseArp(BaseEngine):

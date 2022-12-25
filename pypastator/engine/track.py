@@ -10,7 +10,6 @@ from pypastator.constants import (
 from pypastator.engine.arp import Arp
 from pypastator.engine.chord import Chord
 from pypastator.engine.field import EnumField
-from pypastator.engine.lfo import get_lfo
 from pypastator.engine.strum import Strum
 from pypastator.widgets.gui.base import WithMenu
 
@@ -27,7 +26,6 @@ class Track(WithMenu):
         self.engine = None
         self.engine_type = EnumField(choices=ENGINE_TYPES)
         self.engine_type.hook(self.set_type, "track_set_type")
-        self.lfos = []
 
     @property
     def engine_type_str(self):
@@ -55,13 +53,6 @@ class Track(WithMenu):
         if change:
             self.engine.load(data)
 
-    def load_lfos(self, data):
-        """
-        Load LFO setup from data.
-        """
-        for lfo_data in data:
-            self.add_lfo(**lfo_data)
-
     def load(self, data):
         """
         Load a track from data.
@@ -69,14 +60,11 @@ class Track(WithMenu):
         engine_type = ENGINE_TYPES.index(data.get("type", "arp"))
         self.engine_type.set_value(engine_type)
         self.engine.load(data)
-        self.load_lfos(data.get("lfos", []))
 
     def midi_tick(self, ticks, timestamp, chord):
         """
         Handle Midi tick event.
         """
-        for lfo in self.lfos:
-            lfo.midi_tick(ticks)
         if self.engine is not None:
             return self.engine.midi_tick(ticks, timestamp, chord)
         return []
@@ -88,17 +76,6 @@ class Track(WithMenu):
         super().handle_click(pos)
         if self.engine is not None:
             self.engine.handle_click(pos)
-
-    def add_lfo(self, waveform="squarish", attrname="vel", depth=0, rate=1, **kw):
-        """
-        Add an LFO modulating attribute 'attrname'.
-        """
-        field = getattr(self.engine, attrname)
-        setter = getattr(field, "set_modulation")
-        lfo = get_lfo(setter, waveform=waveform, **kw)
-        lfo.rate.set_value(rate, force=True)
-        lfo.depth.set_value(depth, force=True)
-        self.lfos.append(lfo)
 
     def handle_cc(self, cc_channel, cc_number, cc_value):
         """

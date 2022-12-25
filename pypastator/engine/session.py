@@ -187,17 +187,22 @@ class Session(WithMenu):
         TODO: maybe use a Field instead of setting the widget value directly.
         """
         if self.selected_track is not None:
-            self.tracks[self.selected_track].engine.main_menu.widgets["menu"].set_value(
-                False
-            )
+            cur_track = self.tracks[self.selected_track]
+            cur_track.hide_all_menus()
+            if cur_track.engine is not None:
+                cur_track.engine.hide_all_menus()
+            cur_track.engine.main_menu.widgets["menu"].set_value(False)
         self.selected_track = track_id
-        self.tracks[self.selected_track].engine.main_menu.widgets["menu"].set_value(
-            True
-        )
+        sel_track = self.tracks[self.selected_track]
+        sel_track.engine.main_menu.widgets["menu"].set_value(True)
+        sel_track.engine.next_page()
 
     def next_page(self, go_back=False):
         """
-        Go to track menu if going down, else engine menu.
+        Activate next page.
+
+        While going down, we scroll through each page.
+        While going up, go directly from section to section.
         """
         session_active = self.get_active_menu()
         track_active = None

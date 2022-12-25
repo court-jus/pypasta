@@ -5,7 +5,7 @@ LowFrequencyOscillators allow to smoothly change a value over time.
 import math
 import random
 
-from pypastator.engine.field import Field
+from pypastator.engine.field import Field, StrField
 
 
 class LFO:
@@ -15,14 +15,34 @@ class LFO:
 
     def __init__(self, destination):
         self.destination = destination
+        self.dest_name = StrField()
         self.rate = Field(default=1)
         self.depth = Field(default=10)
+        self.running = True
         self.value = 0
+
+    def reset(self):
+        """
+        Reset destination's modulation value to 0.
+        """
+        self.running = False
+        self.destination(0)
+
+    def change_destination(self, new_destination, new_name):
+        """
+        Change this LFO's destination.
+        """
+        self.reset()
+        self.destination = new_destination
+        self.dest_name.set_value(new_name)
+        self.running = True
 
     def midi_tick(self, ticks):
         """
         Calculate the LFO value, each tick.
         """
+        if not self.running:
+            return
         rate = self.rate.get_value() * 6
         depth = self.depth.get_value()
         value = self.get_value(ticks, rate)

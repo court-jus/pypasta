@@ -26,7 +26,8 @@ class GUI:
         self.active_widget = None
         self.activable_widgets = []
         self.hideable = True
-        self.init_widgets(pos_y)
+        self.pos_y = pos_y
+        self.init_widgets()
         if not self.hideable:
             self.show()
 
@@ -146,6 +147,17 @@ class WithMenu:
     def __init__(self):
         self.main_menu = None
         self.sub_menus = []
+
+    def hide_all_menus(self):
+        """
+        Hide all menus.
+        """
+        if self.main_menu is not None:
+            if self.main_menu.hideable:
+                self.main_menu.hide()
+        for menu in self.sub_menus:
+            if menu.hideable:
+                menu.hide()
 
     def close(self):
         """

@@ -133,6 +133,29 @@ class Field:
                 callback(self.get_value())
 
 
+class StrField(Field):
+    """
+    A Field holding any str.
+    """
+
+    def __init__(self, *a, default="", **kw):
+        kw["min_value"] = None
+        kw["max_value"] = None
+        super().__init__(*a, default=default, **kw)
+
+    def increment(self, _increment=1):
+        """
+        Cannont increment this.
+        """
+        return
+
+    def get_value(self):
+        """
+        Get this field value.
+        """
+        return self.value
+
+
 class BooleanField(Field):
     """
     This field can hold True/False values.

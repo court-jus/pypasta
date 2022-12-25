@@ -17,10 +17,11 @@ class SessionGUI(GUI):
         self.default_widget = "scale"
         self.activable_widgets = ["scale", "chord"]
 
-    def init_widgets(self, pos_y=0):
+    def init_widgets(self):
         """
         Initialize GUI's widgets.
         """
+        pos_y = self.pos_y
         self.hideable = False
         self.widgets["separator"] = Separator(y=pos_y, visible=False)
         pos_y += WIDGETS_MARGIN

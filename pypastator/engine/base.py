@@ -13,7 +13,7 @@ from pypastator.constants import (
     WIDGETS_MARGIN,
 )
 from pypastator.engine.field import BooleanField, EnumField, Field
-from pypastator.engine.lfo import get_lfo
+from pypastator.engine.lfo import LFO
 from pypastator.engine.utils import spread_notes
 from pypastator.widgets.gui.base import WithMenu
 from pypastator.widgets.gui.engine import LFOGUI, EngineDetailsGUI, MainEngineGUI
@@ -110,22 +110,31 @@ class BaseEngine(WithMenu):
         if "visible_menu" in data:
             self.sub_menus[data["visible_menu"]].show()
             if "active_widget" in data:
+                print("activate because load menus")
                 self.sub_menus[data["visible_menu"]].activate_widget(
                     data["active_widget"]
                 )
         self.load_lfos(data.get("lfos", []))
 
-    def save(self):
+    def save(self, for_reload=False):
         """
         Get data to save this engine.
         """
         result = {
             "type": self.track.engine_type.get_value(),
-            "visible_menu": self.get_visible_menu(),
-            "active_widget": self.sub_menus[self.get_visible_menu()].active_widget
-            if self.get_visible_menu() is not None
-            else None,
+            "lfos": [lfo.save() for lfo in self.lfos],
         }
+        if for_reload:
+            result.update(
+                {
+                    "visible_menu": self.get_visible_menu(),
+                    "active_widget": self.sub_menus[
+                        self.get_visible_menu()
+                    ].active_widget
+                    if self.get_visible_menu() is not None
+                    else None,
+                }
+            )
         for savable_key in LOADABLE_KEYS:
             field = getattr(self, savable_key)
             if isinstance(field, Field):
@@ -324,7 +333,7 @@ class BaseEngine(WithMenu):
         """
         field = getattr(self, attrname)
         setter = getattr(field, "set_modulation")
-        lfo = get_lfo(setter, waveform=waveform, **kw)
+        lfo = LFO(setter, waveform=waveform, **kw)
         lfo.dest_name.set_value(attrname, force=True)
         lfo.rate.set_value(rate, force=True)
         lfo.depth.set_value(depth, force=True)

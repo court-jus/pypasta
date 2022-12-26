@@ -33,8 +33,8 @@ class BaseWidget:
         bcolor=DARK_GRAY,
         w=BASE_WIDGET_WIDTH,
         h=BASE_WIDGET_HEIGHT,
-        x=WIDGETS_MARGIN,
-        y=WIDGETS_MARGIN,
+        x=1024,
+        y=768,
         on_click=None,
         value=None,
         visible=True,
@@ -162,6 +162,33 @@ class BaseWidget:
         """
         self.visible = False
         pygame.display.get_surface().fill(BLACK, self.rect)
+
+    def get_width(self):
+        """
+        Get this widget's width.
+        """
+        return self.width
+
+    def move_to(self, new_x, new_y, new_width=None):
+        """
+        Move widget to another position.
+        """
+        self.hide()
+        self.pos_x = new_x
+        self.pos_y = new_y
+        if new_width is not None:
+            self.width = new_width
+
+    def apply_new_pos(self):
+        """
+        Apply move_to result.
+        """
+        self.rect.update(self.rect.left, self.rect.top, self.width, self.height)
+        self.rect.center = (
+            self.pos_x + int(self.width / 2),
+            self.pos_y + int(self.height / 2),
+        )
+        self.show()
 
     def draw(self):
         """

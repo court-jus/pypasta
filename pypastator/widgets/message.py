@@ -19,6 +19,7 @@ class Message(Label):
 
     def __init__(self, *a, **kw):
         kw.setdefault("font_size", MESSAGE_FONT_SIZE)
+        kw.setdefault("x", WIDGETS_MARGIN)
         kw.setdefault("y", 768 - BASE_WIDGET_HEIGHT - WIDGETS_MARGIN)
         kw.setdefault("w", 1024 - 2 * WIDGETS_MARGIN)
         kw.setdefault("text", DEFAULT_MESSAGE)

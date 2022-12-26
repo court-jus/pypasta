@@ -1,8 +1,9 @@
 """
 GUIs for the Session model.
 """
-from pypastator.constants import BIG_LABEL_W, BUTTON_WIDTH, WIDGET_LINE, WIDGETS_MARGIN
+from pypastator.constants import BIG_LABEL_W, WIDGET_LINE, WIDGETS_MARGIN
 from pypastator.widgets.gui.base import GUI
+from pypastator.widgets.gui.row import make_row
 from pypastator.widgets.label import Label
 from pypastator.widgets.separator import Separator
 
@@ -25,14 +26,8 @@ class SessionGUI(GUI):
         self.hideable = False
         self.widgets["separator"] = Separator(y=pos_y, visible=False)
         pos_y += WIDGETS_MARGIN
-        pos_x = WIDGETS_MARGIN
-        self.widgets["scale_label"] = Label(
-            text="Scale", y=pos_y, x=pos_x, visible=False
-        )
-        pos_x += BUTTON_WIDTH + WIDGETS_MARGIN
-        self.widgets["scale"] = Label(
-            text="", y=pos_y, x=pos_x, w=BIG_LABEL_W, visible=False
-        )
+        self.widgets["scale_label"] = Label(text="Scale", visible=False)
+        self.widgets["scale"] = Label(text="", w=BIG_LABEL_W, visible=False)
         self.widgets["scale"].hook(
             self.model,
             "scale",
@@ -43,16 +38,21 @@ class SessionGUI(GUI):
         self.widgets["scale"].on_click = (
             lambda v: self.model.scale.increment() if v == 127 else None
         )
+        make_row(
+            [
+                self.widgets[widget_name]
+                for widget_name in (
+                    "scale_label",
+                    "scale",
+                )
+            ],
+            WIDGETS_MARGIN,
+            pos_y,
+        )
         # Second row
         pos_y += WIDGET_LINE
-        pos_x = WIDGETS_MARGIN
-        self.widgets["chord_label"] = Label(
-            text="Chord", y=pos_y, x=pos_x, visible=False
-        )
-        pos_x += BUTTON_WIDTH + WIDGETS_MARGIN
-        self.widgets["chord"] = Label(
-            text="Chord", y=pos_y, x=pos_x, w=BIG_LABEL_W, visible=False
-        )
+        self.widgets["chord_label"] = Label(text="Chord", visible=False)
+        self.widgets["chord"] = Label(text="Chord", w=BIG_LABEL_W, visible=False)
         self.widgets["chord"].hook(
             self.model,
             "scale",
@@ -73,4 +73,15 @@ class SessionGUI(GUI):
             "current_chord_to_chord",
             set_text=True,
             value_getter=lambda: self.model.chord_str,
+        )
+        make_row(
+            [
+                self.widgets[widget_name]
+                for widget_name in (
+                    "chord_label",
+                    "chord",
+                )
+            ],
+            WIDGETS_MARGIN,
+            pos_y,
         )

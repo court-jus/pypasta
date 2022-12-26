@@ -45,20 +45,22 @@
       "accentuation": 1.5,
       "lfos": [
         {
-          "waveform": "smoothrandom",
+          "waveform": "random",
+          "smoothness": 88,
           "attrname": "pitch",
           "depth": 16,
           "rate": 24
         },
         {
           "waveform": "squarish",
-          "smoothness": 0.4,
+          "smoothness": 45,
           "attrname": "pattern",
           "depth": 50,
           "rate": 13
         },
         {
           "waveform": "saw",
+          "smoothness": 76.2,
           "attrname": "rythm",
           "depth": 50,
           "rate": 18

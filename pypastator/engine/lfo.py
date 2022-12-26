@@ -5,7 +5,9 @@ LowFrequencyOscillators allow to smoothly change a value over time.
 import math
 import random
 
-from pypastator.engine.field import Field, StrField
+from pypastator.engine.field import EnumField, Field, StrField
+
+WAVEFORMS = ["sinus", "squarish", "sincos", "saw", "triangle", "random"]
 
 
 class LFO:
@@ -13,13 +15,39 @@ class LFO:
     Basic LFO, sin waveform.
     """
 
-    def __init__(self, destination):
+    def __init__(self, destination, waveform, smoothness=0.6 * 127):
         self.destination = destination
+        self.smoothness = Field(default=max(smoothness, 1))
         self.dest_name = StrField()
         self.rate = Field(default=1)
         self.depth = Field(default=10)
+        self.waveform = EnumField(
+            default=WAVEFORMS.index(waveform), choices=WAVEFORMS, debug=True
+        )
+        self.last_random_time = 0
+        self.last_random_value = 0
+        self.target_value = 0
         self.running = True
         self.value = 0
+
+    @property
+    def waveform_str(self):
+        """
+        Return the name of the waveform.
+        """
+        return self.waveform.get_value()
+
+    def save(self):
+        """
+        Save this LFO's attributes.
+        """
+        return {
+            "waveform": self.waveform.get_value(),
+            "smoothness": self.smoothness.get_value(),
+            "attrname": self.dest_name.get_value(),
+            "depth": self.depth.get_value(),
+            "rate": self.rate.get_value(),
+        }
 
     def reset(self):
         """
@@ -52,121 +80,55 @@ class LFO:
         """
         Get the raw value of the LFO.
         """
+        method_name = f"get_{self.waveform.get_value()}_value"
+        if not hasattr(self, method_name):
+            return 0
+        return getattr(self, method_name)(ticks, rate)
+
+    def get_sinus_value(self, ticks, rate):
+        """
+        Generate a sinus waveform.
+        """
         return math.sin(ticks / rate)
 
+    def get_squarish_value(self, ticks, rate):
+        """
+        Generate the squarish waveform.
+        """
+        smoothness = max(1, self.smoothness.get_value()) / 127
+        return max(min(smoothness, math.sin(ticks / rate)), -smoothness) / smoothness
 
-class SinCoSLFO(LFO):
-    """
-    A combination of a sin and cos twice as fast.
-    """
-
-    def get_value(self, ticks, rate):
+    def get_sincos_value(self, ticks, rate):
+        """
+        Generate the sincos waveform.
+        """
         return (math.sin(ticks / rate) + math.cos(2 * ticks / rate)) / 2
 
-
-class SawLFO(LFO):
-    """
-    A sawtooth waveform.
-    """
-
-    def get_value(self, ticks, rate):
+    def get_saw_value(self, ticks, rate):
+        """
+        Generate the saw waveform.
+        """
         return ((ticks / (2 * math.pi)) % rate) / rate * 2 - 1
 
-
-class TriangleLFO(LFO):
-    """
-    A triangle waveform.
-    """
-
-    def get_value(self, ticks, rate):
+    def get_triangle_value(self, ticks, rate):
+        """
+        Generate the triangle waveform.
+        """
         return abs(((ticks / (2 * math.pi)) % rate) / rate * 2 - 1) * 2 - 1
 
-
-class SquarishLFO(LFO):
-    """
-    Truncated sinwave.
-
-    If smoothness is 1, that's a sinwave.
-    """
-
-    def __init__(self, destination, smoothness=0.6):
-        self.smoothness = max(smoothness, 0.001)
-        super().__init__(destination)
-
-    def get_value(self, ticks, rate):
-        return (
-            max(min(self.smoothness, math.sin(ticks / rate)), -self.smoothness)
-            / self.smoothness
-        )
-
-
-class SquareLFO(SquarishLFO):
-    """
-    Square (smoothness set to its minimal).
-    """
-
-    def __init__(self, destination):
-        super().__init__(destination, smoothness=0)
-
-
-class AlmostSinLFO(SquarishLFO):
-    """
-    Almost sinus (Squarish with smoothness set high).
-    """
-
-    def __init__(self, destination):
-        super().__init__(destination, smoothness=0.8)
-
-
-class RandomLFO(LFO):
-    """
-    Random value, can be smoothed over time to avoid big leaps.
-
-    IDEA: the rate could be randomized too.
-    """
-
-    def __init__(self, destination, smoothness=0):
-        self.smoothness = smoothness
-        super().__init__(destination)
-        self.last_random_time = 0
-        self.last_random_value = 0
-        self.target_value = 0
-
-    def get_value(self, ticks, rate):
+    def get_random_value(self, ticks, rate):
+        """
+        Generate the random waveform.
+        """
         if self.last_random_time == 0 or ticks - rate > self.last_random_time:
             self.target_value = random.random() * 2 - 1
             self.last_random_time = ticks
-        # smoothness 0 -> jump straight at target
-        # smoothness 1 -> will reach target just before new target choice
         elif abs(self.last_random_value - self.target_value) > 0:
+            # smoothness 0 -> jump straight at target
+            # smoothness 1 -> will reach target just before new target choice
+            smoothness = max(1, self.smoothness.get_value()) / 127
             delta = (self.target_value - self.last_random_value) / (
-                (self.last_random_time + (rate * self.smoothness)) - ticks
+                (self.last_random_time + (rate * smoothness)) - ticks
             )
             self.last_random_value += delta
         return self.last_random_value
-
-
-class SmoothRandomLFO(RandomLFO):
-    """
-    Random value, smoothed over time to avoid big leaps.
-    """
-
-    def __init__(self, destination):
-        super().__init__(destination, smoothness=0.7)
-
-
-def get_lfo(destination, waveform="squarish", **kw):
-    """
-    Instantiate required LFO based on the waveform argument.
-    """
-    return {
-        "squarish": SquarishLFO,
-        "square": SquareLFO,
-        "almostsin": AlmostSinLFO,
-        "sinus": LFO,
-        "sincos": SinCoSLFO,
-        "saw": SawLFO,
-        "triangle": TriangleLFO,
-        "random": RandomLFO,
-        "smoothrandom": SmoothRandomLFO,
-    }[waveform](destination, **kw)

@@ -64,6 +64,30 @@ class Labeled(BaseWidget):
             self.label.hide()
         super().hide()
 
+    def get_width(self):
+        """
+        Get this widget's width.
+        """
+        width = super().get_width()
+        if self.label is not None:
+            width += WIDGETS_MARGIN + self.label.get_width()
+        return width
+
+    def move_to(self, new_x, new_y, new_width=None):
+        """
+        Move widget and its label to another position.
+        """
+        self.hide()
+        self.pos_x = new_x
+        self.pos_y = new_y
+        if self.label is not None:
+            self.label.move_to(self.pos_x, new_y)
+            self.pos_x += self.label.width + WIDGETS_MARGIN
+        if new_width is not None:
+            self.width = new_width
+            if self.label is not None:
+                self.width -= self.label.width + WIDGETS_MARGIN
+
     def highlight(self):
         """
         Highlight this widget.

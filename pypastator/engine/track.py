@@ -41,7 +41,7 @@ class Track(WithMenu):
         change = self.engine is not None
         data = {}
         if change:
-            data = self.engine.save()
+            data = self.engine.save(for_reload=True)
             for evt in self.engine.close():
                 self.session.pasta.emit_out_event(evt)
         if engine_type == ENGINE_TYPE_ARP:

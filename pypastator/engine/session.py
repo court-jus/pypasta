@@ -195,7 +195,9 @@ class Session(WithMenu):
         self.selected_track = track_id
         sel_track = self.tracks[self.selected_track]
         sel_track.engine.main_menu.widgets["menu"].set_value(True)
-        sel_track.engine.next_page()
+        if self.get_active_menu() is not True:
+            self.deactivate_active_menu()
+            sel_track.engine.next_page()
 
     def next_page(self, go_back=False):
         """

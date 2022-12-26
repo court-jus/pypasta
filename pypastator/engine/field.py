@@ -193,6 +193,8 @@ class EnumField(Field):
         if value < 0 or value >= len(self.choices):
             return
         self.value = value
+        if self.debug:
+            print(self.callbacks)
         for callback, send_modulation in list(self.callbacks.values()):
             if send_modulation:
                 callback(self.value, self.modulation)

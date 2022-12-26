@@ -70,7 +70,9 @@ class GUI:
         """
         Activate a widget for arrows manipulation.
         """
-        if not self.visible:
+        if not self.visible or (
+            widget_id is not None and widget_id not in self.widgets
+        ):
             return
         if self.active_widget is not None:
             self.widgets[self.active_widget].shade()

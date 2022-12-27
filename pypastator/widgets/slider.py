@@ -29,6 +29,7 @@ class Slider(Labeled):
         """
         Draw this widget on a pygame surface.
         """
+        super().draw()
         brect = pygame.Rect(0, 0, self.width - 2, self.height - 2)
         brect.center = self.rect.center
         txt = self.font.render(str(self.value), True, BLACK)

@@ -27,6 +27,11 @@ class Track(WithMenu):
         self.engine_type = EnumField(choices=ENGINE_TYPES)
         self.engine_type.hook(self.set_type, "track_set_type")
 
+    def handle_tick(self):
+        super().handle_tick()
+        if self.engine is not None:
+            self.engine.handle_tick()
+
     @property
     def engine_type_str(self):
         """
@@ -65,17 +70,21 @@ class Track(WithMenu):
         """
         Handle Midi tick event.
         """
+        if self.main_menu is not None:
+            self.main_menu.midi_tick(timestamp)
+        for menu in self.sub_menus:
+            menu.midi_tick(timestamp)
         if self.engine is not None:
             return self.engine.midi_tick(ticks, timestamp, chord)
         return []
 
-    def handle_click(self, pos):
+    def handle_click(self, pos, button):
         """
         Pass click event to this track's widgets.
         """
-        super().handle_click(pos)
+        super().handle_click(pos, button)
         if self.engine is not None:
-            self.engine.handle_click(pos)
+            self.engine.handle_click(pos, button)
 
     def handle_cc(self, cc_channel, cc_number, cc_value):
         """

@@ -173,6 +173,9 @@ class EngineDetailsGUI(GUI):
             set_text=True,
             value_getter=lambda: self.model.related_to_str,
         )
+        self.widgets[
+            "related_to"
+        ].on_click = lambda v: self.model.track.related_to.increment()
         make_row(
             [
                 self.widgets[widget_name]

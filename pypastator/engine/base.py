@@ -278,9 +278,10 @@ class BaseEngine(WithMenu):
                     + self.chord_number
                     - 1
                 ) % len(scale_notes)
+                note = scale_notes[chord_degree]
                 if degree > max(chord_notes):
                     note += 12
-                notes.append(scale_notes[chord_degree])
+                notes.append(note)
             elif self.related_to.get_value() == "scale":
                 notes.append(scale_notes[(degree - 1) % len(scale_notes)])
         return notes

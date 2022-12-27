@@ -62,8 +62,6 @@ class Pastator:
         elif typ == STOP:
             self.session.stop()
             self.all_sound_off()
-        else:
-            print("Unkown clock event", evt)
 
     def handle_ctrl_in_event(self, evt):
         """
@@ -83,8 +81,6 @@ class Pastator:
             cc_number = data1
             cc_value = data2
             self.session.handle_cc(cc_channel, cc_number, cc_value)
-        else:
-            print("Unkown ctrl event", evt)
 
     def handle_ui_event(self, ui_evt):
         """
@@ -98,7 +94,9 @@ class Pastator:
             else:
                 print("Key", ui_evt)
         elif ui_evt.type == pygame.MOUSEBUTTONDOWN:
-            self.session.handle_click(ui_evt.pos)
+            self.session.handle_click(ui_evt.pos, ui_evt.button)
+        elif ui_evt.type == pygame.MOUSEMOTION:
+            self.session.handle_mouse_move(ui_evt.pos)
 
     def run(self):
         """
@@ -108,6 +106,7 @@ class Pastator:
         while self.running:
             pygame.event.pump()
             self.clock.tick()
+            self.session.handle_tick()
             ui_evts = pygame.event.get()
             for ui_evt in ui_evts:
                 self.handle_ui_event(ui_evt)

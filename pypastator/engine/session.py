@@ -20,6 +20,7 @@ from pypastator.engine.field import EnumField, Field, ListField
 from pypastator.engine.track import Track
 from pypastator.engine.utils import int_to_roman
 from pypastator.widgets.gui.base import WithMenu
+from pypastator.widgets.gui.mouse import MouseGUI
 from pypastator.widgets.gui.session import SessionGUI
 from pypastator.widgets.message import Message
 
@@ -67,6 +68,7 @@ class Session(WithMenu):
         self.tracks = {}
         self.selected_track = None
         self.playing = True
+        self.mouse_menu = None
         self.cc_mode = "menu"
         self.cc_controls = {}
         if "pytest" not in sys.modules:
@@ -74,6 +76,7 @@ class Session(WithMenu):
             self.main_menu = SessionGUI(self, 300)
             self.main_menu.show()
             self.main_menu.activate_widget(self.main_menu.default_widget)
+            self.mouse_menu = MouseGUI(self)
 
     @property
     def scale_str(self):
@@ -169,16 +172,17 @@ class Session(WithMenu):
             json.dump(data, file_pointer, indent=2)
         self.message.say(f"Song [{track_name}] saved as [{filename}]")
 
-    def add_track(self, track_id, data=None):
+    def add_track(self, track_id=None, data=None):
         """
         Add a new track to the session.
         """
+        new_track_id = track_id if track_id is not None else len(self.tracks.keys())
         track_data = data if data is not None else DEFAULT_TRACK
-        track = Track(track_id, self)
+        track = Track(new_track_id, self)
         track.load(track_data)
-        self.tracks[track_id] = track
-        self.message.say(f"Track [{track_id}] added")
-        self.select_track(track_id)
+        self.tracks[new_track_id] = track
+        self.message.say(f"Track [{new_track_id}] added")
+        self.select_track(new_track_id)
 
     def select_track(self, track_id):
         """
@@ -195,9 +199,8 @@ class Session(WithMenu):
         self.selected_track = track_id
         sel_track = self.tracks[self.selected_track]
         sel_track.engine.main_menu.widgets["menu"].set_value(True)
-        if self.get_active_menu() is not True:
-            self.deactivate_active_menu()
-            sel_track.engine.next_page()
+        self.deactivate_active_menu()
+        sel_track.engine.next_page()
 
     def next_page(self, go_back=False):
         """
@@ -235,7 +238,6 @@ class Session(WithMenu):
         """
         Handle Midi tick event.
         """
-        self.message.midi_tick(timestamp)
         if not self.playing:
             return []
         relative_ticks = ticks - self.playing
@@ -261,6 +263,18 @@ class Session(WithMenu):
                 )
             )
         return out_evts
+
+    def handle_tick(self):
+        """
+        Method called every event loop.
+        """
+        super().handle_tick()
+        for track in self.tracks.values():
+            track.handle_tick()
+        if self.message is not None:
+            self.message.handle_tick()
+        if self.mouse_menu is not None:
+            self.mouse_menu.handle_tick()
 
     def _handle_global_cc(self, cc_number, value):
         """
@@ -325,13 +339,22 @@ class Session(WithMenu):
 
         self._handle_global_cc(cc_number, cc_value)
 
-    def handle_click(self, pos):
+    def handle_click(self, pos, button):
         """
         Handle click event based on its position.
         """
-        super().handle_click(pos)
+        super().handle_click(pos, button)
         for track in self.tracks.values():
-            track.handle_click(pos)
+            track.handle_click(pos, button)
+        if self.mouse_menu is not None:
+            self.mouse_menu.handle_click(pos, button)
+
+    def handle_mouse_move(self, _pos):
+        """
+        Handle mouse moves.
+        """
+        if self.mouse_menu is not None:
+            self.mouse_menu.show()
 
     def stop(self):
         """

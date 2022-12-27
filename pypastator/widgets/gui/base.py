@@ -31,6 +31,13 @@ class GUI:
         if not self.hideable:
             self.show()
 
+    def handle_tick(self):
+        """
+        Called every frame.
+        """
+        if self.visible:
+            self.redraw()
+
     def init_widgets(self):
         """
         Initialize GUI's widgets.
@@ -55,6 +62,15 @@ class GUI:
             widget.hide()
             widget.unhook()
         self.visible = False
+
+    def redraw(self):
+        """
+        Refresh the display.
+        """
+        if self.model is None or not self.visible:
+            return
+        for widget in self.widgets.values():
+            widget.redraw()
 
     def show(self):
         """
@@ -111,14 +127,14 @@ class GUI:
         if isinstance(field, Field):
             field.increment(increment)
 
-    def handle_click(self, pos):
+    def handle_click(self, pos, button):
         """
         Handle click events.
         """
         if not self.visible:
             return
         for widget in self.widgets.values():
-            widget.handle_click(pos)
+            widget.handle_click(pos, button)
 
     def handle_cc(self, cc_channel, cc_number, cc_value):
         """
@@ -148,6 +164,15 @@ class WithMenu:
         self.main_menu = None
         self.sub_menus = []
 
+    def handle_tick(self):
+        """
+        Called every frame.
+        """
+        if self.main_menu is not None:
+            self.main_menu.handle_tick()
+        for submenu in self.sub_menus:
+            submenu.handle_tick()
+
     def hide_all_menus(self):
         """
         Hide all menus.
@@ -168,14 +193,14 @@ class WithMenu:
         for menu in self.sub_menus:
             menu.close()
 
-    def handle_click(self, pos):
+    def handle_click(self, pos, button):
         """
         Pass click event to this track's widgets.
         """
         if self.main_menu is not None:
-            self.main_menu.handle_click(pos)
+            self.main_menu.handle_click(pos, button)
         for menu in self.sub_menus:
-            menu.handle_click(pos)
+            menu.handle_click(pos, button)
 
     def handle_cc(self, cc_channel, cc_number, cc_value):
         """

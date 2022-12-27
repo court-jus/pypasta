@@ -32,9 +32,10 @@ class Label(BaseWidget):
         """
         Draw this widget to pygame surface.
         """
+        super().draw()
         fcolor = self.fcolor_selected if self.value else self.fcolor
         bcolor = self.bcolor_selected if self.value else self.bcolor
-        msg_image = self.font.render(self.text, True, fcolor)
+        msg_image = self.get_font().render(self.text, True, fcolor)
         msg_image_rect = msg_image.get_rect()
         msg_image_rect.center = self.rect.center
         brect = pygame.Rect(0, 0, self.width - 2, self.height - 2)

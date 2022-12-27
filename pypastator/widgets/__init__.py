@@ -14,6 +14,9 @@ from pypastator.constants import (
     FONT_NAME,
     FONT_SIZE,
     LIGHT_GRAY,
+    MESSAGE_FONT_SIZE,
+    MOUSE_WHEEL_DOWN,
+    MOUSE_WHEEL_UP,
     SMALL_FONT_NAME,
     SMALL_FONT_SIZE,
     WIDGETS_MARGIN,
@@ -25,6 +28,12 @@ class BaseWidget:
     """
     Base class for all widgets.
     """
+
+    pygame.font.init()
+    font = pygame.font.Font(FONT_NAME, FONT_SIZE)
+    small_font = pygame.font.Font(SMALL_FONT_NAME, SMALL_FONT_SIZE)
+    msg_font = pygame.font.Font(FONT_NAME, MESSAGE_FONT_SIZE)
+    emoji_font = pygame.font.Font(EMOJI_FONT_NAME, EMOJI_FONT_SIZE)
 
     def __init__(
         self,
@@ -58,11 +67,14 @@ class BaseWidget:
             self.pos_y + int(self.height / 2),
         )
         self.font_size = font_size
-        self.font = pygame.font.Font(FONT_NAME, self.font_size)
-        self.small_font = pygame.font.Font(SMALL_FONT_NAME, SMALL_FONT_SIZE)
-        self.emoji_font = pygame.font.Font(EMOJI_FONT_NAME, EMOJI_FONT_SIZE)
         self.widget_init(*a, **kw)
         self.set_value(value)
+
+    def get_font(self):
+        """
+        Gather the font to be used.
+        """
+        return self.font
 
     def widget_init(self):
         """
@@ -75,7 +87,7 @@ class BaseWidget:
         """
         return 127
 
-    def handle_click(self, pos):
+    def handle_click(self, pos, button):
         """
         Handle click events.
         """
@@ -84,8 +96,17 @@ class BaseWidget:
             and self.rect.collidepoint(pos)
             and self.on_click is not None
         ):
-            val = self.get_click_value(pos)
-            self.on_click(val)
+            if button == MOUSE_WHEEL_UP and len(self.hooked_to.keys()) == 1:
+                field = getattr(*list(self.hooked_to.values())[0])
+                if isinstance(field, Field):
+                    field.increment()
+            elif button == MOUSE_WHEEL_DOWN and len(self.hooked_to.keys()) == 1:
+                field = getattr(*list(self.hooked_to.values())[0])
+                if isinstance(field, Field):
+                    field.increment(-1)
+            else:
+                val = self.get_click_value(pos)
+                self.on_click(val)
 
     def hook(self, instance, attrname, hook_name, set_text=False, value_getter=None):
         """
@@ -160,8 +181,9 @@ class BaseWidget:
         """
         Hide this widget.
         """
+        surf = pygame.display.get_surface()
+        surf.fill(BLACK, self.rect)
         self.visible = False
-        pygame.display.get_surface().fill(BLACK, self.rect)
 
     def get_width(self):
         """
@@ -190,6 +212,12 @@ class BaseWidget:
             self.pos_y + int(self.height / 2),
         )
         self.show()
+
+    def redraw(self):
+        """
+        Refresh the display.
+        """
+        self.draw()
 
     def draw(self):
         """

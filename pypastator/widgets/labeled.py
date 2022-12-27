@@ -19,6 +19,7 @@ class Labeled(BaseWidget):
         """
         Draw this widget on a pygame surface.
         """
+        super().draw()
         if self.label is not None:
             self.label.draw()
 

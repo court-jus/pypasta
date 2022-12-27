@@ -17,6 +17,7 @@ class Led(Labeled):
         self.emoji = None
         self.bcolor_on = GREEN
         self.bcolor_off = RED
+        self.debug = False
         kw.setdefault("w", LED_SIZE)
         kw.setdefault("h", LED_SIZE)
         super().__init__(*a, **kw)
@@ -28,9 +29,13 @@ class Led(Labeled):
     ):
         self.label_in = kw.pop("label_in", None)
         self.emoji = kw.pop("emoji", None)
+        self.debug = kw.pop("debug", False)
+        self.bcolor_on = kw.pop("bcolor_on", GREEN)
+        self.bcolor_off = kw.pop("bcolor_off", RED)
         super().widget_init(*a, **kw)
 
     def draw(self):
+        super().draw()
         radius = LED_SIZE / 2
         bcolor = self.bcolor_on if self.value else self.bcolor_off
         fcolor = BLACK if self.value else self.fcolor
@@ -47,4 +52,3 @@ class Led(Labeled):
             msg_image_rect = msg_image.get_rect()
             msg_image_rect.center = self.rect.center
             pygame.display.get_surface().blit(msg_image, msg_image_rect)
-        super().draw()

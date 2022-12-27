@@ -23,6 +23,7 @@ class Knob(Labeled):
         """
         Draw the knob to a pygame surface.
         """
+        super().draw()
         radius = KNOB_SIZE / 2
         surf = pygame.display.get_surface()
         surf.fill(BLACK, self.rect)

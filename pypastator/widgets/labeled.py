@@ -87,6 +87,7 @@ class Labeled(BaseWidget):
             self.width = new_width
             if self.label is not None:
                 self.width -= self.label.width + WIDGETS_MARGIN
+        self.apply_new_pos()
 
     def highlight(self):
         """

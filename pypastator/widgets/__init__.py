@@ -178,6 +178,7 @@ class BaseWidget:
         self.pos_y = new_y
         if new_width is not None:
             self.width = new_width
+        self.apply_new_pos()
 
     def apply_new_pos(self):
         """

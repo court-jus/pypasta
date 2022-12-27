@@ -128,7 +128,7 @@ class EngineDetailsGUI(GUI):
     def __init__(self, *a, **kw):
         super().__init__(*a, **kw)
         self.default_widget = "midi_channel"
-        self.activable_widgets = ["midi_channel", "engine_type"]
+        self.activable_widgets = ["midi_channel", "engine_type", "related_to"]
 
     def init_widgets(self):
         """

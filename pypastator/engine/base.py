@@ -27,6 +27,7 @@ LOADABLE_KEYS = (
     "midi_channel",
     "active",
     "accentuation",
+    "related_to",
 )
 
 
@@ -260,21 +261,40 @@ class BaseEngine(WithMenu):
             center = 127 - delta
         return (center - delta, center + delta)
 
-    def get_notes(self):
+    def get_candidate_notes(self):
         """
-        Get playable notes.
+        Depending on the engine, get the candidate 'playable' notes.
         """
         pattern = self.get_pattern()
         scale_notes = self.track.session.scale.get_value()
         chord_notes = self.track.session.current_chord.get_value()
-        lowest, highest = self.get_tessitura()
         notes = []
         for degree in pattern:
-            octave = self.pitch.get_value() // 12
-            scale_degree = (
-                chord_notes[(degree - 1) % len(chord_notes)] - 1 + self.chord_number - 1
-            ) % len(scale_notes)
-            note = scale_notes[scale_degree] + 12 * octave
+            if self.related_to.get_value() == "chord":
+                chord_degree = (
+                    chord_notes[(degree - 1) % len(chord_notes)] - 1 + self.chord_number - 1
+                ) % len(scale_notes)
+                notes.append(scale_notes[chord_degree])
+            elif self.related_to.get_value() == "scale":
+                notes.append(scale_notes[degree % len(scale_notes)])
+        return notes
+
+    def get_notes(self):
+        """
+        Get playable notes.
+        """
+        candidates = self.get_candidate_notes()
+        return self.transpose_notes(candidates)
+
+    def transpose_notes(self, candidates):
+        """
+        Transpose notes based on pitch and gravity.
+        """
+        chord_notes = self.track.session.current_chord.get_value()
+        lowest, highest = self.get_tessitura()
+        notes = []
+        for candidate in candidates:
+            note = candidate + 12 * self.pitch.get_value() // 12
             if note < lowest:
                 note += (((lowest - note) // 12) + 1) * 12
             if note > highest:
@@ -283,8 +303,8 @@ class BaseEngine(WithMenu):
                 # note is outside of our tessitura, find the closest equivalent
                 if lowest - note > (note + 12 - lowest):
                     note += 12
-            if degree > max(chord_notes):
-                octave += 1
+            if candidate > max(chord_notes):
+                note += 12
             notes.append(int(note))
         # Now spread the notes into the whole allowed tessitura
         return spread_notes(notes, lowest, highest)

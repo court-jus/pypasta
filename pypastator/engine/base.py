@@ -48,7 +48,7 @@ class BaseEngine(WithMenu):
         self.midi_channel = Field(min_value=0, max_value=15)
         self.active = BooleanField(default=True)
         self.accentuation = Field(default=ACCENT, smooth=True)
-        self.related_to = EnumField(choices=["scale", "chord"])
+        self.related_to = EnumField(choices=["scale", "chord"], default=1)
         self.lfos = []
         # Internal stuff
         self.pos = Field(max_value=None)
@@ -274,9 +274,11 @@ class BaseEngine(WithMenu):
                 chord_degree = (
                     chord_notes[(degree - 1) % len(chord_notes)] - 1 + self.chord_number - 1
                 ) % len(scale_notes)
+                if degree > max(chord_notes):
+                    note += 12
                 notes.append(scale_notes[chord_degree])
             elif self.related_to.get_value() == "scale":
-                notes.append(scale_notes[degree % len(scale_notes)])
+                notes.append(scale_notes[(degree - 1) % len(scale_notes)])
         return notes
 
     def get_notes(self):
@@ -284,17 +286,18 @@ class BaseEngine(WithMenu):
         Get playable notes.
         """
         candidates = self.get_candidate_notes()
-        return self.transpose_notes(candidates)
+        transposed = self.transpose_notes(candidates)
+        lowest, highest = self.get_tessitura()
+        return spread_notes(transposed, lowest, highest)
 
     def transpose_notes(self, candidates):
         """
         Transpose notes based on pitch and gravity.
         """
-        chord_notes = self.track.session.current_chord.get_value()
         lowest, highest = self.get_tessitura()
         notes = []
         for candidate in candidates:
-            note = candidate + 12 * self.pitch.get_value() // 12
+            note = candidate + 12 * (self.pitch.get_value() // 12)
             if note < lowest:
                 note += (((lowest - note) // 12) + 1) * 12
             if note > highest:
@@ -303,11 +306,9 @@ class BaseEngine(WithMenu):
                 # note is outside of our tessitura, find the closest equivalent
                 if lowest - note > (note + 12 - lowest):
                     note += 12
-            if candidate > max(chord_notes):
-                note += 12
             notes.append(int(note))
         # Now spread the notes into the whole allowed tessitura
-        return spread_notes(notes, lowest, highest)
+        return notes
 
     def get_vel(self, tick):
         """

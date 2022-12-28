@@ -2,6 +2,7 @@
   "tracks": {
     "0": {
       "type": "arp",
+      "lfos": [],
       "pitch": 39,
       "gravity": 12,
       "rythm": 105,
@@ -9,10 +10,12 @@
       "basevel": 71,
       "midi_channel": 11,
       "active": 0,
-      "accentuation": 1.5
+      "accentuation": 1.5,
+      "related_to": 1
     },
     "1": {
       "type": "strum",
+      "lfos": [],
       "pitch": 62,
       "gravity": 12,
       "rythm": 63,
@@ -20,10 +23,12 @@
       "basevel": 78,
       "midi_channel": 10,
       "active": true,
-      "accentuation": 1.5
+      "accentuation": 1.5,
+      "related_to": 1
     },
     "2": {
       "type": "arp",
+      "lfos": [],
       "pitch": 84,
       "gravity": 37,
       "rythm": 55,
@@ -31,18 +36,11 @@
       "basevel": 100,
       "midi_channel": 12,
       "active": true,
-      "accentuation": 1.5
+      "accentuation": 1.5,
+      "related_to": 1
     },
     "3": {
       "type": "arp",
-      "pitch": 65,
-      "gravity": 49,
-      "rythm": 60,
-      "pattern": 127,
-      "basevel": 101,
-      "midi_channel": 13,
-      "active": true,
-      "accentuation": 1.5,
       "lfos": [
         {
           "waveform": "random",
@@ -65,10 +63,20 @@
           "depth": 50,
           "rate": 18
         }
-      ]
+      ],
+      "pitch": 65,
+      "gravity": 49,
+      "rythm": 60,
+      "pattern": 127,
+      "basevel": 101,
+      "midi_channel": 13,
+      "active": true,
+      "accentuation": 1.5,
+      "related_to": 1
     },
     "4": {
       "type": "arp",
+      "lfos": [],
       "pitch": 45,
       "gravity": 46,
       "rythm": 107,
@@ -76,7 +84,8 @@
       "basevel": 96,
       "midi_channel": 13,
       "active": true,
-      "accentuation": 1.5
+      "accentuation": 1.5,
+      "related_to": 1
     }
   },
   "scale_name": "minor",

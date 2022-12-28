@@ -162,8 +162,8 @@ CHORDS = [
     [1, 3, 6],
     [1, 3, 6, 7],
 ]
-ENGINE_TYPE_ARP, ENGINE_TYPE_CHORD, ENGINE_TYPE_STRUM = (0, 1, 2)
-ENGINE_TYPES = ["arp", "chord", "strum"]
+ENGINE_TYPE_ARP, ENGINE_TYPE_CHORD, ENGINE_TYPE_STRUM, ENGINE_TYPE_MELOTOR = (0, 1, 2, 3)
+ENGINE_TYPES = ["arp", "chord", "strum", "melotor"]
 
 # Drum notes for MC-101
 KICK = 36

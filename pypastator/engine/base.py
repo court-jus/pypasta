@@ -248,17 +248,20 @@ class BaseEngine(WithMenu):
             int(self.pattern.get_value() * (len(NOTE_PATTERNS) - 1) / 127)
         ]
 
-    def get_tessitura(self):
+    def get_tessitura(self, centered=True):
         """
         Get the lowest/highest playable notes.
         """
         delta = int(self.gravity.get_value() / 4)
-        center = self.pitch.get_value()
-        if center - delta < 0:
-            center = delta
-        if center + delta > 127:
-            center = 127 - delta
-        return (center - delta, center + delta)
+        pitch = self.pitch.get_value()
+        if centered:
+            if pitch - delta < 0:
+                pitch = delta
+            if pitch + delta > 127:
+                pitch = 127 - delta
+            return (pitch - delta, pitch + delta)
+        else:
+            return (pitch, pitch + delta * 2)
 
     def get_candidate_notes(self):
         """
@@ -295,11 +298,11 @@ class BaseEngine(WithMenu):
         lowest, highest = self.get_tessitura()
         return spread_notes(transposed, lowest, highest)
 
-    def transpose_notes(self, candidates):
+    def transpose_notes(self, candidates, centered=True):
         """
         Transpose notes based on pitch and gravity.
         """
-        lowest, highest = self.get_tessitura()
+        lowest, highest = self.get_tessitura(centered)
         notes = []
         for candidate in candidates:
             note = candidate + 12 * (self.pitch.get_value() // 12)

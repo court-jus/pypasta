@@ -21,9 +21,7 @@ class LFO:
         self.dest_name = StrField()
         self.rate = Field(default=1)
         self.depth = Field(default=10)
-        self.waveform = EnumField(
-            default=WAVEFORMS.index(waveform), choices=WAVEFORMS, debug=True
-        )
+        self.waveform = EnumField(default=WAVEFORMS.index(waveform), choices=WAVEFORMS)
         self.last_random_time = 0
         self.last_random_value = 0
         self.target_value = 0
@@ -127,8 +125,9 @@ class LFO:
             # smoothness 0 -> jump straight at target
             # smoothness 1 -> will reach target just before new target choice
             smoothness = max(1, self.smoothness.get_value()) / 127
-            delta = (self.target_value - self.last_random_value) / (
-                (self.last_random_time + (rate * smoothness)) - ticks
-            )
-            self.last_random_value += delta
+            if (self.last_random_time + (rate * smoothness)) - ticks != 0:
+                delta = (self.target_value - self.last_random_value) / (
+                    (self.last_random_time + (rate * smoothness)) - ticks
+                )
+                self.last_random_value += delta
         return self.last_random_value

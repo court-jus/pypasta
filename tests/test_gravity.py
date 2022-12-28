@@ -66,22 +66,34 @@ def test_tessitura_calculation(engine, pitch, gravity, lower, higher):
     engine.gravity.set_value(gravity, force=True)
     assert engine.get_tessitura() == (lower, higher)
 
+
 @pytest.mark.parametrize(
-    "pitch, gravity, notes",
+    "pitch, gravity, related_to, notes",
     [
-        (60, 0, [0, 4, 7]),
-        (60, 24, [0, 4, 7]),
-        (0, 24, [0, 4, 7]),
-        (3, 48, [0, 4, 7]),
-        (125, 20, [0, 4, 7]),
+        (60, 0, 0, [0, 2, 4]),
+        (60, 24, 0, [0, 2, 4]),
+        (0, 24, 0, [0, 2, 4]),
+        (3, 48, 0, [0, 2, 4]),
+        (125, 20, 0, [0, 2, 4]),
+        (60, 0, 1, [0, 4, 7]),
+        (60, 24, 1, [0, 4, 7]),
+        (0, 24, 1, [0, 4, 7]),
+        (3, 48, 1, [0, 4, 7]),
+        (125, 20, 1, [0, 4, 7]),
+        (60, 0, 2, [1, 2, 3]),
+        (60, 24, 2, [1, 2, 3]),
+        (0, 24, 2, [1, 2, 3]),
+        (3, 48, 2, [1, 2, 3]),
+        (125, 20, 2, [1, 2, 3]),
     ],
 )
-def test_candidates(engine, pitch, gravity, notes):
+def test_candidates(engine, pitch, gravity, related_to, notes):
     """
     Test the candidate notes returned, they do NOT depend on pitch nor gravity.
     """
     engine.pitch.set_value(pitch, force=True)
     engine.gravity.set_value(gravity, force=True)
+    engine.related_to.set_value(related_to, force=True)
     assert engine.get_candidate_notes() == notes
 
 
@@ -108,10 +120,10 @@ def test_notes_choice(engine, pitch, gravity, notes):
     "pitch, gravity, in_notes, out_notes",
     [
         (60, 0, [0, 4, 7], [60, 64, 55]),
-        (60, 24,[0, 4, 7], [60, 64, 55]),
+        (60, 24, [0, 4, 7], [60, 64, 55]),
         (0, 24, [0, 4, 7], [0, 4, 7]),
         (3, 48, [0, 4, 7], [0, 4, 7]),
-        (125, 20,[0, 4, 7], [120, 124, 127]),
+        (125, 20, [0, 4, 7], [120, 124, 127]),
     ],
 )
 def test_transpose_notes(engine, pitch, gravity, in_notes, out_notes):

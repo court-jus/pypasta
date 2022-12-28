@@ -48,7 +48,7 @@ class BaseEngine(WithMenu):
         self.midi_channel = Field(min_value=0, max_value=15)
         self.active = BooleanField(default=True)
         self.accentuation = Field(default=ACCENT, smooth=True)
-        self.related_to = EnumField(choices=["scale", "chord"], default=1)
+        self.related_to = EnumField(choices=["scale", "chord", "static"], default=1)
         self.lfos = []
         # Internal stuff
         self.pos = Field(max_value=None)
@@ -111,7 +111,6 @@ class BaseEngine(WithMenu):
         if "visible_menu" in data:
             self.sub_menus[data["visible_menu"]].show()
             if "active_widget" in data:
-                print("activate because load menus")
                 self.sub_menus[data["visible_menu"]].activate_widget(
                     data["active_widget"]
                 )
@@ -265,6 +264,8 @@ class BaseEngine(WithMenu):
         """
         Depending on the engine, get the candidate 'playable' notes.
         """
+        if self.related_to.get_value() == "static":
+            return [self.pitch.get_value()]
         pattern = self.get_pattern()
         scale_notes = self.track.session.scale.get_value()
         chord_notes = self.track.session.current_chord.get_value()
@@ -272,7 +273,10 @@ class BaseEngine(WithMenu):
         for degree in pattern:
             if self.related_to.get_value() == "chord":
                 chord_degree = (
-                    chord_notes[(degree - 1) % len(chord_notes)] - 1 + self.chord_number - 1
+                    chord_notes[(degree - 1) % len(chord_notes)]
+                    - 1
+                    + self.chord_number
+                    - 1
                 ) % len(scale_notes)
                 if degree > max(chord_notes):
                     note += 12

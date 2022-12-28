@@ -105,11 +105,9 @@ class GUI:
         """
         if not self.visible:
             return
-        print("Widget increment", self.active_widget, "on", self.model)
         if self.active_widget is None or self.model is None:
             return
         field = getattr(self.model, self.active_widget)
-        print("  Field is", field)
         if isinstance(field, Field):
             field.increment(increment)
 

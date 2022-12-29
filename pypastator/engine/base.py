@@ -9,6 +9,7 @@ from pypastator.constants import (
     ACCENT,
     NOTE_PATTERNS,
     RYTHM_PATTERNS,
+    THIRTYSECOND,
     WIDGET_LINE,
     WIDGETS_MARGIN,
 )
@@ -161,15 +162,15 @@ class BaseEngine(WithMenu):
         """
         Get str representation of the rythmic pattern.
 
-        The representation uses 'o' and '.', for example a simple
-        4/4 rythm will be presented as:
+        The representation uses 'o' and '.', each character is a thirty-second note
+        for example a simple 4/4 rythm will be presented as:
 
-        o...o...o...o...
+        o.......o.......o.......o.......
         """
         rpat = self.get_rythm_pattern()
-        if not all(int(r / 6) == r / 6 for r in rpat):
+        if not all(int(r / THIRTYSECOND) == r / THIRTYSECOND for r in rpat):
             return str()
-        rpat = [int(r / 6) for r in rpat]
+        rpat = [int(r / THIRTYSECOND) for r in rpat]
         return "".join(["o" + ("." * (r - 1) if r > 1 else "") for r in rpat])
 
     @property

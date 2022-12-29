@@ -61,7 +61,8 @@ MOUSE_WHEEL_DOWN = 5
 
 # Melodic constants
 # Durations
-SIXTEENTH = 6
+THIRTYSECOND = 3
+SIXTEENTH = 2 * THIRTYSECOND
 DSIXTEENTH = SIXTEENTH * 1.5
 EIGHTH = 12
 DEIGHTH = EIGHTH * 1.5
@@ -76,6 +77,7 @@ DEFAULT_STRUMMING = 3
 
 # Patterns
 # Those number represent positions in the chord
+#  (or in the scale if related_to is set to "scale")
 # For example, in a triad:
 # - 1 is the root
 # - 2 is the third

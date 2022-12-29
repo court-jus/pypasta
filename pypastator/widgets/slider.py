@@ -20,16 +20,14 @@ class Slider(Labeled):
         kw.setdefault("w", SLIDER_WIDTH)
         super().__init__(*a, **kw)
 
-    def widget_init(self, *a, **kw):
+    def widget_init(self, **kw):
         self.ratio = kw.pop("ratio", 128)
         self.stripes = kw.pop("stripes", False)
-        super().widget_init(*a, **kw)
 
     def draw(self):
         """
         Draw this widget on a pygame surface.
         """
-        super().draw()
         brect = pygame.Rect(0, 0, self.width - 2, self.height - 2)
         brect.center = self.rect.center
         txt = self.font.render(str(self.value), True, BLACK)
@@ -60,7 +58,6 @@ class Slider(Labeled):
             pygame.draw.circle(surf, GREEN, (line_pos, self.rect.bottom - 3), 3)
         surf.fill(self.fcolor, cursor)
         surf.blit(txt, txtrect)
-        super().draw()
 
     def get_click_value(self, pos):
         """

@@ -482,3 +482,30 @@ class LFOGUI(GUI):
             lfo_number = active_widget.split(":")[1]
             attrname = active_widget.split(":")[2]
             self.apply_increment(lfo_number, attrname, increment)
+
+
+class MelotorGUI(GUI):
+    """
+    GUI to manage Melotor.
+    """
+
+    def __init__(self, *a, **kw):
+        super().__init__(*a, **kw)
+        self.default_widget = "first"
+        self.activable_widgets = [
+            "first",
+        ]
+
+    def init_widgets(self):
+        """
+        Initialize widgets.
+        """
+        pos_y = self.pos_y
+        self.widgets["separator"] = Separator(text="Melotor", y=pos_y, visible=False)
+        pos_y += WIDGET_LINE + WIDGETS_MARGIN
+        self.widgets["first"] = Label(text="1", visible=False)
+        make_row([self.widgets["first"]], pos_y=pos_y)
+
+    def show(self):
+        print("show melotor menu")
+        super().show()

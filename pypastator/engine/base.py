@@ -17,7 +17,12 @@ from pypastator.engine.field import BooleanField, EnumField, Field
 from pypastator.engine.lfo import LFO
 from pypastator.engine.utils import spread_notes
 from pypastator.widgets.gui.base import WithMenu
-from pypastator.widgets.gui.engine import LFOGUI, EngineDetailsGUI, MainEngineGUI
+from pypastator.widgets.gui.engine import (
+    LFOGUI,
+    EngineDetailsGUI,
+    MainEngineGUI,
+    MelotorGUI,
+)
 
 LOADABLE_KEYS = (
     "pitch",
@@ -70,8 +75,8 @@ class BaseEngine(WithMenu):
         pos_y += WIDGET_LINE * 2 + WIDGETS_MARGIN  # Size of the session menu
         details = EngineDetailsGUI(self, pos_y=pos_y)
         self.sub_menus.append(details)
-        lfos = LFOGUI(self, pos_y=pos_y)
-        self.sub_menus.append(lfos)
+        self.sub_menus.append(LFOGUI(self, pos_y=pos_y))
+        self.sub_menus.append(MelotorGUI(self, pos_y=pos_y))
 
     def next_page(self, go_back=False):
         """

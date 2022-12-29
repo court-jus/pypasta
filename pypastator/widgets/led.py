@@ -24,7 +24,6 @@ class Led(Labeled):
 
     def widget_init(
         self,
-        *a,
         **kw,
     ):
         self.label_in = kw.pop("label_in", None)
@@ -32,10 +31,8 @@ class Led(Labeled):
         self.debug = kw.pop("debug", False)
         self.bcolor_on = kw.pop("bcolor_on", GREEN)
         self.bcolor_off = kw.pop("bcolor_off", RED)
-        super().widget_init(*a, **kw)
 
     def draw(self):
-        super().draw()
         radius = LED_SIZE / 2
         bcolor = self.bcolor_on if self.value else self.bcolor_off
         fcolor = BLACK if self.value else self.fcolor
@@ -52,3 +49,9 @@ class Led(Labeled):
             msg_image_rect = msg_image.get_rect()
             msg_image_rect.center = self.rect.center
             pygame.display.get_surface().blit(msg_image, msg_image_rect)
+
+    def hide(self):
+        radius = LED_SIZE / 2
+        surf = pygame.display.get_surface()
+        pygame.draw.circle(surf, BLACK, self.rect.center, radius)
+        super().hide()

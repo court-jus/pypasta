@@ -67,7 +67,7 @@ class BaseWidget:
             self.pos_y + int(self.height / 2),
         )
         self.font_size = font_size
-        self.widget_init(*a, **kw)
+        self.widget_init(**kw)
         self.set_value(value)
 
     def get_font(self):
@@ -76,7 +76,7 @@ class BaseWidget:
         """
         return self.font
 
-    def widget_init(self):
+    def widget_init(self, **_kw):
         """
         Widget specific init code, should be overriden when needed.
         """
@@ -229,6 +229,7 @@ class BaseWidget:
         """
         Draw this widget on a pygame surface.
         """
+        raise NotImplementedError
 
     def highlight(self):
         """

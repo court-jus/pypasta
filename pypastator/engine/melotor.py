@@ -14,6 +14,7 @@ class Melotor(BaseArp):
     """
     Melotor Engine.
     """
+
     def __init__(self, track):
         self.weights = ListField(default=[10, 2, 4, 3, 8, 6, 8, 5, 5, 0, 3, 0, 2])
         super().__init__(track)
@@ -26,7 +27,9 @@ class Melotor(BaseArp):
         choices = []
         for degree, weight in enumerate(self.weights.get_value()):
             octave = degree // len(scale_notes)
-            choices.extend([scale_notes[degree % len(scale_notes)] + octave * 12] * weight)
+            choices.extend(
+                [scale_notes[degree % len(scale_notes)] + octave * 12] * weight
+            )
         return choices
 
     def get_candidate_notes(self):

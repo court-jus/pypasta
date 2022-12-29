@@ -23,7 +23,6 @@ class Knob(Labeled):
         """
         Draw the knob to a pygame surface.
         """
-        super().draw()
         radius = KNOB_SIZE / 2
         surf = pygame.display.get_surface()
         surf.fill(BLACK, self.rect)
@@ -40,7 +39,6 @@ class Knob(Labeled):
             dest_x = math.cos(origin_line_angle) * (radius - 3) + self.rect.center[0]
             dest_y = math.sin(origin_line_angle) * (radius - 3) + self.rect.center[1]
             pygame.draw.circle(surf, GREEN, (dest_x, dest_y), 3)
-        super().draw()
 
     def get_click_value(self, pos):
         """

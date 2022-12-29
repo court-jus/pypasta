@@ -19,20 +19,18 @@ class Label(BaseWidget):
         kw.setdefault("font_size", FONT_SIZE)
         super().__init__(*a, **kw)
 
-    def widget_init(self, *a, **kw):
+    def widget_init(self, **kw):
         """
         Widget specific init code.
         """
         self.text = kw.pop("text", None)
         self.fcolor_selected = kw.pop("fcolor_selected", GREEN)
         self.bcolor_selected = kw.pop("bcolor_selected", DARK_GRAY)
-        super().widget_init(*a, **kw)
 
     def draw(self):
         """
         Draw this widget to pygame surface.
         """
-        super().draw()
         fcolor = self.fcolor_selected if self.value else self.fcolor
         bcolor = self.bcolor_selected if self.value else self.bcolor
         msg_image = self.get_font().render(self.text, True, fcolor)

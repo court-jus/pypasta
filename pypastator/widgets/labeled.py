@@ -22,10 +22,11 @@ class Labeled(BaseWidget):
         if self.label is not None:
             self.label.draw()
 
-    def widget_init(self, label=None):
+    def widget_init(self, **kw):
         """
         Init code specific to this widget.
         """
+        label = kw.get("label", None)
         if label:
             self.label = Label(
                 text=label,
@@ -94,11 +95,13 @@ class Labeled(BaseWidget):
         Highlight this widget.
         """
         if self.label is not None:
-            self.label.set_value(True)
+            self.label.highlight()
+        super().highlight()
 
     def shade(self):
         """
         Remove highlighting from this widget.
         """
         if self.label is not None:
-            self.label.set_value(False)
+            self.label.shade()
+        super().shade()

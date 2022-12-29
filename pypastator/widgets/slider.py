@@ -5,7 +5,7 @@ Shows its value inside.
 """
 import pygame
 
-from pypastator.constants import BLACK, GREEN, SLIDER_WIDTH
+from pypastator.constants import BLACK, DARK_GRAY, GREEN, SLIDER_WIDTH
 from pypastator.widgets.labeled import Labeled
 
 
@@ -17,17 +17,23 @@ class Slider(Labeled):
     def __init__(self, *a, **kw):
         self.ratio = None
         self.stripes = None
+        self.fcolor_selected = None
+        self.bcolor_selected = None
         kw.setdefault("w", SLIDER_WIDTH)
         super().__init__(*a, **kw)
 
     def widget_init(self, **kw):
         self.ratio = kw.pop("ratio", 128)
         self.stripes = kw.pop("stripes", False)
+        self.fcolor_selected = kw.pop("fcolor_selected", GREEN)
+        self.bcolor_selected = kw.pop("bcolor_selected", DARK_GRAY)
 
     def draw(self):
         """
         Draw this widget on a pygame surface.
         """
+        fcolor = self.fcolor_selected if self.selected else self.fcolor
+        bcolor = self.bcolor_selected if self.selected else self.bcolor
         brect = pygame.Rect(0, 0, self.width - 2, self.height - 2)
         brect.center = self.rect.center
         txt = self.font.render(str(self.value), True, BLACK)
@@ -40,14 +46,14 @@ class Slider(Labeled):
             self.rect.center[1],
         )
         surf = pygame.display.get_surface()
-        surf.fill(self.fcolor, self.rect)
-        surf.fill(self.bcolor, brect)
+        surf.fill(fcolor, self.rect)
+        surf.fill(bcolor, brect)
         if self.stripes:
             for i in range(self.ratio):
                 line_pos = int(cell_size * i + self.pos_x + 0.5 * cell_size)
                 pygame.draw.line(
                     surf,
-                    self.fcolor,
+                    fcolor,
                     (line_pos, self.rect.top),
                     (line_pos, self.rect.bottom - 1),
                 )
@@ -56,7 +62,7 @@ class Slider(Labeled):
                 (self.value - self.modulation) * self.width / self.ratio
             )
             pygame.draw.circle(surf, GREEN, (line_pos, self.rect.bottom - 3), 3)
-        surf.fill(self.fcolor, cursor)
+        surf.fill(fcolor, cursor)
         surf.blit(txt, txtrect)
 
     def get_click_value(self, pos):

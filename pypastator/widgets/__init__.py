@@ -19,7 +19,6 @@ from pypastator.constants import (
     MOUSE_WHEEL_UP,
     SMALL_FONT_NAME,
     SMALL_FONT_SIZE,
-    WIDGETS_MARGIN,
 )
 from pypastator.engine.field import Field
 
@@ -37,7 +36,6 @@ class BaseWidget:
 
     def __init__(
         self,
-        *a,
         fcolor=LIGHT_GRAY,
         bcolor=DARK_GRAY,
         w=BASE_WIDGET_WIDTH,
@@ -57,6 +55,7 @@ class BaseWidget:
         self.rect = None
         self.text = None
         self.value = value
+        self.selected = False
         self.modulation = 0
         self.pos_x, self.pos_y = x, y
         self.width, self.height = w, h
@@ -235,8 +234,12 @@ class BaseWidget:
         """
         Highlight this widget.
         """
+        self.selected = True
+        self.draw()
 
     def shade(self):
         """
         Remove highlighting from this widget.
         """
+        self.selected = False
+        self.draw()

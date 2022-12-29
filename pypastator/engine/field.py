@@ -244,10 +244,23 @@ class ListField(Field):
             return self.value[index]
         return self.value
 
-    def increment(self, _increment=1):
+    def increment(self, increment=1, index=None, min_value=None, max_value=None):
         """
         Cannot increment this field's value.
         """
+        if index is None:
+            return
+        new_value = self.value[:]
+        if len(new_value) <= index:
+            missing_slots = index - (len(new_value) - 1)
+            new_value.extend([0] * missing_slots)
+        if isinstance(new_value[index], (int, float)):
+            new_value[index] += increment
+            if min_value is not None and new_value[index] < min_value:
+                new_value[index] = min_value
+            if max_value is not None and new_value[index] > max_value:
+                new_value[index] = max_value
+            self.set_value(new_value)
 
     def str_value(self):
         """

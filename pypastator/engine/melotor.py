@@ -30,6 +30,8 @@ class Melotor(BaseArp):
             choices.extend(
                 [scale_notes[degree % len(scale_notes)] + octave * 12] * weight
             )
+        if not choices:
+            return 0
         return choices
 
     def get_candidate_notes(self):

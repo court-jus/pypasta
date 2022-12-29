@@ -85,7 +85,8 @@ class BaseEngine(WithMenu):
         if not self.sub_menus:
             return False
         active_menu = self.get_active_menu()
-        self.sub_menus[active_menu].hide()
+        for submenu in self.sub_menus:
+            submenu.hide()
         if isinstance(active_menu, bool):
             self.sub_menus[0].show()
             self.sub_menus[0].activate_widget(self.sub_menus[0].default_widget)
@@ -266,8 +267,7 @@ class BaseEngine(WithMenu):
             if pitch + delta > 127:
                 pitch = 127 - delta
             return (pitch - delta, pitch + delta)
-        else:
-            return (pitch, pitch + delta * 2)
+        return (pitch, pitch + delta * 2)
 
     def get_candidate_notes(self):
         """

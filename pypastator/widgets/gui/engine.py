@@ -23,6 +23,7 @@ from pypastator.widgets.label import Label
 from pypastator.widgets.led import Led
 from pypastator.widgets.separator import Separator
 from pypastator.widgets.slider import Slider
+from pypastator.widgets.vertslider import VertSlider
 
 
 class MainEngineGUI(GUI):
@@ -485,21 +486,60 @@ class MelotorGUI(GUI):
 
     def __init__(self, *a, **kw):
         super().__init__(*a, **kw)
-        self.default_widget = "first"
-        self.activable_widgets = [
-            "first",
-        ]
+        self.default_widget = "value:1"
 
     def init_widgets(self):
         """
         Initialize widgets.
         """
+        if not hasattr(self.model, "weights"):
+            return
         pos_y = self.pos_y
         self.widgets["separator"] = Separator(text="Melotor", y=pos_y, visible=False)
         pos_y += WIDGET_LINE + WIDGETS_MARGIN
-        self.widgets["first"] = Label(text="1", visible=False)
-        make_row([self.widgets["first"]], pos_y=pos_y)
+        row1 = []
+        row2 = []
+        for degree in range(1, 14):
+            label_widget = Label(
+                text=str(degree), visible=False, bcolor=BLACK, bcolor_selected=BLACK
+            )
+            value_widget = VertSlider(visible=False, ratio=20)
+            value_widget.hook(
+                self.model,
+                "weights",
+                f"melotor_gui:{degree}",
+                value_getter=self.make_getter(degree),
+            )
+            self.widgets[f"label:{degree}"] = label_widget
+            self.widgets[f"value:{degree}"] = value_widget
+            self.activable_widgets.append(f"value:{degree}")
+            row1.append(label_widget)
+            row2.append(value_widget)
+        make_row(row1, pos_y=pos_y)
+        pos_y += WIDGET_LINE + WIDGETS_MARGIN
+        make_row(row2, pos_y=pos_y)
 
-    def show(self):
-        print("show melotor menu")
-        super().show()
+    def make_getter(self, degree):
+        """
+        Get the melotor weight for this degree.
+        """
+
+        def getter():
+            value = self.model.weights.get_value()
+            if len(self.model.weights.get_value()) >= degree:
+                return value[degree - 1]
+            return 0
+
+        return getter
+
+    def increment(self, increment=1):
+        if (
+            not self.visible
+            or self.active_widget is None
+            or self.model is None
+            or not self.active_widget.startswith("value:")
+        ):
+            return
+        degree = int(self.active_widget.split(":")[1]) - 1
+        field = self.model.weights
+        field.increment(increment=increment, index=degree, min_value=0, max_value=19)

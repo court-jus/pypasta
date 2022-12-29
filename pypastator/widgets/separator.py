@@ -37,7 +37,7 @@ class Separator(Label):
         Draw this widget to pygame surface.
         """
         pos_y = self.pos_y
-        fcolor = self.fcolor_selected if self.value else self.fcolor
+        fcolor = self.fcolor_selected if self.selected else self.fcolor
         surf = pygame.display.get_surface()
         surf.fill(BLACK, self.rect)
         # Title

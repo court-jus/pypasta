@@ -49,9 +49,10 @@ class MouseGUI(GUI):
         """
         make_row(
             self.widgets.values(),
-            WIDGETS_MARGIN,
-            WIDGET_LINE * (len(self.model.tracks.keys())) + WIDGETS_MARGIN,
-            (LED_SIZE + WIDGETS_MARGIN) * len(self.widgets.keys()) - WIDGETS_MARGIN,
+            0,
+            pos_y=WIDGET_LINE * (len(self.model.tracks.keys())) + WIDGETS_MARGIN,
+            width=(LED_SIZE + WIDGETS_MARGIN) * len(self.widgets.keys())
+            - WIDGETS_MARGIN,
         )
 
     def show(self):

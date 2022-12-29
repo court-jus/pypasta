@@ -85,8 +85,7 @@ class MainEngineGUI(GUI):
                     "basevel",
                 )
             ],
-            WIDGETS_MARGIN,
-            pos_y,
+            pos_y=pos_y,
         )
 
     def handle_cc(self, cc_channel, cc_number, cc_value):
@@ -186,8 +185,7 @@ class EngineDetailsGUI(GUI):
                     "related_to",
                 )
             ],
-            WIDGETS_MARGIN,
-            pos_y,
+            pos_y=pos_y,
         )
         # Second row: pattern number, pattern str
         pos_y += WIDGET_LINE
@@ -251,8 +249,7 @@ class EngineDetailsGUI(GUI):
                     "pattern_str",
                 )
             ],
-            WIDGETS_MARGIN,
-            pos_y,
+            pos_y=pos_y,
         )
         # Third row: rythm number, rythm str
         pos_y += WIDGET_LINE
@@ -274,8 +271,7 @@ class EngineDetailsGUI(GUI):
                     "rythm_str",
                 )
             ],
-            WIDGETS_MARGIN,
-            pos_y,
+            pos_y=pos_y,
         )
 
     def increment(self, increment=1):
@@ -351,8 +347,7 @@ class LFOGUI(GUI):
                 self.widgets["label_depth"],
                 self.widgets["label_smooth"],
             ],
-            WIDGETS_MARGIN,
-            self.pos_y,
+            pos_y=self.pos_y,
         )
         self.pos_y += WIDGET_LINE
         self.update_lfo_widgets()
@@ -422,11 +417,10 @@ class LFOGUI(GUI):
                         "smoothness",
                     )
                 ],
-                WIDGETS_MARGIN,
-                pos_y,
+                pos_y=pos_y,
             )
             pos_y += WIDGET_LINE
-        make_row([self.widgets["add_lfo"]], WIDGETS_MARGIN, pos_y)
+        make_row([self.widgets["add_lfo"]], pos_y=pos_y)
 
     def show(self):
         self.update_lfo_widgets()

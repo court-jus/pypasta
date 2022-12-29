@@ -46,8 +46,7 @@ class SessionGUI(GUI):
                     "scale",
                 )
             ],
-            WIDGETS_MARGIN,
-            pos_y,
+            pos_y=pos_y,
         )
         # Second row
         pos_y += WIDGET_LINE
@@ -82,6 +81,5 @@ class SessionGUI(GUI):
                     "chord",
                 )
             ],
-            WIDGETS_MARGIN,
-            pos_y,
+            pos_y=pos_y,
         )

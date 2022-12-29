@@ -133,7 +133,7 @@ class GUI:
         """
         if not self.visible:
             return
-        for widget in self.widgets.values():
+        for widget in list(self.widgets.values()):
             widget.handle_click(pos, button)
 
     def handle_cc(self, cc_channel, cc_number, cc_value):

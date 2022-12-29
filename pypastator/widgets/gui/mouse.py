@@ -76,5 +76,8 @@ class MouseGUI(GUI):
             self.shown_time is not None
             and self.shown_time + MOUSE_GUI_DURATION <= timestamp
         ):
+            for widget in self.widgets.values():
+                if widget.is_hovered():
+                    return
             self.hide()
             self.shown_time = None

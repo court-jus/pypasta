@@ -87,6 +87,12 @@ class BaseWidget:
         """
         return 127
 
+    def is_hovered(self):
+        """
+        Detect if this widget is hovered by the mouse.
+        """
+        return self.rect is not None and self.rect.collidepoint(pygame.mouse.get_pos())
+
     def handle_click(self, pos, button):
         """
         Handle click events.

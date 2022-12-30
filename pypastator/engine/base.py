@@ -60,6 +60,7 @@ class BaseEngine(WithMenu):
         self.pos = Field(max_value=None)
         self.currently_playing_notes = []
         self.chord_number = 1
+        self.notes_cache = None
         if "pytest" not in sys.modules:
             self.init_menus()
 
@@ -158,8 +159,11 @@ class BaseEngine(WithMenu):
         lowest, highest = [
             f"{pygame.midi.midi_to_ansi_note(note):4}" for note in self.get_tessitura()
         ]
+        notes = self.notes_cache
+        if not notes:
+            notes = self.get_notes()
         note_names = ", ".join(
-            [f"{pygame.midi.midi_to_ansi_note(note):4}" for note in self.get_notes()]
+            [f"{pygame.midi.midi_to_ansi_note(note):4}" for note in notes]
         )
         return f"{lowest} < {note_names} < {highest}"
 
@@ -216,6 +220,7 @@ class BaseEngine(WithMenu):
         if tick in positions:
             self.pos.increment()
             notes = self.get_notes()
+            self.notes_cache = notes
             vel = self.get_vel(tick)
             for note in notes:
                 if self.active.get_value():

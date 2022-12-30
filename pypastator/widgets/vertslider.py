@@ -26,10 +26,10 @@ class VertSlider(Slider):
         brect = pygame.Rect(0, 0, self.width - 2, self.height - 2)
         brect.center = self.rect.center
         cursor = pygame.Rect(0, 0, self.width, 5)
-        cell_size = self.rect.height / self.ratio
+        cell_size = (self.rect.height - 2) / self.ratio
         cursor.center = (
             self.rect.center[0],
-            self.rect.bottom - int(cell_size * (self.value or 0) + 0.5 * cell_size),
+            (self.rect.bottom - 2) - int(cell_size * (self.value or 0) + 0.5 * cell_size),
         )
         surf = pygame.display.get_surface()
         surf.fill(fcolor, self.rect)

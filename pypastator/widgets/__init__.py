@@ -114,7 +114,6 @@ class BaseWidget:
                 click_cb(val, button)
             else:
                 field = getattr(*list(self.hooked_to.values())[0])
-                print(button, field)
                 if isinstance(field, Field):
                     field.increment(1 if button == MOUSE_WHEEL_UP else -1)
 

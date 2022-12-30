@@ -14,6 +14,7 @@ from pypastator.constants import (
     MOUSE_WHEEL_DOWN,
     MOUSE_WHEEL_UP,
     SLIDER_WIDTH,
+    VERT_SLIDER_HEIGHT,
     WIDGET_LABEL_SIZE,
     WIDGET_LINE,
     WIDGETS_MARGIN,
@@ -526,6 +527,11 @@ class MelotorGUI(GUI):
         make_row(row1, pos_y=pos_y)
         pos_y += WIDGET_LINE + WIDGETS_MARGIN
         make_row(row2, pos_y=pos_y)
+        pos_y += VERT_SLIDER_HEIGHT + WIDGETS_MARGIN
+        self.widgets["chord_influence"] = Slider(text="Chord influence", visible=False)
+        self.widgets["chord_influence"].hook(self.model, "chord_influence", "melotor_gui")
+        self.widgets["chord_influence"].on_click = self.model.chord_influence.set_value
+        make_row([self.widgets["chord_influence"]], pos_y=pos_y)
 
     def make_getter(self, degree):
         """

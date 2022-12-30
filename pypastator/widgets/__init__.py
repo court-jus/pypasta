@@ -101,17 +101,22 @@ class BaseWidget:
             and self.rect.collidepoint(pos)
             and self.on_click is not None
         ):
-            if button == MOUSE_WHEEL_UP and len(self.hooked_to.keys()) == 1:
-                field = getattr(*list(self.hooked_to.values())[0])
-                if isinstance(field, Field):
-                    field.increment()
-            elif button == MOUSE_WHEEL_DOWN and len(self.hooked_to.keys()) == 1:
-                field = getattr(*list(self.hooked_to.values())[0])
-                if isinstance(field, Field):
-                    field.increment(-1)
+            val = self.get_click_value(pos)
+            if isinstance(self.on_click, (list, tuple)):
+                click_cb, handle_wheel = self.on_click
             else:
-                val = self.get_click_value(pos)
-                self.on_click(val)
+                click_cb, handle_wheel = self.on_click, False
+            if (
+                handle_wheel
+                or button not in (MOUSE_WHEEL_UP, MOUSE_WHEEL_DOWN)
+                or len(self.hooked_to.keys()) != 1
+            ):
+                click_cb(val, button)
+            else:
+                field = getattr(*list(self.hooked_to.values())[0])
+                print(button, field)
+                if isinstance(field, Field):
+                    field.increment(1 if button == MOUSE_WHEEL_UP else -1)
 
     def hook(self, instance, attrname, hook_name, set_text=False, value_getter=None):
         """

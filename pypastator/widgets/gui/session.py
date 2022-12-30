@@ -36,7 +36,10 @@ class SessionGUI(GUI):
             value_getter=lambda: self.model.scale_str,
         )
         self.widgets["scale"].on_click = (
-            lambda v: self.model.scale.increment() if v == 127 else None
+            # TODO: handle different buttons
+            lambda v, _b: self.model.scale.increment()
+            if v == 127
+            else None
         )
         make_row(
             [
@@ -73,6 +76,10 @@ class SessionGUI(GUI):
             set_text=True,
             value_getter=lambda: self.model.chord_str,
         )
+        # TODO: handle different buttons
+        # TODO: how to activate chord mode with CC
+        # lambda v, _b: ACTIVATE CHORD MODE
+        self.widgets["chord"].on_click = None
         make_row(
             [
                 self.widgets[widget_name]

@@ -11,6 +11,8 @@ from pypastator.constants import (
     ENGINE_CC_PITCH,
     ENGINE_CC_RYTHM,
     ENGINE_CC_SELECT,
+    MOUSE_WHEEL_DOWN,
+    MOUSE_WHEEL_UP,
     SLIDER_WIDTH,
     WIDGET_LABEL_SIZE,
     WIDGET_LINE,
@@ -42,36 +44,36 @@ class MainEngineGUI(GUI):
         self.widgets["menu"] = Led(emoji="⚙️")
         self.widgets[
             "menu"
-        ].on_click = lambda _v: self.model.track.session.select_track(
+        ].on_click = lambda _v, _b: self.model.track.session.select_track(
             self.model.track.track_id
         )
         # Active Led
         self.widgets["mute"] = Led(emoji="🔈")
         self.widgets["mute"].hook(self.model, "active", "engine_to_controls")
-        self.widgets["mute"].on_click = self.model.active.increment
+        self.widgets["mute"].on_click = lambda _v, _b: self.model.active.increment()
         # Pitch slider
         self.widgets["pitch"] = Slider(label="Pitch")
         self.widgets["pitch"].hook(self.model, "pitch", "engine_to_controls")
-        self.widgets["pitch"].on_click = lambda v: self.model.pitch.set_value(
+        self.widgets["pitch"].on_click = lambda v, _b: self.model.pitch.set_value(
             v, force=True
         )
         # Knobs
         # Rythm
         self.widgets["rythm"] = Knob(label="Rythm")
         self.widgets["rythm"].hook(self.model, "rythm", "engine_to_controls")
-        self.widgets["rythm"].on_click = lambda v: self.model.rythm.set_value(
+        self.widgets["rythm"].on_click = lambda v, _b: self.model.rythm.set_value(
             v, force=True
         )
         # Pattern
         self.widgets["pattern"] = Knob(label="Pat.")
         self.widgets["pattern"].hook(self.model, "pattern", "engine_to_controls")
-        self.widgets["pattern"].on_click = lambda v: self.model.pattern.set_value(
+        self.widgets["pattern"].on_click = lambda v, _b: self.model.pattern.set_value(
             v, force=True
         )
         # Velocity
         self.widgets["basevel"] = Knob(label="Vel.")
         self.widgets["basevel"].hook(self.model, "basevel", "engine_to_controls")
-        self.widgets["basevel"].on_click = lambda v: self.model.basevel.set_value(
+        self.widgets["basevel"].on_click = lambda v, _b: self.model.basevel.set_value(
             v, force=True
         )
         make_row(
@@ -153,7 +155,7 @@ class EngineDetailsGUI(GUI):
         self.widgets["midi_channel"].hook(self.model, "midi_channel", "menu")
         self.widgets[
             "midi_channel"
-        ].on_click = lambda v: self.model.midi_channel.set_value(v, force=True)
+        ].on_click = lambda v, _b: self.model.midi_channel.set_value(v, force=True)
         self.widgets["engine_type"] = Label(text="Eng.", visible=False)
         self.widgets["engine_type"].hook(
             self.model.track,
@@ -162,9 +164,10 @@ class EngineDetailsGUI(GUI):
             set_text=True,
             value_getter=lambda: self.model.track.engine_type_str,
         )
-        self.widgets[
-            "engine_type"
-        ].on_click = lambda v: self.model.track.engine_type.increment()
+        self.widgets["engine_type"].on_click = (
+            # todo: handle different buttons
+            lambda _v, _b: self.model.track.engine_type.increment()
+        )
         self.widgets["related_to"] = Label(text="RTo", visible=False)
         self.widgets["related_to"].hook(
             self.model,
@@ -173,9 +176,10 @@ class EngineDetailsGUI(GUI):
             set_text=True,
             value_getter=lambda: self.model.related_to_str,
         )
-        self.widgets[
-            "related_to"
-        ].on_click = lambda v: self.model.track.related_to.increment()
+        self.widgets["related_to"].on_click = (
+            # todo: handle different buttons
+            lambda _v, _b: self.model.related_to.increment()
+        )
         make_row(
             [
                 self.widgets[widget_name]
@@ -312,7 +316,9 @@ class LFOGUI(GUI):
             w=WIDGET_LABEL_SIZE * 7 + WIDGETS_MARGIN * 5,
             visible=False,
         )
-        self.widgets["add_lfo"].on_click = lambda _v: self.increment(widget="add_lfo")
+        self.widgets["add_lfo"].on_click = lambda _v, _b: self.increment(
+            widget="add_lfo"
+        )
         self.widgets["label_placeholder"] = Label(
             text="", visible=False, fcolor=BLACK, bcolor=BLACK, bcolor_selected=BLACK
         )
@@ -432,7 +438,8 @@ class LFOGUI(GUI):
         Prepare a callback for the on click event.
         """
 
-        def callback(_val):
+        def callback(_val, _b):
+            # TODO: handle different buttons
             self.apply_increment(lfo_number, attrname)
 
         return callback
@@ -510,6 +517,7 @@ class MelotorGUI(GUI):
                 f"melotor_gui:{degree}",
                 value_getter=self.make_getter(degree),
             )
+            value_widget.on_click = self.make_clicker(degree)
             self.widgets[f"label:{degree}"] = label_widget
             self.widgets[f"value:{degree}"] = value_widget
             self.activable_widgets.append(f"value:{degree}")
@@ -531,6 +539,23 @@ class MelotorGUI(GUI):
             return 0
 
         return getter
+
+    def make_clicker(self, degree):
+        """
+        Prepare a callback for click event on this widget.
+        """
+
+        def clicker(val, button):
+            field = self.model.weights
+            kwargs = dict(index=degree - 1, min_value=0, max_value=19)
+            if button in (MOUSE_WHEEL_UP, MOUSE_WHEEL_DOWN):
+                field.increment(
+                    increment=(1 if button == MOUSE_WHEEL_UP else -1), **kwargs
+                )
+            else:
+                field.set_index_value(val, **kwargs)
+
+        return (clicker, True)
 
     def increment(self, increment=1):
         if (

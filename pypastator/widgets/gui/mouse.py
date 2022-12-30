@@ -26,13 +26,13 @@ class MouseGUI(GUI):
         """
         kwargs = dict(visible=False, bcolor_on=BLUE, bcolor_off=BLUE)
         self.widgets["add_track"] = Led(emoji="➕", **kwargs)
-        self.widgets["add_track"].on_click = lambda _v: self.add_track_callback()
+        self.widgets["add_track"].on_click = lambda _v, _b: self.add_track_callback()
         self.widgets["save"] = Led(emoji="💾", **kwargs)
-        self.widgets["save"].on_click = lambda _v: self.model.save()
+        self.widgets["save"].on_click = lambda _v, _b: self.model.save()
         self.widgets["next_page"] = Led(emoji="🔽", **kwargs)
-        self.widgets["next_page"].on_click = lambda _v: self.model.next_page()
+        self.widgets["next_page"].on_click = lambda _v, _b: self.model.next_page()
         self.widgets["prev_page"] = Led(emoji="🔼", **kwargs)
-        self.widgets["prev_page"].on_click = lambda _v: self.model.next_page(
+        self.widgets["prev_page"].on_click = lambda _v, _b: self.model.next_page(
             go_back=True
         )
 

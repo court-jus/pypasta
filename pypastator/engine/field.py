@@ -246,7 +246,7 @@ class ListField(Field):
 
     def increment(self, increment=1, index=None, min_value=None, max_value=None):
         """
-        Cannot increment this field's value.
+        Increment the value at index.
         """
         if index is None:
             return
@@ -261,6 +261,23 @@ class ListField(Field):
             if max_value is not None and new_value[index] > max_value:
                 new_value[index] = max_value
             self.set_value(new_value)
+
+    def set_index_value(self, value, index=None, min_value=None, max_value=None):
+        """
+        Set the value at index
+        """
+        if index is None:
+            return
+        new_value = self.value[:]
+        if len(new_value) <= index:
+            missing_slots = index - (len(new_value) - 1)
+            new_value.extend([0] * missing_slots)
+        new_value[index] = value
+        if min_value is not None and new_value[index] < min_value:
+            new_value[index] = min_value
+        if max_value is not None and new_value[index] > max_value:
+            new_value[index] = max_value
+        self.set_value(new_value)
 
     def str_value(self):
         """

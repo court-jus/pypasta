@@ -54,5 +54,7 @@ class VertSlider(Slider):
         """
         Return value related to where the user clicked.
         """
-        relative_click_position = (pos[1] - self.rect.y) / self.height * self.ratio
+        relative_click_position = self.ratio - (
+            (pos[1] - self.rect.y) / self.height * self.ratio
+        )
         return min(self.ratio, int(relative_click_position))

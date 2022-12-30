@@ -1,13 +1,22 @@
+"""
+A simple script to monitor MIDI events.
+"""
 import pygame.midi
 
 pygame.midi.init()
 
+
 class MidiTester:
+    """
+    Open all MIDI input devices and print their events.
+    """
+
     def __init__(self):
         """
         Open all 'input' devices
         """
         self.input_devices = {}
+        self.running = False
         self.tick = 0
         for i in range(pygame.midi.get_count()):
             device_info = pygame.midi.get_device_info(i)
@@ -30,6 +39,11 @@ class MidiTester:
                         self.handle_in_event(evt, name)
 
     def handle_in_event(self, evt, devname):
+        """
+        Print MIDI event.
+
+        Clock events are debounced.
+        """
         evt_data = evt[0]
         if evt_data[0] == 248:
             # clock
@@ -39,9 +53,14 @@ class MidiTester:
         else:
             print(devname, evt)
 
+
 def main():
+    """
+    Main entry point.
+    """
     tester = MidiTester()
     tester.run()
+
 
 if __name__ == "__main__":
     main()

@@ -3,6 +3,17 @@ Various util functions.
 """
 
 
+from pypastator.constants import (
+    BAR,
+    EIGHTH,
+    FULL,
+    HALF,
+    QUARTER,
+    SIXTEENTH,
+    THIRTYSECOND,
+)
+
+
 def int_to_roman(num, lowercase=False):
     """
     Convert an integer to roman numerals.
@@ -19,6 +30,36 @@ def int_to_roman(num, lowercase=False):
     if lowercase:
         return roman_num.lower()
     return roman_num
+
+
+def duration_to_str(duration):
+    """
+    Convert a duration to its text.
+
+    For example, 96 => 1 bar
+    48 => half-note
+    ...
+    """
+    if duration == 0:
+        return "∅"
+    if duration % BAR == 0:
+        bars = duration // BAR
+        if bars > 1:
+            return f"{bars} bars"
+    raw_durations = {
+        THIRTYSECOND: "32d",
+        SIXTEENTH: "16th",
+        EIGHTH: "8th",
+        QUARTER: "4th",
+        HALF: "½",
+        FULL: "1",
+    }
+    if duration in raw_durations:
+        return raw_durations[duration]
+    dotted = int(duration * 2 / 3)
+    if dotted in raw_durations:
+        return f"{raw_durations[dotted]}."
+    return str(duration)
 
 
 def spread_notes(notes, lowest, highest):

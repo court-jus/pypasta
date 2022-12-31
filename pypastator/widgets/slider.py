@@ -27,6 +27,7 @@ class Slider(Labeled):
         self.stripes = kw.pop("stripes", False)
         self.fcolor_selected = kw.pop("fcolor_selected", GREEN)
         self.bcolor_selected = kw.pop("bcolor_selected", DARK_GRAY)
+        super().widget_init(**kw)
 
     def draw(self):
         """

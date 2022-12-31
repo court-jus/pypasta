@@ -174,7 +174,7 @@ class BaseEngine(WithMenu):
         ]
         notes = self.notes_cache
         if not notes:
-            notes = self.get_notes()
+            notes = []
         note_names = ", ".join(
             [f"{pygame.midi.midi_to_ansi_note(note):4}" for note in notes]
         )
@@ -191,10 +191,13 @@ class BaseEngine(WithMenu):
         o.......o.......o.......o.......
         """
         rpat = self.get_rythm_pattern()
-        if not all(int(r / THIRTYSECOND) == r / THIRTYSECOND for r in rpat):
-            return str()
-        rpat = [int(r / THIRTYSECOND) for r in rpat]
-        return "".join(["o" + ("." * (r - 1) if r > 1 else "") for r in rpat])
+        result = []
+        for r in rpat:
+            length = int(r / THIRTYSECOND)
+            symbol = "o" if length == r / THIRTYSECOND else "3"
+            rpr = symbol + ("." * (length - 1) if length > 1 else "")
+            result.append(rpr)
+        return "".join([r for r in result])
 
     @property
     def related_to_str(self):
@@ -231,9 +234,9 @@ class BaseEngine(WithMenu):
         if not self.active.get_value():
             return result
         if tick in positions:
-            self.pos.increment()
             notes = self.get_notes()
             self.notes_cache = notes
+            self.pos.increment()
             vel = self.get_vel(tick)
             for note in notes:
                 if self.active.get_value():
@@ -364,6 +367,12 @@ class BaseEngine(WithMenu):
             for prevnote in self.currently_playing_notes:
                 result.append((timestamp, "off", midi_channel, prevnote, 0))
         return result
+
+    def reset_pos(self):
+        """
+        Reset position.
+        """
+        self.pos.set_value(0)
 
     def close(self):
         """

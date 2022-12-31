@@ -24,6 +24,7 @@ def fixture_melotor(track):
     test_engine.pitch.set_value(60, force=True)
     test_engine.gravity.set_value(48, force=True)
     test_engine.related_to.set_value(0, force=True)
+    test_engine.chord_influence.set_value(0, force=True)
     return test_engine
 
 
@@ -43,4 +44,21 @@ def test_melotor_choices(melotor, weights, choices):
     Test how melotor generate choices from which to pick a note.
     """
     melotor.weights.set_value(weights, force=True)
-    assert melotor.get_melotor_choices() == choices
+    assert melotor.generate_new_choices() == choices
+
+
+@pytest.mark.parametrize(
+    "current, notes",
+    [
+        ([7, 0, 0, 11, 0], [67, 60, 60, 71, 60]),
+        ([7, 11, 7, 7, 14], [67, 71, 67, 67, 74]),
+    ],
+)
+def test_melotor_get_notes(melotor, current, notes):
+    """
+    Test how melotor generate notes based on current_melo.
+    """
+    melotor.current_melo.set_value(current, force=True)
+    assert (
+        melotor.transpose_notes(melotor.get_candidate_notes(), centered=False) == notes
+    )

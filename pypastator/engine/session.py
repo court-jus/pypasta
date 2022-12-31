@@ -362,4 +362,4 @@ class Session(WithMenu):
         """
         self.playing = False
         for track in self.tracks.values():
-            track.engine.pos.set_value(0)
+            track.engine.reset_pos()

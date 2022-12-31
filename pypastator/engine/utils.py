@@ -62,7 +62,7 @@ def duration_to_str(duration):
     return str(duration)
 
 
-def spread_notes(notes, lowest, highest):
+def spread_notes(notes, lowest, highest, centered=True):
     """
     Spread given notes in the allowed tessitura.
     """
@@ -74,13 +74,13 @@ def spread_notes(notes, lowest, highest):
             / max(1, (current_highest - current_lowest))
             * (highest - lowest)
         )
-        + lowest
+        + (lowest if centered else 0)
         for note in notes
     ]
     transposed = []
     for idx, note in enumerate(notes):
-        should_shift_by = (shifted_notes[idx] - note) / 12
-        transposed_note = note + round(should_shift_by) * 12
+        octave = (shifted_notes[idx] - (current_lowest if centered else 0)) // 12
+        transposed_note = int(note + octave * 12)
         if transposed_note < lowest:
             transposed_note += (((lowest - transposed_note) // 12) + 1) * 12
         if transposed_note > highest:

@@ -11,6 +11,7 @@ from pypastator.constants import (
     ENGINE_CC_PITCH,
     ENGINE_CC_RYTHM,
     ENGINE_CC_SELECT,
+    MED_LABEL_W,
     MOUSE_WHEEL_DOWN,
     MOUSE_WHEEL_UP,
     SLIDER_WIDTH,
@@ -528,10 +529,66 @@ class MelotorGUI(GUI):
         pos_y += WIDGET_LINE + WIDGETS_MARGIN
         make_row(row2, pos_y=pos_y)
         pos_y += VERT_SLIDER_HEIGHT + WIDGETS_MARGIN
-        self.widgets["chord_influence"] = Slider(text="Chord influence", visible=False)
-        self.widgets["chord_influence"].hook(self.model, "chord_influence", "melotor_gui")
+        row = []
+        self.widgets["chord_influence"] = Knob(
+            label="Chord.I", visible=False, debug=True
+        )
+        self.widgets["chord_influence"].hook(
+            self.model, "chord_influence", "melotor_gui"
+        )
         self.widgets["chord_influence"].on_click = self.model.chord_influence.set_value
-        make_row([self.widgets["chord_influence"]], pos_y=pos_y)
+        row.append(self.widgets["chord_influence"])
+        self.widgets["melo_length"] = Knob(label="Len", visible=False, debug=True)
+        self.widgets["melo_length"].hook(
+            self.model,
+            "melo_length",
+            "melotor_gui",
+            value_getter=lambda: self.model.get_melo_length_knob,
+        )
+        self.widgets["melo_length"].on_click = self.model.melo_length.set_value
+        row.append(self.widgets["melo_length"])
+        self.widgets["change_frequency"] = Label(
+            label="Ch.Frq",
+            visible=False,
+            debug=True,
+            w=MED_LABEL_W,
+        )
+        self.widgets["change_frequency"].hook(
+            self.model,
+            "change_frequency",
+            "melotor_gui",
+            set_text=True,
+            value_getter=lambda: self.model.get_change_frequency_str,
+        )
+        self.widgets[
+            "change_frequency"
+        ].on_click = self.model.change_frequency.set_value
+        row.append(self.widgets["change_frequency"])
+        self.widgets["change_intensity"] = Knob(label="Ch.Int", visible=False)
+        self.widgets["change_intensity"].hook(
+            self.model, "change_intensity", "melotor_gui"
+        )
+        self.widgets[
+            "change_intensity"
+        ].on_click = self.model.change_intensity.set_value
+        row.append(self.widgets["change_intensity"])
+        make_row(row, pos_y=pos_y)
+        pos_y += VERT_SLIDER_HEIGHT + WIDGETS_MARGIN
+        self.widgets["melo_reset"] = Label(text="Reset", visible=False, debug=True)
+        self.widgets["melo_reset"].on_click = lambda _v, _b: self.model.reset_melo()
+        self.widgets["current_melo"] = Label(
+            text="Current melo", visible=False, w=BIG_LABEL_W
+        )
+        self.widgets["current_melo"].hook(
+            self.model,
+            "current_melo",
+            "melotor_gui",
+            set_text=True,
+            value_getter=lambda: self.model.current_melo_str,
+        )
+        make_row(
+            [self.widgets["melo_reset"], self.widgets["current_melo"]], pos_y=pos_y
+        )
 
     def make_getter(self, degree):
         """

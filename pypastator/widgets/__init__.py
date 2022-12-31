@@ -67,6 +67,7 @@ class BaseWidget:
             self.pos_y + int(self.height / 2),
         )
         self.font_size = font_size
+        self.debug = kw.pop("debug", False)
         self.widget_init(**kw)
         self.set_value(value)
 
@@ -98,10 +99,10 @@ class BaseWidget:
         Handle click events.
         """
         if (
-            button not in (MOUSE_LEFT_CLICK, MOUSE_WHEEL_UP, MOUSE_WHEEL_DOWN) or
-            self.rect is None or
-            self.on_click is None or
-            not self.rect.collidepoint(pos)
+            button not in (MOUSE_LEFT_CLICK, MOUSE_WHEEL_UP, MOUSE_WHEEL_DOWN)
+            or self.rect is None
+            or self.on_click is None
+            or not self.rect.collidepoint(pos)
         ):
             return
         val = self.get_click_value(pos)

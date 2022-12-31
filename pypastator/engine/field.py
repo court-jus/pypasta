@@ -47,6 +47,8 @@ class Field:
         """
         Set this field's value and call the hooks.
         """
+        if self.debug:
+            print("set value", value)
         if force or not self.smooth:
             self.value = value
         else:
@@ -85,15 +87,9 @@ class Field:
         """
         new_value = self.value + increment
         if self.max_value is not None and new_value > self.max_value:
-            if self.min_value is not None:
-                new_value = self.min_value + (new_value - self.max_value - 1)
-            else:
-                new_value = self.max_value
+            new_value = self.max_value
         if self.min_value is not None and new_value < self.min_value:
-            if self.max_value is not None:
-                new_value = self.max_value + new_value + 1
-            else:
-                new_value = self.min_value
+            new_value = self.min_value
         self.set_value(new_value)
 
     def str_value(self):

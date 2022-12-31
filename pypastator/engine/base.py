@@ -122,7 +122,13 @@ class BaseEngine(WithMenu):
                 self.sub_menus[data["visible_menu"]].activate_widget(
                     data["active_widget"]
                 )
+        self.engine_load(data)
         self.load_lfos(data.get("lfos", []))
+
+    def engine_load(self, data):
+        """
+        Method to allow subclasses to have specific load mechanism.
+        """
 
     def save(self, for_reload=False):
         """
@@ -149,7 +155,14 @@ class BaseEngine(WithMenu):
                 result[savable_key] = field.value
             else:
                 result[savable_key] = field
+        result.update(self.engine_save())
         return result
+
+    def engine_save(self):
+        """
+        Method to allow subclasses to save specific parameters.
+        """
+        return {}
 
     @property
     def pattern_str(self):

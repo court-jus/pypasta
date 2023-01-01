@@ -164,24 +164,18 @@ class BaseWidget:
         Set this widget's value.
         """
         self.value = value
-        if self.visible:
-            self.draw()
 
     def set_modulation(self, modulation):
         """
         Set the modulation value so it can be displayed along the value.
         """
         self.modulation = modulation
-        if self.visible:
-            self.draw()
 
     def set_text(self, new_text):
         """
         Set this widget's text.
         """
         self.text = new_text
-        if self.visible:
-            self.draw()
 
     def show(self):
         """

@@ -28,11 +28,14 @@ class Pastator:
     Pastator handles pygame GUI and manages the Midi engines.
     """
 
-    def __init__(self, clock_device, ctrl_device, output_device):
+    def __init__(self):
         self.out_evts = []
-        self.clock_device = clock_device
-        self.ctrl_device = ctrl_device
-        self.output_device = output_device
+        self.devices = {
+            "clock": None,
+            "ctrl": [],
+            "output": [],
+            "note_in": [],
+        }
         self.ticks = 0
         self.running = False
         screen_width = 1024
@@ -41,13 +44,102 @@ class Pastator:
         self.clock = pygame.time.Clock()
         self.session = Session(self)
 
+    def _get_available_midi_devices(self):
+        """
+        Gather the list of available MIDI devices.
+        """
+        available_devices = {
+            "output": {},
+            "input": {},
+        }
+        for i in range(pygame.midi.get_count()):
+            device_info = pygame.midi.get_device_info(i)
+            name, is_input, is_output = device_info[1:4]
+            if is_input:
+                available_devices["input"][name.decode()] = i
+            elif is_output:
+                available_devices["output"][name.decode()] = i
+        return available_devices
+
+    def set_clock_device(self, dev_name):
+        """
+        Set the MIDI clock device.
+        """
+        available_devices = self._get_available_midi_devices()
+        if dev_name in available_devices["input"]:
+            if self.devices["clock"] is not None:
+                self.devices["clock"].close()
+            self.devices["clock"] = pygame.midi.Input(
+                available_devices["input"][dev_name]
+            )
+        else:
+            print(f"WARN: input device [{dev_name}] is not available.")
+
+    def add_input_output_device(self, dev_name, device_type="ctrl", direction="input"):
+        """
+        Add an input or output device (input for ctrl or note_in, output for note_out).
+        """
+        available_devices = self._get_available_midi_devices()
+        device_class = (
+            pygame.midi.Output if direction == "output" else pygame.midi.Input
+        )
+        if dev_name in available_devices[direction]:
+            self.devices[device_type].append(
+                device_class(available_devices[direction][dev_name])
+            )
+        else:
+            print(f"WARN: {direction} device [{dev_name}] is not available.")
+
+    def load_settings(self):
+        """
+        Load settings from JSON file.
+        """
+        with open("settings.json", "r", encoding="utf8") as file_pointer:
+            data = json.load(file_pointer)
+            for key, value in data.get("devices", {}).items():
+                if key not in self.devices:
+                    continue
+                if key == "clock":
+                    self.set_clock_device(value)
+                elif key in ("ctrl", "note_in"):
+                    for dev_name in value:
+                        self.add_input_output_device(dev_name, key)
+                elif key == "output":
+                    for dev_name in value:
+                        self.add_input_output_device(dev_name, key, "output")
+
+    def save_settings(self):
+        """
+        Save settings to JSON file.
+        """
+        data = {
+            "devices": {
+                "clock": None,
+                "ctrl": [],
+                "note_in": [],
+                "output": [],
+            }
+        }
+        for device_type, devices in self.devices.items():
+            if device_type == "clock":
+                device = devices
+                if device is not None:
+                    data["devices"][device_type] = pygame.midi.get_device_info(
+                        devices.device_id
+                    )[1].decode()
+                continue
+            for device in devices:
+                data["devices"][device_type].append(
+                    pygame.midi.get_device_info(device.device_id)[1].decode()
+                )
+        with open("settings.json", "w", encoding="utf8") as file_pointer:
+            json.dump(data, file_pointer, indent=2)
+
     def load(self, filename):
         """
         Load a song.
         """
-        with open(filename, "r", encoding="utf8") as file_pointer:
-            data = json.load(file_pointer)
-            self.session.load(data)
+        self.session.load(filename)
 
     def handle_clock_in_event(self, evt):
         """
@@ -93,7 +185,7 @@ class Pastator:
                 self.running = False
             else:
                 print("Key", ui_evt)
-        elif ui_evt.type == pygame.MOUSEBUTTONDOWN:
+        elif ui_evt.type == pygame.MOUSEBUTTONUP:
             self.session.handle_click(ui_evt.pos, ui_evt.button)
         elif ui_evt.type == pygame.MOUSEMOTION:
             self.session.handle_mouse_move(ui_evt.pos)
@@ -110,13 +202,13 @@ class Pastator:
             ui_evts = pygame.event.get()
             for ui_evt in ui_evts:
                 self.handle_ui_event(ui_evt)
-            if self.clock_device is not None:
-                if self.clock_device.poll():
-                    for evt in self.clock_device.read(10):
+            if self.devices["clock"] is not None:
+                if self.devices["clock"].poll():
+                    for evt in self.devices["clock"].read(10):
                         self.handle_clock_in_event(evt)
-            if self.ctrl_device is not None:
-                if self.ctrl_device.poll():
-                    for evt in self.ctrl_device.read(10):
+            for ctrl_device in self.devices["ctrl"]:
+                if ctrl_device.poll():
+                    for evt in ctrl_device.read(10):
                         self.handle_ctrl_in_event(evt)
             self.handle_out_events()
             pygame.display.flip()
@@ -126,10 +218,10 @@ class Pastator:
         """
         Turn off all the notes on all Midi channels.
         """
-        if self.output_device is not None:
+        for output_device in self.devices["output"]:
             for channel in range(16):
-                self.output_device.write_short(CCMIN + channel, ALL_NOTES_OFF)
-                self.output_device.write_short(CCMIN + channel, ALL_SOUND_OFF)
+                output_device.write_short(CCMIN + channel, ALL_NOTES_OFF)
+                output_device.write_short(CCMIN + channel, ALL_SOUND_OFF)
 
     def midi_tick(self):
         """
@@ -154,12 +246,13 @@ class Pastator:
         """
         evt_type = evt[1]
         evt_channel = evt[2]
-        if evt_type == "on" and self.output_device is not None:
-            note, velocity = evt[3:5]
-            self.output_device.note_on(note, velocity, evt_channel)
-        elif evt_type == "off" and self.output_device is not None:
-            note = evt[3]
-            self.output_device.note_off(note, 0, evt_channel)
+        for output_device in self.devices["output"]:
+            if evt_type == "on":
+                note, velocity = evt[3:5]
+                output_device.note_on(note, velocity, evt_channel)
+            elif evt_type == "off":
+                note = evt[3]
+                output_device.note_off(note, 0, evt_channel)
 
 
 def main():
@@ -170,61 +263,10 @@ def main():
     pygame.display.init()
     pygame.font.init()
 
-    print("=================")
-
-    clock_device_name = "MC-101"
-    output_device_name = "MC-101"
-    ctrl_device_name = "Launch Control XL"
-    ctrl_out_device_name = "Launch Control XL"
-    # clock_device_name = "OP-Z MIDI 1"
-    # output_device_name = "OP-Z MIDI 1"
-    # ctrl_device_name = "OP-Z MIDI 1"
-    clock_device = None
-    ctrl_device = None
-    ctrl_out_device = None
-    output_device = None
-    print("MIDI Devices detected:")
-    for i in range(pygame.midi.get_count()):
-        device_info = pygame.midi.get_device_info(i)
-        name, is_input, is_output = device_info[1:4]
-        if is_input:
-            if name.decode() == clock_device_name:
-                clock_device = pygame.midi.Input(i)
-            elif name.decode() == ctrl_device_name:
-                ctrl_device = pygame.midi.Input(i)
-            else:
-                print(f" - Input [{name.decode()}] available but unused")
-        if is_output:
-            if name.decode() == output_device_name:
-                output_device = pygame.midi.Output(i)
-            if name.decode() == ctrl_out_device_name:
-                ctrl_out_device = pygame.midi.Output(i)
-            else:
-                print(f" - Output [{name.decode()}] available but unused")
-
-    print("Devices used:")
-    if clock_device:
-        print(
-            f" - Clock - {pygame.midi.get_device_info(clock_device.device_id)[1].decode()}"
-        )
-    if ctrl_device:
-        print(
-            f" - Controller - {pygame.midi.get_device_info(ctrl_device.device_id)[1].decode()}"
-        )
-    if ctrl_out_device:
-        print(
-            " - Controller (out) - "
-            f"{pygame.midi.get_device_info(ctrl_out_device.device_id)[1].decode()}"
-        )
-    if output_device:
-        print(
-            f" - Sound output - {pygame.midi.get_device_info(output_device.device_id)[1].decode()}"
-        )
-    pasta = Pastator(clock_device, ctrl_device, output_device)
+    pasta = Pastator()
+    pasta.load_settings()
     pasta.all_sound_off()
-    pasta.load("example.json")
     pasta.run()
-    print("================")
 
 
 if __name__ == "__main__":

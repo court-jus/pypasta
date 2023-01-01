@@ -40,6 +40,7 @@ class Knob(Labeled):
             dest_y = math.sin(origin_line_angle) * (radius - 3) + self.rect.center[1]
             pygame.draw.circle(surf, GREEN, (dest_x, dest_y), 3)
         super().draw()
+
     def get_click_value(self, pos):
         """
         Get the value based on the position of the click.

@@ -50,6 +50,7 @@ class Led(Labeled):
             msg_image_rect.center = self.rect.center
             pygame.display.get_surface().blit(msg_image, msg_image_rect)
         super().draw()
+
     def hide(self):
         radius = LED_SIZE / 2
         surf = pygame.display.get_surface()

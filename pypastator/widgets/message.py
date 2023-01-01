@@ -53,4 +53,5 @@ class Message(Label):
         """
         self.set_text(message)
         self.highlight()
+        self.redraw()
         self.shown_time = time.time()

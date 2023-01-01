@@ -2,6 +2,7 @@
 Session holds all the details for the current song.
 """
 import json
+import os
 import sys
 
 import pygame.midi
@@ -22,6 +23,7 @@ from pypastator.engine.utils import int_to_roman
 from pypastator.widgets.gui.base import WithMenu
 from pypastator.widgets.gui.mouse import MouseGUI
 from pypastator.widgets.gui.session import SessionGUI
+from pypastator.widgets.gui.settings import SettingsGUI
 from pypastator.widgets.message import Message
 
 DEFAULT_TRACK = {
@@ -77,6 +79,7 @@ class Session(WithMenu):
             self.main_menu.show()
             self.main_menu.activate_widget(self.main_menu.default_widget)
             self.mouse_menu = MouseGUI(self)
+            self.settings_menu = SettingsGUI(self)
 
     @property
     def scale_str(self):
@@ -120,10 +123,35 @@ class Session(WithMenu):
             [pygame.midi.midi_to_ansi_note(note)[:-1] for note in notes]
         )
 
-    def load(self, data):
+    def new_song(self):
+        """
+        Clear current song.
+        """
+        self.stop()
+        self.pasta.all_sound_off()
+        for track in self.tracks.values():
+            if track.engine.main_menu:
+                track.engine.main_menu.hide()
+            for menu in track.engine.sub_menus:
+                menu.hide()
+        self.tracks = {}
+        self.selected_track = None
+        self.current_chord.set_value([], force=True)
+        self.chord_progression.set_value([1], force=True)
+        self.progression_pos = 0
+        self.title = self.get_title(generate_new=True)
+        self.scale_name = "major"
+        self.root_note = 0
+        self.chords_mode = "progression"
+
+    def load(self, filename):
         """
         Load Session from data.
         """
+        self.new_song()
+        data = {}
+        with open(os.path.join("songs", filename), "r", encoding="utf8") as file_pointer:
+            data = json.load(file_pointer)
         for loadable_key in LOADABLE_KEYS:
             if loadable_key in data:
                 field = getattr(self, loadable_key)
@@ -150,11 +178,11 @@ class Session(WithMenu):
 
         If the session has no name, generate a random title.
         """
-        fake = Faker()
         data = {
             "tracks": {
                 track.track_id: track.engine.save() for track in self.tracks.values()
-            }
+            },
+            "title": self.get_title(),
         }
         for loadable_key in LOADABLE_KEYS:
             field = getattr(self, loadable_key)
@@ -163,14 +191,27 @@ class Session(WithMenu):
             else:
                 data.update({loadable_key: field})
 
-        track_name = self.title
-        if not track_name:
-            track_name = fake.catch_phrase()
-            data["title"] = track_name
-        filename = slugify(track_name) + ".json"
-        with open(filename, "w", encoding="utf8") as file_pointer:
+        filename = slugify(data["title"]) + ".json"
+        with open(
+            os.path.join("songs", filename), "w", encoding="utf8"
+        ) as file_pointer:
             json.dump(data, file_pointer, indent=2)
-        self.message.say(f"Song [{track_name}] saved as [{filename}]")
+        self.message.say(f"Song [{data['title']}] saved as [{filename}]")
+
+    def get_title(self, generate_new=False):
+        """
+        Get current title or generate a new one.
+        """
+        if generate_new or not self.title:
+            fake = Faker()
+            self.set_title(fake.catch_phrase())
+        return self.title
+
+    def set_title(self, value):
+        """
+        Set title.
+        """
+        self.title = value
 
     def add_track(self, track_id=None, data=None):
         """
@@ -206,9 +247,12 @@ class Session(WithMenu):
         """
         Activate next page.
 
+        Skipped if settings menu is visible.
         While going down, we scroll through each page.
         While going up, go directly from section to section.
         """
+        if self.settings_menu is not None and self.settings_menu.any_visible():
+            return
         session_active = self.get_active_menu()
         track_active = None
         engine_active = None
@@ -268,13 +312,16 @@ class Session(WithMenu):
         """
         Method called every event loop.
         """
-        super().handle_tick()
-        for track in self.tracks.values():
-            track.handle_tick()
-        if self.message is not None:
-            self.message.handle_tick()
-        if self.mouse_menu is not None:
-            self.mouse_menu.handle_tick()
+        if self.settings_menu is not None and self.settings_menu.any_visible():
+            self.settings_menu.handle_tick()
+        else:
+            super().handle_tick()
+            for track in self.tracks.values():
+                track.handle_tick()
+            if self.message is not None:
+                self.message.handle_tick()
+            if self.mouse_menu is not None:
+                self.mouse_menu.handle_tick()
 
     def _handle_global_cc(self, cc_number, value):
         """
@@ -293,7 +340,9 @@ class Session(WithMenu):
             self.message.say("[Chords] mode")
             self.chords_mode = "manual"
         elif cc_number == 7:
-            self.save()
+            if self.settings_menu is not None and not self.settings_menu.any_visible():
+                self.settings_menu.show()
+                self.settings_menu.activate_next()
         elif self.cc_mode == "menu":
             self._handle_menu_cc(cc_number)
         elif self.cc_mode == "chords":
@@ -323,7 +372,12 @@ class Session(WithMenu):
     def handle_cc(self, cc_channel, cc_number, cc_value):
         """
         Handle Midi CC event.
+
+        Bypassed if settings menu is visible.
         """
+        if self.settings_menu is not None and self.settings_menu.any_visible():
+            self.settings_menu.handle_cc(cc_channel, cc_number, cc_value)
+            return
         super().handle_cc(cc_channel, cc_number, cc_value)
         for track in self.tracks.values():
             track.handle_cc(cc_channel, cc_number, cc_value)
@@ -348,6 +402,8 @@ class Session(WithMenu):
             track.handle_click(pos, button)
         if self.mouse_menu is not None:
             self.mouse_menu.handle_click(pos, button)
+        if self.settings_menu is not None:
+            self.settings_menu.handle_click(pos, button)
 
     def handle_mouse_move(self, _pos):
         """

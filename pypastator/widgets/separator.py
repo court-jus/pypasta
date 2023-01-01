@@ -41,11 +41,18 @@ class Separator(Label):
         surf = pygame.display.get_surface()
         surf.fill(BLACK, self.rect)
         # Title
-        pygame.draw.line(surf, fcolor, (0, pos_y), (1024, pos_y))
+        pygame.draw.line(
+            surf, fcolor, (self.pos_x, pos_y), (self.pos_x + self.width, pos_y)
+        )
         if self.text:
             msg_image = self.font.render(self.text, True, fcolor)
             msg_image_rect = msg_image.get_rect()
-            msg_image_rect.center = (1024 / 2, pos_y + WIDGET_LINE / 2)
+            msg_image_rect.center = (
+                (self.width / 2) + self.pos_x,
+                pos_y + WIDGET_LINE / 2,
+            )
             surf.blit(msg_image, msg_image_rect)
             pos_y += WIDGET_LINE
-            pygame.draw.line(surf, fcolor, (0, pos_y), (1024, pos_y))
+            pygame.draw.line(
+                surf, fcolor, (self.pos_x, pos_y), (self.pos_x + self.width, pos_y)
+            )

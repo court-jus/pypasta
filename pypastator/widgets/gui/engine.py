@@ -166,9 +166,9 @@ class EngineDetailsGUI(GUI):
             set_text=True,
             value_getter=lambda: self.model.track.engine_type_str,
         )
-        self.widgets["engine_type"].on_click = (
-            lambda _v, _b: self.model.track.engine_type.increment()
-        )
+        self.widgets[
+            "engine_type"
+        ].on_click = lambda _v, _b: self.model.track.engine_type.increment()
         self.widgets["related_to"] = Label(text="RTo", visible=False)
         self.widgets["related_to"].hook(
             self.model,
@@ -177,9 +177,9 @@ class EngineDetailsGUI(GUI):
             set_text=True,
             value_getter=lambda: self.model.related_to_str,
         )
-        self.widgets["related_to"].on_click = (
-            lambda _v, _b: self.model.related_to.increment()
-        )
+        self.widgets[
+            "related_to"
+        ].on_click = lambda _v, _b: self.model.related_to.increment()
         make_row(
             [
                 self.widgets[widget_name]
@@ -529,9 +529,7 @@ class MelotorGUI(GUI):
         make_row(row2, pos_y=pos_y)
         pos_y += VERT_SLIDER_HEIGHT + WIDGETS_MARGIN
         row = []
-        self.widgets["chord_influence"] = Knob(
-            label="Chord.I", visible=False
-        )
+        self.widgets["chord_influence"] = Knob(label="Chord.I", visible=False)
         self.widgets["chord_influence"].hook(
             self.model, "chord_influence", "melotor_gui"
         )

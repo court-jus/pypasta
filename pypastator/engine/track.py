@@ -12,8 +12,8 @@ from pypastator.constants import (
 from pypastator.engine.arp import Arp
 from pypastator.engine.chord import Chord
 from pypastator.engine.field import EnumField
-from pypastator.engine.melotor import Melotor
 from pypastator.engine.melostep import Melostep
+from pypastator.engine.melotor import Melotor
 from pypastator.engine.strum import Strum
 from pypastator.widgets.gui.base import WithMenu
 

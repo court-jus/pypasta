@@ -1,0 +1,44 @@
+{
+  "tracks": {
+    "0": {
+      "type": "arp",
+      "pitch": 45,
+      "gravity": 12,
+      "rythm": 90,
+      "pattern": 58,
+      "basevel": 71,
+      "midi_channel": 13,
+      "active": true,
+      "accentuation": 1.5,
+      "lfos": [
+        {
+          "waveform": "random",
+          "smoothness": 40,
+          "attrname": "pitch",
+          "depth": 16,
+          "rate": 24
+        },
+        {
+          "waveform": "squarish",
+          "smoothness": 0.4,
+          "attrname": "pattern",
+          "depth": 50,
+          "rate": 3
+        },
+        {
+          "waveform": "saw",
+          "attrname": "rythm",
+          "depth": 50,
+          "rate": 18
+        }
+      ]
+    }
+  },
+  "scale_name": "minor",
+  "root_note": 0,
+  "chord_progression": [
+    1,1,6,4,4,5
+  ],
+  "playing": false,
+  "title": "Example using LFOs"
+}

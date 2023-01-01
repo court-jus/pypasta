@@ -1,0 +1,160 @@
+{
+    "tracks": {
+      "0": {
+        "type": "arp",
+        "lfos": [
+          {
+            "waveform": "squarish",
+            "smoothness": 65.2,
+            "attrname": "rythm",
+            "depth": 3,
+            "rate": 16
+          }
+        ],
+        "pitch": 36,
+        "gravity": 0,
+        "rythm": 71,
+        "pattern": 64,
+        "basevel": 103,
+        "midi_channel": 11,
+        "active": true,
+        "accentuation": 1.5,
+        "related_to": 2
+      },
+      "1": {
+        "type": "arp",
+        "lfos": [
+          {
+            "waveform": "sincos",
+            "smoothness": 76.2,
+            "attrname": "basevel",
+            "depth": 28,
+            "rate": 5
+          },
+          {
+            "waveform": "random",
+            "smoothness": 76.2,
+            "attrname": "rythm",
+            "depth": 4,
+            "rate": 13
+          }
+        ],
+        "pitch": 42,
+        "gravity": 12,
+        "rythm": 63,
+        "pattern": 100,
+        "basevel": 64,
+        "midi_channel": 11,
+        "active": true,
+        "accentuation": 1.5,
+        "related_to": 2
+      },
+      "2": {
+        "type": "arp",
+        "lfos": [],
+        "pitch": 38,
+        "gravity": 12,
+        "rythm": 53,
+        "pattern": 100,
+        "basevel": 88,
+        "midi_channel": 11,
+        "active": true,
+        "accentuation": 1.5,
+        "related_to": 2
+      },
+      "3": {
+        "type": "arp",
+        "lfos": [],
+        "pitch": 51,
+        "gravity": 12,
+        "rythm": 0,
+        "pattern": 100,
+        "basevel": 101,
+        "midi_channel": 11,
+        "active": true,
+        "accentuation": 1.5,
+        "related_to": 2
+      },
+      "4": {
+        "type": "arp",
+        "lfos": [
+          {
+            "waveform": "squarish",
+            "smoothness": 96.2,
+            "attrname": "pitch",
+            "depth": 7,
+            "rate": 26
+          },
+          {
+            "waveform": "sinus",
+            "smoothness": 76.2,
+            "attrname": "rythm",
+            "depth": 15,
+            "rate": 16
+          }
+        ],
+        "pitch": 75,
+        "gravity": 12,
+        "rythm": 0,
+        "pattern": 25,
+        "basevel": 100,
+        "midi_channel": 10,
+        "active": true,
+        "accentuation": 1.5,
+        "related_to": 1
+      },
+      "5": {
+        "type": "strum",
+        "lfos": [],
+        "pitch": 106,
+        "gravity": 12,
+        "rythm": 79,
+        "pattern": 79,
+        "basevel": 42,
+        "midi_channel": 12,
+        "active": true,
+        "accentuation": 1.5,
+        "related_to": 1
+      },
+      "6": {
+        "type": "arp",
+        "lfos": [
+          {
+            "waveform": "saw",
+            "smoothness": 76.2,
+            "attrname": "rythm",
+            "depth": 14,
+            "rate": 12
+          },
+          {
+            "waveform": "squarish",
+            "smoothness": 28.200000000000003,
+            "attrname": "pitch",
+            "depth": 4,
+            "rate": 8
+          }
+        ],
+        "pitch": 45,
+        "gravity": 12,
+        "rythm": 109,
+        "pattern": 46,
+        "basevel": 100,
+        "midi_channel": 13,
+        "active": true,
+        "accentuation": 1.5,
+        "related_to": 1
+      }
+    },
+    "scale_name": "minor",
+    "root_note": 0,
+    "chord_progression": [
+      1,
+      1,
+      6,
+      4,
+      4,
+      5
+    ],
+    "playing": 25264,
+    "title": "Example with drums"
+  }

@@ -104,7 +104,8 @@ class Melostep(BaseArp):
         """
         scale_notes = self.track.session.scale.get_value()
         chord_notes = [
-            scale_notes[(degree - 1) % len(scale_notes)] for degree in self.track.session.current_chord.get_value()
+            scale_notes[(degree - 1) % len(scale_notes)]
+            for degree in self.track.session.current_chord.get_value()
         ]
         melody = []
         # Pick one of the chord notes to start with
@@ -129,7 +130,7 @@ class Melostep(BaseArp):
                 if movement > 0:
                     movement = random.randint(MIN_LEAP, MAX_LEAP)
                 else:
-                    movement = random.randint(-MAX_LEAP,-MIN_LEAP)
+                    movement = random.randint(-MAX_LEAP, -MIN_LEAP)
                 current_scale_pos = current_scale_pos + movement
             current_step_pos += 1
         return melody
@@ -203,4 +204,7 @@ class Melostep(BaseArp):
 
     @property
     def get_melo_length_knob(self):
+        """
+        Return the value for the melo length knob.
+        """
         return int(self.melo_length.get_value() / (MAX_LENGTH - MIN_LENGTH) * 127)

@@ -1,10 +1,12 @@
 """
 Tests for the melostep engine.
 """
-import pytest
 import random
 
+import pytest
+
 from pypastator.engine.melostep import Melostep
+
 
 class BaseEngineForTest(Melostep):
     """

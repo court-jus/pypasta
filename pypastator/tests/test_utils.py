@@ -1,3 +1,6 @@
+"""
+Test various utility functions.
+"""
 import pytest
 
 from pypastator.constants import (
@@ -36,4 +39,7 @@ from pypastator.engine.utils import duration_to_str
     ],
 )
 def test_duration_to_str(in_value, out_value):
+    """
+    Check conversion from duration to text representation.
+    """
     assert duration_to_str(in_value) == out_value

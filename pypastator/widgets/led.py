@@ -18,8 +18,8 @@ class Led(Labeled):
         self.bcolor_on = GREEN
         self.bcolor_off = RED
         self.debug = False
-        kw.setdefault("w", LED_SIZE)
-        kw.setdefault("h", LED_SIZE)
+        kw.setdefault("width", LED_SIZE)
+        kw.setdefault("height", LED_SIZE)
         super().__init__(*a, **kw)
 
     def widget_init(
@@ -49,7 +49,7 @@ class Led(Labeled):
             msg_image_rect = msg_image.get_rect()
             msg_image_rect.center = self.rect.center
             pygame.display.get_surface().blit(msg_image, msg_image_rect)
-
+        super().draw()
     def hide(self):
         radius = LED_SIZE / 2
         surf = pygame.display.get_surface()

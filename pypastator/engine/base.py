@@ -192,12 +192,12 @@ class BaseEngine(WithMenu):
         """
         rpat = self.get_rythm_pattern()
         result = []
-        for r in rpat:
-            length = int(r / THIRTYSECOND)
-            symbol = "o" if length == r / THIRTYSECOND else "3"
+        for duration in rpat:
+            length = int(duration / THIRTYSECOND)
+            symbol = "o" if length == duration / THIRTYSECOND else "3"
             rpr = symbol + ("." * (length - 1) if length > 1 else "")
             result.append(rpr)
-        return "".join([r for r in result])
+        return "".join(result)
 
     @property
     def related_to_str(self):

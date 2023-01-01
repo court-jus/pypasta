@@ -17,9 +17,9 @@ class Separator(Label):
         self.fcolor_selected = None
         self.bcolor_selected = None
         kw.setdefault("font_size", FONT_SIZE)
-        kw.setdefault("x", 0)
-        kw.setdefault("w", 1024)
-        kw.setdefault("h", WIDGET_LINE + 1 if kw.get("text") else 1)
+        kw.setdefault("pos_x", 0)
+        kw.setdefault("width", 1024)
+        kw.setdefault("height", WIDGET_LINE + 1 if kw.get("text") else 1)
         kw.setdefault("fcolor", WHITE)
         kw.setdefault("bcolor", BLACK)
         super().__init__(*a, **kw)

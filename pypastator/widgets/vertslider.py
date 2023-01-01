@@ -13,18 +13,11 @@ class VertSlider(Slider):
     """
 
     def __init__(self, *a, **kw):
-        kw.setdefault("w", VERT_SLIDER_WIDTH)
-        kw.setdefault("h", VERT_SLIDER_HEIGHT)
+        kw.setdefault("width", VERT_SLIDER_WIDTH)
+        kw.setdefault("height", VERT_SLIDER_HEIGHT)
         super().__init__(*a, **kw)
 
-    def draw(self):
-        """
-        Draw this widget on a pygame surface.
-        """
-        fcolor = self.fcolor_selected if self.selected else self.fcolor
-        bcolor = self.bcolor_selected if self.selected else self.bcolor
-        brect = pygame.Rect(0, 0, self.width - 2, self.height - 2)
-        brect.center = self.rect.center
+    def _draw_cursor(self, surf, fcolor):
         cursor = pygame.Rect(0, 0, self.width, 5)
         cell_size = (self.rect.height - 2) / self.ratio
         cursor.center = (
@@ -32,9 +25,10 @@ class VertSlider(Slider):
             (self.rect.bottom - 2)
             - int(cell_size * (self.value or 0) + 0.5 * cell_size),
         )
-        surf = pygame.display.get_surface()
-        surf.fill(fcolor, self.rect)
-        surf.fill(bcolor, brect)
+        surf.fill(fcolor, cursor)
+
+    def _draw_stripes(self, surf, fcolor):
+        cell_size = (self.rect.height - 2) / self.ratio
         if self.stripes:
             for i in range(self.ratio):
                 line_pos = int(cell_size * i + self.pos_y + 0.5 * cell_size)
@@ -44,12 +38,13 @@ class VertSlider(Slider):
                     (self.rect.left, line_pos),
                     (self.rect.right - 1, line_pos),
                 )
+
+    def _draw_modulation_dot(self, surf):
         if self.modulation:
             line_pos = self.pos_y + int(
                 (self.value - self.modulation) * self.height / self.ratio
             )
             pygame.draw.circle(surf, GREEN, (self.rect.right - 3, line_pos), 3)
-        surf.fill(fcolor, cursor)
 
     def get_click_value(self, pos):
         """

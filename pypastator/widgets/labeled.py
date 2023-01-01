@@ -32,10 +32,10 @@ class Labeled(BaseWidget):
                 text=label,
                 fcolor=self.fcolor,
                 bcolor=self.bcolor,
-                w=WIDGET_LABEL_SIZE,
-                h=self.height,
-                x=self.pos_x,
-                y=self.pos_y,
+                width=WIDGET_LABEL_SIZE,
+                height=self.height,
+                pos_x=self.pos_x,
+                pos_y=self.pos_y,
                 visible=self.visible,
             )
             self.pos_x += WIDGET_LABEL_SIZE + WIDGETS_MARGIN

@@ -15,8 +15,8 @@ class Knob(Labeled):
     """
 
     def __init__(self, *a, **kw):
-        kw.setdefault("w", KNOB_SIZE)
-        kw.setdefault("h", KNOB_SIZE)
+        kw.setdefault("width", KNOB_SIZE)
+        kw.setdefault("height", KNOB_SIZE)
         super().__init__(*a, **kw)
 
     def draw(self):
@@ -39,7 +39,7 @@ class Knob(Labeled):
             dest_x = math.cos(origin_line_angle) * (radius - 3) + self.rect.center[0]
             dest_y = math.sin(origin_line_angle) * (radius - 3) + self.rect.center[1]
             pygame.draw.circle(surf, GREEN, (dest_x, dest_y), 3)
-
+        super().draw()
     def get_click_value(self, pos):
         """
         Get the value based on the position of the click.

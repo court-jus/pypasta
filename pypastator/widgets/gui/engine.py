@@ -140,7 +140,7 @@ class EngineDetailsGUI(GUI):
         """
         pos_y = self.pos_y
         self.widgets["separator"] = Separator(
-            text="Track details", y=pos_y, visible=False
+            text="Track details", pos_y=pos_y, visible=False
         )
         pos_y += WIDGET_LINE + WIDGETS_MARGIN
         # First row: track id, midi_channel, engine_type and related_to, LFO
@@ -148,7 +148,7 @@ class EngineDetailsGUI(GUI):
             text=f"Trk {self.model.track.track_id}", visible=False
         )
         self.widgets["midi_channel"] = Slider(
-            w=SLIDER_WIDTH / 2,
+            width=SLIDER_WIDTH / 2,
             label="Chan.",
             ratio=16,
             stripes=True,
@@ -167,7 +167,6 @@ class EngineDetailsGUI(GUI):
             value_getter=lambda: self.model.track.engine_type_str,
         )
         self.widgets["engine_type"].on_click = (
-            # todo: handle different buttons
             lambda _v, _b: self.model.track.engine_type.increment()
         )
         self.widgets["related_to"] = Label(text="RTo", visible=False)
@@ -179,7 +178,6 @@ class EngineDetailsGUI(GUI):
             value_getter=lambda: self.model.related_to_str,
         )
         self.widgets["related_to"].on_click = (
-            # todo: handle different buttons
             lambda _v, _b: self.model.related_to.increment()
         )
         make_row(
@@ -196,9 +194,9 @@ class EngineDetailsGUI(GUI):
         )
         # Second row: pattern number, pattern str
         pos_y += WIDGET_LINE
-        self.widgets["pattern"] = Label(text="P.", w=BUTTON_WIDTH, visible=False)
+        self.widgets["pattern"] = Label(text="P.", width=BUTTON_WIDTH, visible=False)
         self.widgets["pattern"].hook(self.model, "pattern", "menu", set_text=True)
-        self.widgets["pattern_str"] = Label(text="P.", w=BIG_LABEL_W, visible=False)
+        self.widgets["pattern_str"] = Label(text="P.", width=BIG_LABEL_W, visible=False)
         self.widgets["pattern_str"].hook(
             self.model,
             "pattern",
@@ -260,9 +258,9 @@ class EngineDetailsGUI(GUI):
         )
         # Third row: rythm number, rythm str
         pos_y += WIDGET_LINE
-        self.widgets["rythm"] = Label(text="R.", w=BUTTON_WIDTH, visible=False)
+        self.widgets["rythm"] = Label(text="R.", width=BUTTON_WIDTH, visible=False)
         self.widgets["rythm"].hook(self.model, "rythm", "menu", set_text=True)
-        self.widgets["rythm_str"] = Label(text="R.", w=BIG_LABEL_W, visible=False)
+        self.widgets["rythm_str"] = Label(text="R.", width=BIG_LABEL_W, visible=False)
         self.widgets["rythm_str"].hook(
             self.model,
             "rythm",
@@ -310,12 +308,12 @@ class LFOGUI(GUI):
         Initialize widgets.
         """
         self.widgets["separator"] = Separator(
-            text="Low Frequency Oscillators", y=self.pos_y, visible=False
+            text="Low Frequency Oscillators", pos_y=self.pos_y, visible=False
         )
         self.pos_y += WIDGET_LINE + WIDGETS_MARGIN
         self.widgets["add_lfo"] = Label(
             text="Add",
-            w=WIDGET_LABEL_SIZE * 7 + WIDGETS_MARGIN * 5,
+            width=WIDGET_LABEL_SIZE * 7 + WIDGETS_MARGIN * 5,
             visible=False,
         )
         self.widgets["add_lfo"].on_click = lambda _v, _b: self.increment(
@@ -326,14 +324,14 @@ class LFOGUI(GUI):
         )
         self.widgets["label_waveform"] = Label(
             text="Wave",
-            w=WIDGET_LABEL_SIZE * 1.5,
+            width=WIDGET_LABEL_SIZE * 1.5,
             visible=False,
             bcolor=BLACK,
             bcolor_selected=BLACK,
         )
         self.widgets["label_dest"] = Label(
             text="Dest.",
-            w=WIDGET_LABEL_SIZE * 1.5,
+            width=WIDGET_LABEL_SIZE * 1.5,
             visible=False,
             bcolor=BLACK,
             bcolor_selected=BLACK,
@@ -379,7 +377,7 @@ class LFOGUI(GUI):
             self.widgets[widget_key] = Label(
                 text=f"waveform{key}",
                 visible=False,
-                w=WIDGET_LABEL_SIZE * 1.5,
+                width=WIDGET_LABEL_SIZE * 1.5,
             )
             self.widgets[widget_key].hook(
                 lfo,
@@ -394,7 +392,7 @@ class LFOGUI(GUI):
             self.widgets[widget_key] = Label(
                 text=f"dest{key}",
                 visible=False,
-                w=WIDGET_LABEL_SIZE * 1.5,
+                width=WIDGET_LABEL_SIZE * 1.5,
             )
             self.widgets[widget_key].hook(lfo, "dest_name", "lfo_menu", set_text=True)
             self.widgets[widget_key].on_click = self.make_callback(key, "destination")
@@ -441,7 +439,6 @@ class LFOGUI(GUI):
         """
 
         def callback(_val, _b):
-            # TODO: handle different buttons
             self.apply_increment(lfo_number, attrname)
 
         return callback
@@ -504,7 +501,9 @@ class MelotorGUI(GUI):
         if not hasattr(self.model, "weights"):
             return
         pos_y = self.pos_y
-        self.widgets["separator"] = Separator(text="Melotor", y=pos_y, visible=False)
+        self.widgets["separator"] = Separator(
+            text="Melotor", pos_y=pos_y, visible=False
+        )
         pos_y += WIDGET_LINE + WIDGETS_MARGIN
         row1 = []
         row2 = []
@@ -531,14 +530,14 @@ class MelotorGUI(GUI):
         pos_y += VERT_SLIDER_HEIGHT + WIDGETS_MARGIN
         row = []
         self.widgets["chord_influence"] = Knob(
-            label="Chord.I", visible=False, debug=True
+            label="Chord.I", visible=False
         )
         self.widgets["chord_influence"].hook(
             self.model, "chord_influence", "melotor_gui"
         )
         self.widgets["chord_influence"].on_click = self.model.chord_influence.set_value
         row.append(self.widgets["chord_influence"])
-        self.widgets["melo_length"] = Knob(label="Len", visible=False, debug=True)
+        self.widgets["melo_length"] = Knob(label="Len", visible=False)
         self.widgets["melo_length"].hook(
             self.model,
             "melo_length",
@@ -550,8 +549,7 @@ class MelotorGUI(GUI):
         self.widgets["change_frequency"] = Label(
             label="Ch.Frq",
             visible=False,
-            debug=True,
-            w=MED_LABEL_W,
+            width=MED_LABEL_W,
         )
         self.widgets["change_frequency"].hook(
             self.model,
@@ -574,10 +572,10 @@ class MelotorGUI(GUI):
         row.append(self.widgets["change_intensity"])
         make_row(row, pos_y=pos_y)
         pos_y += VERT_SLIDER_HEIGHT + WIDGETS_MARGIN
-        self.widgets["melo_reset"] = Label(text="Reset", visible=False, debug=True)
+        self.widgets["melo_reset"] = Label(text="Reset", visible=False)
         self.widgets["melo_reset"].on_click = lambda _v, _b: self.model.reset_melo()
         self.widgets["current_melo"] = Label(
-            text="Current melo", visible=False, w=BIG_LABEL_W
+            text="Current melo", visible=False, width=BIG_LABEL_W
         )
         self.widgets["current_melo"].hook(
             self.model,

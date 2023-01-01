@@ -39,10 +39,10 @@ class BaseWidget:
         self,
         fcolor=LIGHT_GRAY,
         bcolor=DARK_GRAY,
-        w=BASE_WIDGET_WIDTH,
-        h=BASE_WIDGET_HEIGHT,
-        x=1024,
-        y=768,
+        width=BASE_WIDGET_WIDTH,
+        height=BASE_WIDGET_HEIGHT,
+        pos_x=1024,
+        pos_y=768,
         on_click=None,
         value=None,
         visible=True,
@@ -58,8 +58,8 @@ class BaseWidget:
         self.value = value
         self.selected = False
         self.modulation = 0
-        self.pos_x, self.pos_y = x, y
-        self.width, self.height = w, h
+        self.pos_x, self.pos_y = pos_x, pos_y
+        self.width, self.height = width, height
         self.visible = visible
         self.rect = pygame.Rect(0, 0, self.width, self.height)
         self.rect.center = (

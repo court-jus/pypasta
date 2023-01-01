@@ -143,6 +143,7 @@ class Melotor(BaseArp):
         already_changed = set()
         while changes > 0:
             change_index = random.randint(0, len(current) - 1)
+            # Avoid changing the same note twice
             while change_index in already_changed:
                 change_index = random.randint(0, len(current) - 1)
             already_changed.add(change_index)
@@ -150,6 +151,7 @@ class Melotor(BaseArp):
                 already_changed = set()
             new_note = random.choice(choices)
             if len(choices) > 1:
+                # Avoid replacing a note by itself
                 while new_note == current[change_index]:
                     new_note = random.choice(choices)
             new_value[change_index] = new_note
@@ -174,10 +176,10 @@ class Melotor(BaseArp):
         """
         Trigger melotor evolution based on ticks.
         """
-        tick_evolution = self.change_frequency.get_value()
         if ticks % BAR == 0:
             # Always start bar at the start of the melo
             self.pos.set_value(0)
+        tick_evolution = self.change_frequency.get_value()
         if ticks % tick_evolution == 0:
             self.evolve_melo()
         return super().midi_tick(ticks, timestamp, chord_number)
@@ -217,4 +219,7 @@ class Melotor(BaseArp):
 
     @property
     def get_melo_length_knob(self):
+        """
+        Get the value for the melo length knob.
+        """
         return int(self.melo_length.get_value() / (MAX_LENGTH - MIN_LENGTH) * 127)

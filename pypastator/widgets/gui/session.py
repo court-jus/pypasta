@@ -24,10 +24,10 @@ class SessionGUI(GUI):
         """
         pos_y = self.pos_y
         self.hideable = False
-        self.widgets["separator"] = Separator(y=pos_y, visible=False)
+        self.widgets["separator"] = Separator(pos_y=pos_y, visible=False)
         pos_y += WIDGETS_MARGIN
         self.widgets["scale_label"] = Label(text="Scale", visible=False)
-        self.widgets["scale"] = Label(text="", w=BIG_LABEL_W, visible=False)
+        self.widgets["scale"] = Label(text="", width=BIG_LABEL_W, visible=False)
         self.widgets["scale"].hook(
             self.model,
             "scale",
@@ -35,12 +35,7 @@ class SessionGUI(GUI):
             set_text=True,
             value_getter=lambda: self.model.scale_str,
         )
-        self.widgets["scale"].on_click = (
-            # TODO: handle different buttons
-            lambda v, _b: self.model.scale.increment()
-            if v == 127
-            else None
-        )
+        self.widgets["scale"].on_click = lambda _v, _b: self.model.scale.increment()
         make_row(
             [
                 self.widgets[widget_name]
@@ -54,7 +49,7 @@ class SessionGUI(GUI):
         # Second row
         pos_y += WIDGET_LINE
         self.widgets["chord_label"] = Label(text="Chord", visible=False)
-        self.widgets["chord"] = Label(text="Chord", w=BIG_LABEL_W, visible=False)
+        self.widgets["chord"] = Label(text="Chord", width=BIG_LABEL_W, visible=False)
         self.widgets["chord"].hook(
             self.model,
             "scale",

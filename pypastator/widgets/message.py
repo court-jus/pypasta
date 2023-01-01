@@ -18,9 +18,9 @@ class Message(Label):
     """
 
     def __init__(self, *a, **kw):
-        kw.setdefault("x", WIDGETS_MARGIN)
-        kw.setdefault("y", 768 - BASE_WIDGET_HEIGHT - WIDGETS_MARGIN)
-        kw.setdefault("w", 1024 - 2 * WIDGETS_MARGIN)
+        kw.setdefault("pos_x", WIDGETS_MARGIN)
+        kw.setdefault("pos_y", 768 - BASE_WIDGET_HEIGHT - WIDGETS_MARGIN)
+        kw.setdefault("width", 1024 - 2 * WIDGETS_MARGIN)
         kw.setdefault("text", DEFAULT_MESSAGE)
         super().__init__(*a, **kw)
         self.shown_time = None

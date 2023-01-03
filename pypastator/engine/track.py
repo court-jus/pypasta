@@ -4,6 +4,7 @@ Track holds the details about the musical engine of a particular track.
 from pypastator.constants import (
     ENGINE_TYPE_ARP,
     ENGINE_TYPE_CHORD,
+    ENGINE_TYPE_MELOSTEP,
     ENGINE_TYPE_MELOTOR,
     ENGINE_TYPE_STRUM,
     ENGINE_TYPES,
@@ -12,6 +13,7 @@ from pypastator.engine.arp import Arp
 from pypastator.engine.chord import Chord
 from pypastator.engine.field import EnumField
 from pypastator.engine.melotor import Melotor
+from pypastator.engine.melostep import Melostep
 from pypastator.engine.strum import Strum
 from pypastator.widgets.gui.base import WithMenu
 
@@ -59,6 +61,8 @@ class Track(WithMenu):
             self.engine = Strum(self)
         elif engine_type == ENGINE_TYPE_MELOTOR:
             self.engine = Melotor(self)
+        elif engine_type == ENGINE_TYPE_MELOSTEP:
+            self.engine = Melostep(self)
         if change:
             self.engine.load(data)
 

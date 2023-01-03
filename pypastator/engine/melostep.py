@@ -1,8 +1,7 @@
 """
-Melotor Engine.
+Melostep Engine.
 
-It takes a random note from the scale, base on
-user chosen weights.
+It creates a melody by following steps, skips and leaps
 """
 import random
 
@@ -23,8 +22,7 @@ from pypastator.engine.field import EnumField, Field, ListField
 from pypastator.engine.utils import duration_to_str
 
 LOADABLE_KEYS = (
-    "weights",
-    "chord_influence",
+    "steps",
     "melo_length",
     "change_frequency",
     "change_intensity",
@@ -35,22 +33,18 @@ SLOWEST_EVOLUTION = 32 * BAR
 MIN_LENGTH = 2
 MAX_LENGTH = 24
 
+MIN_LEAP = 3
+MAX_LEAP = 6
 
-class Melotor(BaseArp):
+
+class Melostep(BaseArp):
     """
-    Melotor Engine.
-
-    IDEAS:
-    * to account for variable pattern length determined by the rythm parameter,
-      allow the notes pattern to be reset whenever the rythm pattern is reset
-    * cut parts of the generated melody and repeat them (like in the bach
-      prelidium)
+    Melostep Engine.
     """
 
     def __init__(self, track):
-        self.weights = ListField(default=[10, 2, 4, 3, 8, 6, 8, 5, 5, 0, 3, 0, 2])
-        self.chord_influence = Field(default=48)
-        self.melo_length = Field(default=5, min_value=MIN_LENGTH, max_value=MAX_LENGTH)
+        self.steps = ListField(default=[0, 1, 1, -2, 3, -3])
+        self.melo_length = Field(default=12, min_value=MIN_LENGTH, max_value=MAX_LENGTH)
         self.change_frequency = EnumField(
             default=8,
             choices=[
@@ -100,65 +94,57 @@ class Melotor(BaseArp):
         """
         Reset the current set of random choices.
         """
-        choices = self.generate_new_choices()
-        if not choices:
-            choices = [0]
-        melo = [random.choice(choices) for _ in range(self.melo_length.get_value())]
-        self.current_melo.set_value(melo)
-        return melo
+        melody = self.generate_new_melody()
+        self.current_melo.set_value(melody)
+        return melody
 
-    def generate_new_choices(self):
+    def generate_new_melody(self):
         """
-        Generate a new set of random choices.
+        Generate a new melody.
         """
         scale_notes = self.track.session.scale.get_value()
         chord_notes = [
-            degree - 1 for degree in self.track.session.current_chord.get_value()
+            scale_notes[(degree - 1) % len(scale_notes)] for degree in self.track.session.current_chord.get_value()
         ]
-        chord_influence = self.chord_influence.get_value() / 128
-        choices = []
-        for degree, weight in enumerate(self.weights.get_value()):
-            if degree in chord_notes and chord_influence > 0.1 and weight == 0:
-                weight = 20 * chord_influence
-            in_chord_ratio = 1 + (1 if degree in chord_notes else -1) * chord_influence
-            tuned_weight = weight * in_chord_ratio
-            octave = degree // len(scale_notes)
-            choices.extend(
-                [scale_notes[degree % len(scale_notes)] + octave * 12]
-                * int(tuned_weight)
-            )
-        return choices
+        melody = []
+        # Pick one of the chord notes to start with
+        current_note = random.choice(chord_notes)
+        steps = self.steps.get_value()
+        current_step_pos = 0
+        try:
+            current_scale_pos = scale_notes.index(current_note)
+        except ValueError:
+            current_scale_pos = 0
+        while len(melody) < self.melo_length.get_value():
+            octave = 0
+            if current_scale_pos < 0:
+                octave += current_scale_pos // 12
+            current_note = scale_notes[current_scale_pos % len(scale_notes)]
+            melody.append(current_note + 12 * octave)
+            movement = steps[current_step_pos % len(steps)]
+            if abs(movement) < 3:
+                # Step or Skip, that's a deterministic move
+                current_scale_pos = current_scale_pos + movement
+            else:
+                if movement > 0:
+                    movement = random.randint(MIN_LEAP, MAX_LEAP)
+                else:
+                    movement = random.randint(-MAX_LEAP,-MIN_LEAP)
+                current_scale_pos = current_scale_pos + movement
+            current_step_pos += 1
+        return melody
 
     def evolve_melo(self):
         """
         Take current melo and slighty change it.
         """
-        current = self.get_melotor_choices()
-        new_value = current[:]
-        intensity = self.change_intensity.get_value()
-        # Full intensity = change all notes
-        # Zero intensity = change nothing
-        changes = int(intensity / 127 * len(current))
-        choices = self.generate_new_choices()
-        already_changed = set()
-        while changes > 0:
-            change_index = random.randint(0, len(current) - 1)
-            while change_index in already_changed:
-                change_index = random.randint(0, len(current) - 1)
-            already_changed.add(change_index)
-            if len(already_changed) == len(current):
-                already_changed = set()
-            new_note = random.choice(choices)
-            if len(choices) > 1:
-                while new_note == current[change_index]:
-                    new_note = random.choice(choices)
-            new_value[change_index] = new_note
-            changes -= 1
-        self.current_melo.set_value(new_value, force=True)
+        self.reset_melo()
+        current = self.get_choices()
+        return current
 
-    def get_melotor_choices(self):
+    def get_choices(self):
         """
-        Get the possible choices for melotor to pick from.
+        Get the possible choices for melostep to pick from.
         """
         current_value = self.current_melo.get_value()
         if current_value:
@@ -166,13 +152,13 @@ class Melotor(BaseArp):
         return self.reset_melo()
 
     def get_candidate_notes(self):
-        choices = self.get_melotor_choices()
+        choices = self.get_choices()
         # transposed = self.transpose_notes(choices, centered=False)
         return choices
 
     def midi_tick(self, ticks, timestamp, chord_number):
         """
-        Trigger melotor evolution based on ticks.
+        Trigger melostep evolution based on ticks.
         """
         tick_evolution = self.change_frequency.get_value()
         if ticks % BAR == 0:

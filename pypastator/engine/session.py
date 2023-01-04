@@ -40,22 +40,19 @@ DEFAULT_TRACK = {
 LOADABLE_KEYS = ("scale_name", "root_note", "chord_progression", "playing", "title")
 
 
-class Session(WithMenu):
+class Harmony:
     """
-    Definition of a Session.
+    Abstract helper to hold harmony parameters of the session.
     """
 
-    def __init__(self, pasta):
+    def __init__(self):
         super().__init__()
-        self.pasta = pasta
-        self.scale_name = "major"
-        self.root_note = 0
-        self.chords_mode = "progression"
+        self.root_note = Field(max_value=11)
         self.chord_progression = ListField()
         self.chord_progression.set_value([1])
         self.progression_pos = 0
         self.next_chord = Field()
-        self.title = ""
+        self.scale_name = "major"
         self.scale = EnumField(choices=SCALES)
         self.scale.set_value(SCALE_NAMES.index(self.scale_name))
         self.chord_type = EnumField(choices=CHORDS)
@@ -68,35 +65,29 @@ class Session(WithMenu):
                 for degree_in_chord in self.chord_type.get_value()
             ]
         )
-        self.tracks = {}
-        self.selected_track = None
-        self.playing = True
-        self.mouse_menu = None
-        self.cc_controls = {}
-        if "pytest" not in sys.modules:
-            self.message = Message()
-            self.main_menu = SessionGUI(self, 300)
-            self.main_menu.show()
-            self.main_menu.activate_widget(self.main_menu.default_widget)
-            self.mouse_menu = MouseGUI(self)
-            self.settings_menu = SettingsGUI(self)
+        self.chords_mode = "progression"
 
     @property
     def scale_str(self):
         """
         Get a str representation of the scale.
         """
-        return (
-            f"{pygame.midi.midi_to_ansi_note(self.root_note + 12)[:-1]}"
-            f"{SCALE_NAMES[self.scale.value]}"
-        )
+        return f"{self.root_note_str} {SCALE_NAMES[self.scale.value]}"
+
+    @property
+    def root_note_str(self):
+        """
+        Get a str representation of the root note.
+        """
+        return f"{pygame.midi.midi_to_ansi_note(self.root_note.get_value() + 12)[:-1]}"
 
     def get_scale_notes(self):
         """
         Get the notes in current scale.
         """
         return [
-            self.root_note + note_in_scale for note_in_scale in self.scale.get_value()
+            self.root_note.get_value() + note_in_scale
+            for note_in_scale in self.scale.get_value()
         ]
 
     @property
@@ -125,14 +116,49 @@ class Session(WithMenu):
         )
         if self.next_chord.get_value():
             next_chord_notes = [
-                scale_notes[(degree_in_chord + self.next_chord.get_value() - 2) % len(scale_notes)]
+                scale_notes[
+                    (degree_in_chord + self.next_chord.get_value() - 2)
+                    % len(scale_notes)
+                ]
                 + 12
                 for degree_in_chord in self.chord_type.get_value()
             ]
-            result = result + " => " + (", ".join(
-                [pygame.midi.midi_to_ansi_note(note)[:-1] for note in next_chord_notes]
-            ))
+            result = (
+                result
+                + " => "
+                + (
+                    ", ".join(
+                        [
+                            pygame.midi.midi_to_ansi_note(note)[:-1]
+                            for note in next_chord_notes
+                        ]
+                    )
+                )
+            )
         return result
+
+
+class Session(Harmony, WithMenu):
+    """
+    Definition of a Session.
+    """
+
+    def __init__(self, pasta):
+        super().__init__()
+        self.pasta = pasta
+        self.title = ""
+        self.tracks = {}
+        self.selected_track = None
+        self.playing = True
+        self.mouse_menu = None
+        self.cc_controls = {}
+        if "pytest" not in sys.modules:
+            self.message = Message()
+            self.main_menu = SessionGUI(self, 300)
+            self.main_menu.show()
+            self.main_menu.activate_widget(self.main_menu.default_widget)
+            self.mouse_menu = MouseGUI(self)
+            self.settings_menu = SettingsGUI(self)
 
     def new_song(self):
         """
@@ -153,7 +179,7 @@ class Session(WithMenu):
         self.next_chord.set_value(0, force=True)
         self.title = self.get_title(generate_new=True)
         self.scale_name = "major"
-        self.root_note = 0
+        self.root_note.set_value(0, force=True)
         self.chords_mode = "progression"
 
     def load(self, filename):
@@ -162,7 +188,9 @@ class Session(WithMenu):
         """
         self.new_song()
         data = {}
-        with open(os.path.join("songs", filename), "r", encoding="utf8") as file_pointer:
+        with open(
+            os.path.join("songs", filename), "r", encoding="utf8"
+        ) as file_pointer:
             data = json.load(file_pointer)
         for loadable_key in LOADABLE_KEYS:
             if loadable_key in data:
@@ -322,9 +350,7 @@ class Session(WithMenu):
             if self.next_chord.get_value():
                 self.current_chord.set_value(
                     [
-                        degree_in_chord
-                        + self.next_chord.get_value()
-                        - 1
+                        degree_in_chord + self.next_chord.get_value() - 1
                         for degree_in_chord in self.chord_type.get_value()
                     ]
                 )

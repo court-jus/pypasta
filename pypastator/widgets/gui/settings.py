@@ -64,10 +64,7 @@ class ModalGUI(GUI):
         """
         True if self is visible or any of its submenus.
         """
-        return (
-            self.visible or
-            any(sub.visible for sub in self.sub_menus.values())
-        )
+        return self.visible or any(sub.visible for sub in self.sub_menus.values())
 
     def update_widgets(self):
         """
@@ -150,7 +147,7 @@ class SettingsGUI(ModalGUI):
             "new_song": "New",
             "load_song": "Load...",
             "save_song": "Save",
-            "rename_song": "Name..."
+            "rename_song": "Name...",
         }.items():
             self.widgets[btn_id] = Label(text=btn_label, **kwargs)
             self.widgets[btn_id].on_click = self.click_callback_maker(btn_id)
@@ -229,6 +226,7 @@ class SettingsGUI(ModalGUI):
             self.model.save()
         elif self.active_widget == "rename_song":
             self.show_submenu("rename_song")
+
 
 class LoadSongGUI(ModalGUI):
     """

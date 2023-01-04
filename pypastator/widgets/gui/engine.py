@@ -120,7 +120,11 @@ class MainEngineGUI(GUI):
         elif ctrl == ENGINE_CC_MUTE and cc_value == 127:
             self.model.active.increment()
         # Select this track
-        elif ctrl == ENGINE_CC_SELECT and cc_value == 127 and self.model.track.session.chords_mode != "manual":
+        elif (
+            ctrl == ENGINE_CC_SELECT
+            and cc_value == 127
+            and self.model.track.session.chords_mode != "manual"
+        ):
             self.model.track.session.select_track(self.model.track.track_id)
 
 

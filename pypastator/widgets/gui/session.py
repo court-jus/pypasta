@@ -1,7 +1,7 @@
 """
 GUIs for the Session model.
 """
-from pypastator.constants import BIG_LABEL_W, WIDGET_LINE, WIDGETS_MARGIN
+from pypastator.constants import WIDGET_LINE, WIDGETS_MARGIN
 from pypastator.widgets.gui.base import GUI
 from pypastator.widgets.gui.row import make_row
 from pypastator.widgets.label import Label
@@ -26,20 +26,39 @@ class SessionGUI(GUI):
         self.hideable = False
         self.widgets["separator"] = Separator(pos_y=pos_y, visible=False)
         pos_y += WIDGETS_MARGIN
-        self.widgets["scale_label"] = Label(text="Scale", visible=False)
-        self.widgets["scale"] = Label(text="", width=BIG_LABEL_W, visible=False)
-        self.widgets["scale"].hook(
+        self.widgets["root_label"] = Label(text="Root", visible=False)
+        self.widgets["root_note"] = Label(text="", visible=False)
+        self.widgets["root_note"].hook(
             self.model,
-            "scale",
+            "root_note",
             "menu",
             set_text=True,
-            value_getter=lambda: self.model.scale_str,
+            value_getter=lambda: self.model.root_note_str,
         )
-        self.widgets["scale"].on_click = lambda _v, _b: (self.activate_widget("scale"), self.model.scale.increment())
+        self.widgets["root_note"].on_click = lambda _v, _b: (
+            self.activate_widget("root_note"),
+            self.model.scale.increment(),
+        )
+        self.widgets["scale_label"] = Label(text="Scale", visible=False)
+        self.widgets["scale"] = Label(text="", visible=False)
+        for fieldname in ("scale", "root_note"):
+            self.widgets["scale"].hook(
+                self.model,
+                fieldname,
+                f"{fieldname}_to_scale",
+                set_text=True,
+                value_getter=lambda: self.model.scale_str,
+            )
+        self.widgets["scale"].on_click = lambda _v, _b: (
+            self.activate_widget("scale"),
+            self.model.scale.increment(),
+        )
         make_row(
             [
                 self.widgets[widget_name]
                 for widget_name in (
+                    "root_label",
+                    "root_note",
                     "scale_label",
                     "scale",
                 )
@@ -49,36 +68,25 @@ class SessionGUI(GUI):
         # Second row
         pos_y += WIDGET_LINE
         self.widgets["chord_label"] = Label(text="Chord", visible=False)
-        self.widgets["chord"] = Label(text="Chord", width=BIG_LABEL_W, visible=False)
-        self.widgets["chord"].hook(
-            self.model,
+        self.widgets["chord"] = Label(text="Chord", visible=False)
+        for fieldname in (
             "scale",
-            "scale_to_chord",
-            set_text=True,
-            value_getter=lambda: self.model.chord_str,
-        )
-        self.widgets["chord"].hook(
-            self.model,
             "chord_type",
-            "chord_to_chord",
-            set_text=True,
-            value_getter=lambda: self.model.chord_str,
-        )
-        self.widgets["chord"].hook(
-            self.model,
             "current_chord",
-            "current_chord_to_chord",
-            set_text=True,
-            value_getter=lambda: self.model.chord_str,
-        )
-        self.widgets["chord"].hook(
-            self.model,
             "next_chord",
-            "next_chord_to_chord",
-            set_text=True,
-            value_getter=lambda: self.model.chord_str,
+            "root_note",
+        ):
+            self.widgets["chord"].hook(
+                self.model,
+                fieldname,
+                f"{fieldname}_to_chord",
+                set_text=True,
+                value_getter=lambda: self.model.chord_str,
+            )
+        self.widgets["chord"].on_click = lambda v, _b: (
+            self.activate_widget("chord"),
+            self.increment(),
         )
-        self.widgets["chord"].on_click = lambda v, _b: (self.activate_widget("chord"), self.increment())
         make_row(
             [
                 self.widgets[widget_name]

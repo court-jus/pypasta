@@ -5,6 +5,7 @@ Pastator is a multi-channel Midi Arpegiator.
 """
 import heapq
 import json
+import traceback
 
 import pygame.font
 import pygame.midi
@@ -61,34 +62,52 @@ class Pastator:
                 available_devices["output"][name.decode()] = i
         return available_devices
 
-    def set_clock_device(self, dev_name):
+    def set_clock_device(self, dev_name=None, dev_id=None):
         """
         Set the MIDI clock device.
         """
         available_devices = self._get_available_midi_devices()
-        if dev_name in available_devices["input"]:
+        try:
             if self.devices["clock"] is not None:
                 self.devices["clock"].close()
-            self.devices["clock"] = pygame.midi.Input(
-                available_devices["input"][dev_name]
-            )
-        else:
-            print(f"WARN: input device [{dev_name}] is not available.")
+            if dev_id is not None:
+                self.devices["clock"] = pygame.midi.Input(dev_id)
+                print(f"INFO: clock device [{dev_id}] selected.")
+            elif dev_name in available_devices["input"]:
+                self.devices["clock"] = pygame.midi.Input(
+                    available_devices["input"][dev_name]
+                )
+                print(f"INFO: clock device [{dev_name}] selected.")
+            else:
+                print(f"WARN: clock device [{dev_name}] is not available.")
+        except:
+            print(f"ERROR: Cannot open clock device [{dev_name or dev_id}].")
+            traceback.print_exc()
 
-    def add_input_output_device(self, dev_name, device_type="ctrl", direction="input"):
+    def add_input_output_device(
+        self, dev_name=None, dev_id=None, device_type="ctrl", direction="input"
+    ):
         """
         Add an input or output device (input for ctrl or note_in, output for note_out).
         """
-        available_devices = self._get_available_midi_devices()
         device_class = (
             pygame.midi.Output if direction == "output" else pygame.midi.Input
         )
-        if dev_name in available_devices[direction]:
-            self.devices[device_type].append(
-                device_class(available_devices[direction][dev_name])
-            )
-        else:
-            print(f"WARN: {direction} device [{dev_name}] is not available.")
+        available_devices = self._get_available_midi_devices()
+        try:
+            if dev_id is not None:
+                self.devices[device_type].append(device_class(dev_id))
+                print(f"INFO: {direction} device [{dev_id}] added for {device_type}.")
+            elif dev_name in available_devices[direction]:
+                self.devices[device_type].append(
+                    device_class(available_devices[direction][dev_name])
+                )
+                print(f"INFO: {direction} device [{dev_name}] added for {device_type}.")
+            else:
+                print(f"WARN: {direction} device [{dev_name}] is not available.")
+        except:
+            print(f"ERROR: Cannot open {direction} device [{dev_name or dev_id}].")
+            traceback.print_exc()
 
     def load_settings(self):
         """
@@ -103,10 +122,12 @@ class Pastator:
                     self.set_clock_device(value)
                 elif key in ("ctrl", "note_in"):
                     for dev_name in value:
-                        self.add_input_output_device(dev_name, key)
+                        self.add_input_output_device(dev_name=dev_name, device_type=key)
                 elif key == "output":
                     for dev_name in value:
-                        self.add_input_output_device(dev_name, key, "output")
+                        self.add_input_output_device(
+                            dev_name=dev_name, device_type=key, direction="output"
+                        )
 
     def save_settings(self):
         """

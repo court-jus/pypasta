@@ -23,7 +23,7 @@ from pypastator.engine.utils import int_to_roman
 from pypastator.widgets.gui.base import WithMenu
 from pypastator.widgets.gui.mouse import MouseGUI
 from pypastator.widgets.gui.session import SessionGUI
-from pypastator.widgets.gui.settings import SettingsGUI
+from pypastator.widgets.gui.settings.settingsgui import SettingsGUI
 from pypastator.widgets.message import Message
 
 DEFAULT_TRACK = {

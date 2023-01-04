@@ -33,6 +33,8 @@ class Led(Labeled):
         self.bcolor_off = kw.pop("bcolor_off", RED)
 
     def draw(self):
+        if not self.visible:
+            return
         radius = LED_SIZE / 2
         bcolor = self.bcolor_on if self.value else self.bcolor_off
         fcolor = BLACK if self.value else self.fcolor

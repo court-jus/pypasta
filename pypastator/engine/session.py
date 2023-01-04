@@ -54,6 +54,7 @@ class Session(WithMenu):
         self.chord_progression = ListField()
         self.chord_progression.set_value([1])
         self.progression_pos = 0
+        self.next_chord = Field()
         self.title = ""
         self.scale = EnumField(choices=SCALES)
         self.scale.set_value(SCALE_NAMES.index(self.scale_name))
@@ -71,7 +72,6 @@ class Session(WithMenu):
         self.selected_track = None
         self.playing = True
         self.mouse_menu = None
-        self.cc_mode = "menu"
         self.cc_controls = {}
         if "pytest" not in sys.modules:
             self.message = Message()
@@ -113,15 +113,26 @@ class Session(WithMenu):
             scale_degree = degree % len(scale_notes)
             note = scale_notes[scale_degree] + 12
             notes.append(note)
-        if self.chords_mode == "progression":
+        if self.chords_mode == "manual":
+            chord_name = ", ".join(map(str, chord_notes))
+        else:
             chord_name = int_to_roman(
                 self.chord_progression.get_value(self.progression_pos)
             )
-        else:
-            chord_name = ", ".join(map(str, chord_notes))
-        return f"[{chord_name}]: " + ", ".join(
+
+        result = f"[{chord_name}]: " + ", ".join(
             [pygame.midi.midi_to_ansi_note(note)[:-1] for note in notes]
         )
+        if self.next_chord.get_value():
+            next_chord_notes = [
+                scale_notes[(degree_in_chord + self.next_chord.get_value() - 2) % len(scale_notes)]
+                + 12
+                for degree_in_chord in self.chord_type.get_value()
+            ]
+            result = result + " => " + (", ".join(
+                [pygame.midi.midi_to_ansi_note(note)[:-1] for note in next_chord_notes]
+            ))
+        return result
 
     def new_song(self):
         """
@@ -139,6 +150,7 @@ class Session(WithMenu):
         self.current_chord.set_value([], force=True)
         self.chord_progression.set_value([1], force=True)
         self.progression_pos = 0
+        self.next_chord.set_value(0, force=True)
         self.title = self.get_title(generate_new=True)
         self.scale_name = "major"
         self.root_note = 0
@@ -278,6 +290,27 @@ class Session(WithMenu):
             self.main_menu.show()
             self.main_menu.activate_widget(self.main_menu.default_widget)
 
+    def toggle_chords_mode(self):
+        """
+        Switch chords mode.
+
+        In manual mode, the user plays chords with 'menu' buttons.
+        In progression mode, the song's chord progression is followed.
+        """
+        self.chords_mode = {
+            "progression": "manual",
+            "manual": "progression",
+        }[self.chords_mode]
+        self.message.say(f"[{self.chords_mode}] chords mode")
+        if self.chords_mode == "manual":
+            for track in self.tracks.values():
+                if track.engine and track.engine.main_menu is not None:
+                    track.engine.main_menu.widgets["menu"].hide()
+        else:
+            for track in self.tracks.values():
+                if track.engine and track.engine.main_menu is not None:
+                    track.engine.main_menu.widgets["menu"].show()
+
     def midi_tick(self, ticks, timestamp):
         """
         Handle Midi tick event.
@@ -285,18 +318,29 @@ class Session(WithMenu):
         if not self.playing:
             return []
         relative_ticks = ticks - self.playing
-        if relative_ticks % BAR == 0 and self.chords_mode == "progression":
-            self.progression_pos = int(relative_ticks / BAR) % len(
-                self.chord_progression.get_value()
-            )
-            self.current_chord.set_value(
-                [
-                    degree_in_chord
-                    + self.chord_progression.get_value(self.progression_pos)
-                    - 1
-                    for degree_in_chord in self.chord_type.get_value()
-                ]
-            )
+        if relative_ticks % BAR == 0:
+            if self.next_chord.get_value():
+                self.current_chord.set_value(
+                    [
+                        degree_in_chord
+                        + self.next_chord.get_value()
+                        - 1
+                        for degree_in_chord in self.chord_type.get_value()
+                    ]
+                )
+                self.next_chord.set_value(0, force=True)
+            elif self.chords_mode == "progression":
+                self.progression_pos = int(relative_ticks / BAR) % len(
+                    self.chord_progression.get_value()
+                )
+                self.current_chord.set_value(
+                    [
+                        degree_in_chord
+                        + self.chord_progression.get_value(self.progression_pos)
+                        - 1
+                        for degree_in_chord in self.chord_type.get_value()
+                    ]
+                )
         out_evts = []
         for track in self.tracks.values():
             out_evts.extend(
@@ -330,22 +374,13 @@ class Session(WithMenu):
         if value != 127:
             return
 
-        # Switch buttons "mode"
-        if cc_number == 6:
-            self.cc_mode = "menu"
-            self.message.say("[Menu] mode")
-            self.chords_mode = "progression"
-        elif cc_number == 5:
-            self.cc_mode = "chords"
-            self.message.say("[Chords] mode")
-            self.chords_mode = "manual"
-        elif cc_number == 7:
+        if cc_number == 7:
             if self.settings_menu is not None and not self.settings_menu.any_visible():
                 self.settings_menu.show()
                 self.settings_menu.activate_next()
-        elif self.cc_mode == "menu":
+        elif self.chords_mode == "progression":
             self._handle_menu_cc(cc_number)
-        elif self.cc_mode == "chords":
+        elif self.chords_mode == "manual":
             self._handle_chords_cc(cc_number)
 
     def _handle_menu_cc(self, cc_number):
@@ -362,12 +397,7 @@ class Session(WithMenu):
         Handle choosing chord via CC.
         """
         if 48 <= cc_number < 56:
-            self.current_chord.set_value(
-                [
-                    degree_in_chord + cc_number - 48
-                    for degree_in_chord in self.chord_type.get_value()
-                ]
-            )
+            self.next_chord.set_value(cc_number - 48 + 1, force=True)
 
     def handle_cc(self, cc_channel, cc_number, cc_value):
         """

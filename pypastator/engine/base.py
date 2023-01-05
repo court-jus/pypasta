@@ -9,7 +9,6 @@ from pypastator.constants import (
     ACCENT,
     NOTE_PATTERNS,
     RYTHM_PATTERNS,
-    THIRTYSECOND,
     WIDGET_LINE,
     WIDGETS_MARGIN,
 )
@@ -187,9 +186,14 @@ class BaseEngine(WithMenu):
         rpat = self.get_rythm_pattern()
         result = []
         for duration in rpat:
-            length = int(duration / THIRTYSECOND)
-            symbol = "o" if length == duration / THIRTYSECOND else "3"
-            rpr = symbol + ("." * (length - 1) if length > 1 else "")
+            start_symbol = "o"
+            sustain_symbol = "."
+            if duration < 0:
+                start_symbol = " "
+                sustain_symbol = " "
+                duration = abs(duration)
+            duration = int(duration)
+            rpr = start_symbol + (sustain_symbol * (duration - 1) if duration > 1 else "")
             result.append(rpr)
         return "".join(result)
 
@@ -215,7 +219,7 @@ class BaseEngine(WithMenu):
         self.chord_number = chord_number
         result = []
         rpattern = self.get_rythm_pattern()
-        rlength = sum(rpattern)
+        rlength = sum(map(abs, rpattern))
         tick = ticks % rlength
         positions = self.get_positions()
         stop_positions = self.get_stop_positions()
@@ -228,14 +232,16 @@ class BaseEngine(WithMenu):
         if not self.active.get_value():
             return result
         if tick in positions:
+            silence = self.is_rest(tick)
             notes = self.get_notes()
             self.notes_cache = notes
-            self.pos.increment()
-            vel = self.get_vel(tick)
-            for note in notes:
-                if self.active.get_value():
-                    result.append((timestamp, "on", midi_channel, note, vel))
-                self.currently_playing_notes.append(note)
+            if not silence:
+                self.pos.increment()
+                vel = self.get_vel(tick)
+                for note in notes:
+                    if self.active.get_value():
+                        result.append((timestamp, "on", midi_channel, note, vel))
+                    self.currently_playing_notes.append(note)
         return result
 
     def get_rythm_pattern(self):
@@ -253,8 +259,16 @@ class BaseEngine(WithMenu):
         rpattern = self.get_rythm_pattern()
         positions = [0]
         for duration in rpattern[:-1]:
-            positions.append(duration + positions[-1])
+            positions.append(abs(duration) + positions[-1])
         return positions
+
+    def is_rest(self, tick):
+        """
+        Decide if given tick should be a note or silence.
+        """
+        rpattern = self.get_rythm_pattern()
+        positions = self.get_positions()
+        return rpattern[positions.index(tick)] < 0
 
     def get_stop_positions(self):
         """

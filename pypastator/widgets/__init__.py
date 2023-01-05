@@ -75,6 +75,10 @@ class BaseWidget:
         """
         Gather the font to be used.
         """
+        if self.font_size == SMALL_FONT_SIZE:
+            return self.small_font
+        if self.font_size == MESSAGE_FONT_SIZE:
+            return self.msg_font
         return self.font
 
     def widget_init(self, **_kw):

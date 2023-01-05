@@ -5,6 +5,7 @@ Pastator is a multi-channel Midi Arpegiator.
 """
 import heapq
 import json
+import os
 import traceback
 
 import pygame.font
@@ -83,6 +84,7 @@ class Pastator:
         except:
             print(f"ERROR: Cannot open clock device [{dev_name or dev_id}].")
             traceback.print_exc()
+        self.save_settings()
 
     def add_input_output_device(
         self, dev_name=None, dev_id=None, device_type="ctrl", direction="input"
@@ -108,11 +110,16 @@ class Pastator:
         except:
             print(f"ERROR: Cannot open {direction} device [{dev_name or dev_id}].")
             traceback.print_exc()
+        self.save_settings()
 
     def load_settings(self):
         """
         Load settings from JSON file.
         """
+        if not os.path.exists("settings.json"):
+            print(f"WARN: no settings.json file found, creating one.")
+            self.save_settings()
+            return
         with open("settings.json", "r", encoding="utf8") as file_pointer:
             data = json.load(file_pointer)
             for key, value in data.get("devices", {}).items():

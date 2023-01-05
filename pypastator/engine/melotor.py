@@ -9,6 +9,7 @@ import random
 from pypastator.constants import BAR
 from pypastator.engine.field import Field, ListField
 from pypastator.engine.melobase import Melobase
+from pypastator.widgets.gui.engine import MelotorGUI
 
 
 class Melotor(Melobase):
@@ -26,6 +27,10 @@ class Melotor(Melobase):
         self.weights = ListField(default=[10, 2, 4, 3, 8, 6, 8, 5, 5, 0, 3, 0, 2])
         self.chord_influence = Field(default=48)
         super().__init__(track)
+
+    def init_menus(self, pos_y):
+        super().init_menus(pos_y)
+        self.sub_menus.append(MelotorGUI(self, pos_y=pos_y))
 
     def get_loadable_keys(self):
         return super().get_loadable_keys() + ["weights", "chord_influence"]

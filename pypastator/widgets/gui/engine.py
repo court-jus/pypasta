@@ -631,3 +631,71 @@ class MelotorGUI(GUI):
         degree = int(self.active_widget.split(":")[1]) - 1
         field = self.model.weights
         field.increment(increment=increment, index=degree, min_value=0, max_value=19)
+
+
+class MelostepGUI(GUI):
+    """
+    GUI to manage melostep engine.
+    """
+
+    def __init__(self, *a, **kw):
+        super().__init__(*a, **kw)
+        self.default_widget = "steps"
+
+    def init_widgets(self):
+        """
+        Initialize widgets.
+        """
+        if not hasattr(self.model, "steps"):
+            return
+        pos_y = self.pos_y
+        self.widgets["separator"] = Separator(
+            text="Melostep", pos_y=pos_y, visible=False
+        )
+        pos_y += WIDGET_LINE + WIDGETS_MARGIN
+        row = []
+        widget = Label(text="Steps")
+        self.widgets["steps_label"] = widget
+        row.append(widget)
+        widget = Label(text="uUdD", width=BIG_LABEL_W)
+        widget.hook(
+            self.model,
+            "steps",
+            "steps",
+            set_text=True,
+            value_getter=self.model.steps_str,
+        )
+        widget.hook(
+            self.model,
+            "rythm",
+            "rythm_to_steps",
+            set_text=True,
+            value_getter=self.model.steps_str,
+        )
+        self.widgets["steps"] = widget
+        self.activable_widgets.append("steps")
+        row.append(widget)
+        make_row(row, pos_y=pos_y)
+        pos_y += WIDGET_LINE
+        row = []
+        widget = Label(text="Melo")
+        self.widgets["melo_label"] = widget
+        row.append(widget)
+        widget = Label(text="uUdD", width=BIG_LABEL_W)
+        widget.hook(
+            self.model,
+            "current_melo",
+            "current_melo",
+            set_text=True,
+            value_getter=self.model.melo_str,
+        )
+        widget.hook(
+            self.model,
+            "rythm",
+            "rythm_to_current_melo",
+            set_text=True,
+            value_getter=self.model.melo_str,
+        )
+        self.widgets["melo"] = widget
+        row.append(widget)
+        make_row(row, pos_y=pos_y)

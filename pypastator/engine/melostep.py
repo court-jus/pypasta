@@ -8,6 +8,7 @@ import random
 from pypastator.constants import BAR
 from pypastator.engine.field import ListField
 from pypastator.engine.melobase import Melobase
+from pypastator.widgets.gui.engine import MelostepGUI
 
 MIN_LEAP = 3
 MAX_LEAP = 6
@@ -21,6 +22,10 @@ class Melostep(Melobase):
     def __init__(self, track):
         self.steps = ListField(default=[0, 1, 1, -2, 3, -3])
         super().__init__(track)
+
+    def init_menus(self, pos_y):
+        super().init_menus(pos_y)
+        self.sub_menus.append(MelostepGUI(self, pos_y=pos_y))
 
     def get_loadable_keys(self):
         return super().get_loadable_keys() + ["steps"]
@@ -103,3 +108,26 @@ class Melostep(Melobase):
         if ticks % tick_evolution == 0:
             self.evolve_melo()
         return super().midi_tick(ticks, timestamp, chord_number)
+
+    # For the GUI
+    def steps_str(self):
+        """
+        Return the visual representation of steps.
+        """
+        steps = self.steps.get_value()
+        phrase_length = len(self.get_positions())
+        arrows = {1: "⇑", 2: "⤊", 3: "⟰", -1: "⇓", -2: "⤋", -3: "⟱", 0: "⇒"}
+        return "  ".join(
+            arrows[steps[i % len(steps)]] for i in range(phrase_length - 1)
+        )
+
+    def melo_str(self):
+        """
+        Return the visual representation of the current melody.
+        """
+        current_value = self.current_melo.get_value()
+        if current_value:
+            return " ".join(
+                f"{car:2}" for car in current_value[: len(self.get_positions())]
+            )
+        return "..."

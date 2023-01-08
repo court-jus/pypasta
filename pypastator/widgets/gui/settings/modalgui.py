@@ -3,7 +3,7 @@ Helper for settings GUI.
 """
 import pygame.display
 
-from pypastator.constants import BLACK, DARKEST_GRAY, WHITE
+from pypastator.constants import BLACK, DARKEST_GRAY, MOUSE_RIGHT_CLICK, WHITE
 from pypastator.widgets.gui.base import GUI
 
 MODAL_MARGIN = 20
@@ -71,12 +71,15 @@ class ModalGUI(GUI):
         super().show()
         self.update_widgets()
 
-    def handle_click(self, *a, **kw):
+    def handle_click(self, pos, button):
         if self.visible:
-            super().handle_click(*a, **kw)
+            if button == MOUSE_RIGHT_CLICK:
+                self.hide()
+            else:
+                super().handle_click(pos, button)
         else:
             for submenu in self.sub_menus.values():
-                submenu.handle_click(*a, **kw)
+                submenu.handle_click(pos, button)
 
     def handle_tick(self, *a, **kw):
         if self.visible:
@@ -91,9 +94,6 @@ class ModalGUI(GUI):
         if cc_number == 7:
             if self.visible:
                 self.hide()
-                if not self.is_main_settings_gui:
-                    self.model.settings_menu.show()
-                    self.model.settings_menu.activate_next()
         if self.visible:
             super().handle_cc(cc_channel, cc_number, cc_value)
         else:
@@ -110,6 +110,9 @@ class ModalGUI(GUI):
         rect = pygame.Rect(0, 0, 1024, 768)
         surf.fill(BLACK, rect)
         super().hide()
+        if not self.is_main_settings_gui:
+            self.model.settings_menu.show()
+            self.model.settings_menu.activate_next()
 
     def show_submenu(self, submenu):
         """

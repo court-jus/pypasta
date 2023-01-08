@@ -193,7 +193,9 @@ class BaseEngine(WithMenu):
                 sustain_symbol = " "
                 duration = abs(duration)
             duration = int(duration)
-            rpr = start_symbol + (sustain_symbol * (duration - 1) if duration > 1 else "")
+            rpr = start_symbol + (
+                sustain_symbol * (duration - 1) if duration > 1 else ""
+            )
             result.append(rpr)
         return "".join(result)
 

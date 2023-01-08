@@ -41,7 +41,6 @@ class Strum(BaseArp):
             base_positions.append(abs(duration) + base_positions[-1])
         return posneg
 
-
     def get_stop_positions(self):
         rpattern = self.get_rythm_pattern()
         stop_positions = [0]

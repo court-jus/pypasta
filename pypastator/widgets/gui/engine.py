@@ -265,7 +265,9 @@ class EngineDetailsGUI(GUI):
         pos_y += WIDGET_LINE
         self.widgets["rythm"] = Label(text="R.", width=BUTTON_WIDTH, visible=False)
         self.widgets["rythm"].hook(self.model, "rythm", "menu", set_text=True)
-        self.widgets["rythm_str"] = Label(text="R.", width=BIG_LABEL_W, font_size=SMALL_FONT_SIZE, visible=False)
+        self.widgets["rythm_str"] = Label(
+            text="R.", width=BIG_LABEL_W, font_size=SMALL_FONT_SIZE, visible=False
+        )
         self.widgets["rythm_str"].hook(
             self.model,
             "rythm",

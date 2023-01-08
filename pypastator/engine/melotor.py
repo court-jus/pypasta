@@ -89,7 +89,7 @@ class Melotor(Melobase):
             if len(already_changed) == len(current):
                 already_changed = set()
             new_note = random.choice(choices)
-            if len(choices) > 1:
+            if len(set(choices)) > 1:
                 # Avoid replacing a note by itself
                 while new_note == current[change_index]:
                     new_note = random.choice(choices)

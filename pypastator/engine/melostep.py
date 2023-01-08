@@ -43,6 +43,7 @@ class Melostep(Melobase):
         Generate a new melody.
         """
         scale_notes = self.track.session.scale.get_value()
+        root = self.track.session.root_note.get_value()
         chord_notes = [
             scale_notes[(degree - 1) % len(scale_notes)]
             for degree in self.track.session.current_chord.get_value()
@@ -61,7 +62,7 @@ class Melostep(Melobase):
             if current_scale_pos < 0:
                 octave += current_scale_pos // 12
             current_note = scale_notes[current_scale_pos % len(scale_notes)]
-            melody.append(current_note + 12 * octave)
+            melody.append(current_note + 12 * octave + root)
             movement = steps[current_step_pos % len(steps)]
             if abs(movement) < 3:
                 # Step or Skip, that's a deterministic move

@@ -308,6 +308,7 @@ class BaseEngine(WithMenu):
             return [self.pitch.get_value()]
         pattern = self.get_pattern()
         scale_notes = self.track.session.scale.get_value()
+        root = self.track.session.root_note.get_value()
         chord_notes = self.track.session.current_chord.get_value()
         notes = []
         for degree in pattern:
@@ -318,12 +319,12 @@ class BaseEngine(WithMenu):
                     + self.chord_number
                     - 1
                 ) % len(scale_notes)
-                note = scale_notes[chord_degree]
+                note = scale_notes[chord_degree] + root
                 if degree > max(chord_notes):
                     note += 12
                 notes.append(note)
             elif self.related_to.get_value() == "scale":
-                notes.append(scale_notes[(degree - 1) % len(scale_notes)])
+                notes.append(scale_notes[(degree - 1) % len(scale_notes)] + root)
         return notes
 
     def get_notes(self):

@@ -15,8 +15,8 @@ class SessionGUI(GUI):
 
     def __init__(self, *a, **kw):
         super().__init__(*a, **kw)
-        self.default_widget = "scale"
-        self.activable_widgets = ["scale", "chord"]
+        self.default_widget = "chord"
+        self.activable_widgets = ["root_note", "scale", "chord"]
 
     def init_widgets(self):
         """

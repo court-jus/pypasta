@@ -51,6 +51,7 @@ class Melotor(Melobase):
         Generate a new set of random choices.
         """
         scale_notes = self.track.session.scale.get_value()
+        root = self.track.session.root_note.get_value()
         chord_notes = [
             degree - 1 for degree in self.track.session.current_chord.get_value()
         ]
@@ -63,7 +64,7 @@ class Melotor(Melobase):
             tuned_weight = weight * in_chord_ratio
             octave = degree // len(scale_notes)
             choices.extend(
-                [scale_notes[degree % len(scale_notes)] + octave * 12]
+                [scale_notes[degree % len(scale_notes)] + octave * 12 + root]
                 * int(tuned_weight)
             )
         return choices

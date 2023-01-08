@@ -6,8 +6,8 @@ from collections import OrderedDict
 
 from pypastator.constants import (
     MENU_CC_CHANNEL,
-    MENU_CC_DECR,
-    MENU_CC_INCR,
+    CC_DOWN_ARROW,
+    CC_UP_ARROW,
     MENU_CC_NEXT_WIDGET,
 )
 from pypastator.engine.field import Field
@@ -149,9 +149,9 @@ class GUI:
             return
         if cc_number == MENU_CC_NEXT_WIDGET:
             self.activate_next()
-        elif cc_number == MENU_CC_INCR:
+        elif cc_number == CC_UP_ARROW:
             self.increment()
-        elif cc_number == MENU_CC_DECR:
+        elif cc_number == CC_DOWN_ARROW:
             self.increment(-1)
 
 

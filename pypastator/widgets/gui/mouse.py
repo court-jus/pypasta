@@ -29,12 +29,6 @@ class MouseGUI(GUI):
         self.widgets["add_track"].on_click = lambda _v, _b: self.add_track_callback()
         self.widgets["save"] = Led(emoji="⚙️", **kwargs)
         self.widgets["save"].on_click = lambda _v, _b: self.model.settings_menu.show()
-        self.widgets["next_page"] = Led(emoji="🔽", **kwargs)
-        self.widgets["next_page"].on_click = lambda _v, _b: self.model.next_page()
-        self.widgets["prev_page"] = Led(emoji="🔼", **kwargs)
-        self.widgets["prev_page"].on_click = lambda _v, _b: self.model.next_page(
-            go_back=True
-        )
 
     def add_track_callback(self):
         """

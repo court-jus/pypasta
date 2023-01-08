@@ -12,8 +12,6 @@ from slugify import slugify
 from pypastator.constants import (
     BAR,
     CHORDS,
-    MENU_CC_NEXT_PAGE,
-    MENU_CC_PREV_PAGE,
     SCALE_NAMES,
     SCALES,
 )
@@ -272,6 +270,9 @@ class Session(Harmony, WithMenu):
         TODO: maybe use a Field instead of setting the widget value directly.
         """
         if self.selected_track is not None:
+            if self.selected_track == track_id:
+                self.next_page()
+                return
             cur_track = self.tracks[self.selected_track]
             cur_track.hide_all_menus()
             if cur_track.engine is not None:
@@ -440,12 +441,6 @@ class Session(Harmony, WithMenu):
         if cc_channel != 15:
             print(f"Ignored CC on channel {cc_channel}, {cc_number}, {cc_value}")
             return
-
-        if cc_value == 127:
-            if cc_number == MENU_CC_NEXT_PAGE:
-                self.next_page()
-            elif cc_number == MENU_CC_PREV_PAGE:
-                self.next_page(go_back=True)
 
         self._handle_global_cc(cc_number, cc_value)
 

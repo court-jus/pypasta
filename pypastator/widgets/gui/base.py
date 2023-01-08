@@ -5,9 +5,9 @@ Base class for all GUI menus.
 from collections import OrderedDict
 
 from pypastator.constants import (
-    MENU_CC_CHANNEL,
     CC_DOWN_ARROW,
     CC_UP_ARROW,
+    MENU_CC_CHANNEL,
     MENU_CC_NEXT_WIDGET,
 )
 from pypastator.engine.field import Field

@@ -9,12 +9,7 @@ import pygame.midi
 from faker import Faker
 from slugify import slugify
 
-from pypastator.constants import (
-    BAR,
-    CHORDS,
-    SCALE_NAMES,
-    SCALES,
-)
+from pypastator.constants import BAR, CHORDS, SCALE_NAMES, SCALES
 from pypastator.engine.field import EnumField, Field, ListField
 from pypastator.engine.track import Track
 from pypastator.engine.utils import int_to_roman
@@ -185,10 +180,11 @@ class Session(Harmony, WithMenu):
         Load Session from data.
         """
         self.new_song()
+        filepath = os.path.join("songs", filename)
+        if not os.path.exists(filepath):
+            return
         data = {}
-        with open(
-            os.path.join("songs", filename), "r", encoding="utf8"
-        ) as file_pointer:
+        with open(filepath, "r", encoding="utf8") as file_pointer:
             data = json.load(file_pointer)
         for loadable_key in LOADABLE_KEYS:
             if loadable_key in data:

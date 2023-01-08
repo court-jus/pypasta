@@ -294,6 +294,7 @@ def main():
     pasta = Pastator()
     pasta.load_settings()
     pasta.all_sound_off()
+    pasta.load("default.json")
     pasta.run()
 
 

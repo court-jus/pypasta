@@ -212,6 +212,7 @@ class Session(Harmony, WithMenu):
 
         If the session has no name, generate a random title.
         """
+        self.scale_name = SCALE_NAMES[self.scale.value]
         data = {
             "tracks": {
                 track.track_id: track.engine.save() for track in self.tracks.values()

@@ -196,13 +196,15 @@ RYTHM_PATTERNS = [
 
 # Other
 ACCENT = 1.5
-SCALE_NAMES = ["major", "minor"]
+SCALE_NAMES = ["major", "blues", "lydian", "minor"]
 # Here the numbers represent semitones from the root
 # - 3 is a minor third
 # - 4 is a major third
 # - ...
 SCALES = [
     [0, 2, 4, 5, 7, 9, 11],
+    [0, 2, 3, 4, 7, 8],
+    [0, 2, 4, 6, 7, 9, 11],
     [0, 2, 3, 5, 7, 8, 10],
 ]
 # Here the numbers represent positions in the scale:

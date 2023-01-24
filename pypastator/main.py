@@ -176,7 +176,6 @@ class Pastator:
         typ = evt[0][0]
         if typ == CLOCK:
             self.midi_tick()
-            self.ticks += 1
         elif typ == PLAY:
             self.session.playing = self.ticks
         elif typ == STOP:
@@ -255,6 +254,7 @@ class Pastator:
         """
         Pass Midi tick events to session and get the outgoing events.
         """
+        self.ticks += 1
         timestamp = pygame.midi.time()
         for evt in self.session.midi_tick(self.ticks, timestamp):
             heapq.heappush(self.out_evts, evt)

@@ -1,7 +1,14 @@
 """
 GUIs for the Session model.
 """
-from pypastator.constants import WIDGET_LINE, WIDGETS_MARGIN
+from pypastator.constants import (
+    BAR,
+    BEAT,
+    DARK_GRAY,
+    GREEN,
+    WIDGET_LINE,
+    WIDGETS_MARGIN,
+)
 from pypastator.widgets.gui.base import GUI
 from pypastator.widgets.gui.row import make_row
 from pypastator.widgets.label import Label
@@ -23,9 +30,22 @@ class SessionGUI(GUI):
         Initialize GUI's widgets.
         """
         pos_y = self.pos_y
+        rows_size = 1024 - 48
         self.hideable = False
         self.widgets["separator"] = Separator(pos_y=pos_y, visible=False)
         pos_y += WIDGETS_MARGIN
+        # Metronome
+        self.widgets["metronome"] = Label(
+            text="",
+            bcolor_selected=GREEN,
+            fcolor_selected=DARK_GRAY,
+            width=48 - WIDGETS_MARGIN,
+            height=2 * WIDGET_LINE - WIDGETS_MARGIN,
+            visible=False,
+            pos_y=pos_y,
+            pos_x=rows_size,
+        )
+        # Rows
         self.widgets["root_label"] = Label(text="Root", visible=False)
         self.widgets["root_note"] = Label(text="", visible=False)
         self.widgets["root_note"].hook(
@@ -64,6 +84,7 @@ class SessionGUI(GUI):
                 )
             ],
             pos_y=pos_y,
+            width=rows_size,
         )
         # Second row
         pos_y += WIDGET_LINE
@@ -96,6 +117,7 @@ class SessionGUI(GUI):
                 )
             ],
             pos_y=pos_y,
+            width=rows_size,
         )
 
     def increment(self, *a, **kw):
@@ -106,3 +128,24 @@ class SessionGUI(GUI):
             self.model.toggle_chords_mode()
             return
         super().increment(*a, **kw)
+
+    def midi_tick(self, ticks, playing):
+        """
+        Animate the metronome to show that clock is running.
+        """
+        metronome = self.widgets.get("metronome")
+        if not metronome:
+            return
+        if ticks % (BEAT / 2) == 0:
+            metro_label = ""
+            counting = 0
+            if ticks % BEAT == 0:
+                counting = int((ticks % BAR) / BEAT) + 1
+                metro_label = str(counting)
+            if metro_label and not playing:
+                metro_label = "."
+            metronome.set_text(metro_label)
+            if counting == 1 and playing:
+                metronome.highlight()
+            else:
+                metronome.shade()

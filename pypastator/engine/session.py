@@ -341,9 +341,11 @@ class Session(Harmony, WithMenu):
         """
         Handle Midi tick event.
         """
+        relative_ticks = ticks - self.playing
+        if self.main_menu is not None:
+            self.main_menu.midi_tick(relative_ticks, self.playing)
         if not self.playing:
             return []
-        relative_ticks = ticks - self.playing
         if relative_ticks % BAR == 0:
             if self.next_chord.get_value():
                 self.current_chord.set_value(

@@ -8,6 +8,9 @@ import pygame.midi
 from pypastator.constants import (
     ACCENT,
     NOTE_PATTERNS,
+    PONCTUATION_NOT,
+    PONCTUATION_PART,
+    PONCTUATION_START,
     RYTHM_PATTERNS,
     WIDGET_LINE,
     WIDGETS_MARGIN,
@@ -49,6 +52,7 @@ class BaseEngine(WithMenu):
         self.active = BooleanField(default=True)
         self.accentuation = Field(default=ACCENT, smooth=True)
         self.related_to = EnumField(choices=["scale", "chord", "static"], default=1)
+        self.do_ponctuation = BooleanField(default=False)
         self.lfos = []
         # Internal stuff
         self.pos = Field(max_value=None)
@@ -228,12 +232,17 @@ class BaseEngine(WithMenu):
         if self.currently_playing_notes and (
             tick in stop_positions or not self.active.get_value()
         ):
-            for prevnote in self.currently_playing_notes:
-                result.append((timestamp, "off", midi_channel, prevnote, 0))
-            self.currently_playing_notes = []
+            ponctuation = self.is_ponctuation(tick)
+            if ponctuation != PONCTUATION_PART:
+                for prevnote in self.currently_playing_notes:
+                    result.append((timestamp, "off", midi_channel, prevnote, 0))
+                self.currently_playing_notes = []
         if not self.active.get_value():
             return result
         if tick in positions:
+            ponctuation = self.is_ponctuation(tick)
+            if ponctuation == PONCTUATION_PART:
+                return result
             silence = self.is_rest(tick)
             notes = self.get_notes()
             self.notes_cache = notes
@@ -271,6 +280,24 @@ class BaseEngine(WithMenu):
         rpattern = self.get_rythm_pattern()
         positions = self.get_positions()
         return rpattern[positions.index(tick)] < 0
+
+    def is_ponctuation(self, tick):
+        """
+        Decide if the current tick should be considered as a ponctuation.
+        """
+        if not self.do_ponctuation.get_value():
+            return PONCTUATION_NOT
+        progression_length = len(self.track.session.chord_progression.get_value())
+        progression_pos = self.track.session.progression_pos
+        if progression_length < 2:
+            # No ponctuation when there is no chord progression (only one chord)
+            return PONCTUATION_NOT
+        if progression_pos != progression_length - 1:
+            # This is not the end of the chord progression
+            return PONCTUATION_NOT
+        if tick == 0:
+            return PONCTUATION_START
+        return PONCTUATION_PART
 
     def get_stop_positions(self):
         """

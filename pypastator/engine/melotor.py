@@ -76,23 +76,31 @@ class Melotor(Melobase):
         current = self.get_melotor_choices()
         new_value = current[:]
         intensity = self.change_intensity.get_value()
+        choices = self.generate_new_choices()
+        expected_length = self.melo_length.get_value()
+        if len(new_value) < expected_length:
+            new_value += [
+                random.choice(choices)
+                for _ in range(self.melo_length.get_value() - len(new_value))
+            ]
+        elif len(new_value) > expected_length:
+            new_value = new_value[:expected_length]
         # Full intensity = change all notes
         # Zero intensity = change nothing
-        changes = int(intensity / 127 * len(current))
-        choices = self.generate_new_choices()
+        changes = int(intensity / 127 * len(new_value))
         already_changed = set()
         while changes > 0:
-            change_index = random.randint(0, len(current) - 1)
+            change_index = random.randint(0, len(new_value) - 1)
             # Avoid changing the same note twice
             while change_index in already_changed:
-                change_index = random.randint(0, len(current) - 1)
+                change_index = random.randint(0, len(new_value) - 1)
             already_changed.add(change_index)
-            if len(already_changed) == len(current):
+            if len(already_changed) == len(new_value):
                 already_changed = set()
             new_note = random.choice(choices)
             if len(set(choices)) > 1:
                 # Avoid replacing a note by itself
-                while new_note == current[change_index]:
+                while new_note == new_value[change_index]:
                     new_note = random.choice(choices)
             new_value[change_index] = new_note
             changes -= 1

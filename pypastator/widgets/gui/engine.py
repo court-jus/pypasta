@@ -137,7 +137,12 @@ class EngineDetailsGUI(GUI):
     def __init__(self, *a, **kw):
         super().__init__(*a, **kw)
         self.default_widget = "midi_channel"
-        self.activable_widgets = ["midi_channel", "engine_type", "related_to"]
+        self.activable_widgets = [
+            "midi_channel",
+            "engine_type",
+            "related_to",
+            "do_ponctuation",
+        ]
 
     def init_widgets(self):
         """
@@ -148,7 +153,7 @@ class EngineDetailsGUI(GUI):
             text="Track details", pos_y=pos_y, visible=False
         )
         pos_y += WIDGET_LINE + WIDGETS_MARGIN
-        # First row: track id, midi_channel, engine_type and related_to, LFO
+        # First row: track id, midi_channel, engine_type, related_to and ponctuation
         self.widgets["track_id"] = Label(
             text=f"Trk {self.model.track.track_id}", visible=False
         )
@@ -185,6 +190,13 @@ class EngineDetailsGUI(GUI):
         self.widgets[
             "related_to"
         ].on_click = lambda _v, _b: self.model.related_to.increment()
+        self.widgets["do_ponctuation"] = Led(emoji="🩸")
+        self.widgets["do_ponctuation"].hook(
+            self.model, "do_ponctuation", "engine_to_controls"
+        )
+        self.widgets[
+            "do_ponctuation"
+        ].on_click = lambda _v, _b: self.model.do_ponctuation.increment()
         make_row(
             [
                 self.widgets[widget_name]
@@ -193,6 +205,7 @@ class EngineDetailsGUI(GUI):
                     "midi_channel",
                     "engine_type",
                     "related_to",
+                    "do_ponctuation",
                 )
             ],
             pos_y=pos_y,

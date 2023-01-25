@@ -312,7 +312,7 @@ class BaseEngine(WithMenu):
         chord_notes = self.track.session.current_chord.get_value()
         notes = []
         for degree in pattern:
-            if self.related_to.get_value() == "chord":
+            if self.related_to.get_value() == "chord" and chord_notes:
                 chord_degree = (
                     chord_notes[(degree - 1) % len(chord_notes)]
                     - 1

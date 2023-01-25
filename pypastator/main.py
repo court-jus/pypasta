@@ -153,7 +153,7 @@ class Pastator:
                 device = devices
                 if device is not None:
                     data["devices"][device_type] = pygame.midi.get_device_info(
-                        devices.device_id
+                        device.device_id
                     )[1].decode()
                 continue
             for device in devices:

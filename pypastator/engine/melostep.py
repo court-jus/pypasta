@@ -94,9 +94,17 @@ class Melostep(Melobase):
         return self.reset_melo()
 
     def get_candidate_notes(self):
-        choices = self.get_choices()
-        # transposed = self.transpose_notes(choices, centered=False)
-        return choices
+        return self.get_choices()
+
+    def transpose_notes(self, candidates, *_a, **_kw):
+        """
+        Transpose notes based on pitch, ignore boundaries.
+        """
+        notes = []
+        for candidate in candidates:
+            note = candidate + 12 * (self.pitch.get_value() // 12)
+            notes.append(int(note))
+        return notes
 
     def midi_tick(self, ticks, timestamp, chord_number):
         """

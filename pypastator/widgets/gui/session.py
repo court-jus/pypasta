@@ -6,6 +6,7 @@ from pypastator.constants import (
     BEAT,
     DARK_GRAY,
     GREEN,
+    SCR_WIDTH,
     WIDGET_LINE,
     WIDGETS_MARGIN,
 )
@@ -30,7 +31,7 @@ class SessionGUI(GUI):
         Initialize GUI's widgets.
         """
         pos_y = self.pos_y
-        rows_size = 1024 - 48
+        rows_size = SCR_WIDTH - 48
         self.hideable = False
         self.widgets["separator"] = Separator(pos_y=pos_y, visible=False)
         pos_y += WIDGETS_MARGIN

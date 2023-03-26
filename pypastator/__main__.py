@@ -44,7 +44,9 @@ class Pastator:
         self.running = False
         screen_width = SCR_WIDTH
         screen_height = SCR_HEIGHT
-        self.screen = pygame.display.set_mode([screen_width, screen_height])
+        self.screen = pygame.display.set_mode(
+            [screen_width, screen_height], flags=pygame.FULLSCREEN
+        )
         self.clock = pygame.time.Clock()
         self.session = Session(self)
 

@@ -3,13 +3,20 @@ Helper for settings GUI.
 """
 import pygame.display
 
-from pypastator.constants import BLACK, DARKEST_GRAY, MOUSE_RIGHT_CLICK, WHITE
+from pypastator.constants import (
+    BLACK,
+    DARKEST_GRAY,
+    MOUSE_RIGHT_CLICK,
+    SCR_HEIGHT,
+    SCR_WIDTH,
+    WHITE,
+)
 from pypastator.widgets.gui.base import GUI
 
 MODAL_MARGIN = 20
 MODAL_BORDER = 3
 TOTAL_MODAL_MARGIN = MODAL_MARGIN + MODAL_BORDER
-MODAL_ROW_WIDTH = 1024 - (TOTAL_MODAL_MARGIN * 2)
+MODAL_ROW_WIDTH = SCR_WIDTH - (TOTAL_MODAL_MARGIN * 2)
 
 
 class ModalGUI(GUI):
@@ -29,8 +36,8 @@ class ModalGUI(GUI):
             (
                 MODAL_MARGIN,
                 MODAL_MARGIN,
-                1024 - (MODAL_MARGIN * 2),
-                768 - (MODAL_MARGIN * 2),
+                SCR_WIDTH - (MODAL_MARGIN * 2),
+                SCR_HEIGHT - (MODAL_MARGIN * 2),
             ),
         )
         surf.fill(
@@ -38,8 +45,8 @@ class ModalGUI(GUI):
             (
                 TOTAL_MODAL_MARGIN,
                 TOTAL_MODAL_MARGIN,
-                1024 - ((TOTAL_MODAL_MARGIN) * 2),
-                768 - ((TOTAL_MODAL_MARGIN) * 2),
+                SCR_WIDTH - ((TOTAL_MODAL_MARGIN) * 2),
+                SCR_HEIGHT - ((TOTAL_MODAL_MARGIN) * 2),
             ),
         )
         super().redraw()
@@ -107,7 +114,7 @@ class ModalGUI(GUI):
             return
         # Shade the whole UI
         surf = pygame.display.get_surface()
-        rect = pygame.Rect(0, 0, 1024, 768)
+        rect = pygame.Rect(0, 0, SCR_WIDTH, SCR_HEIGHT)
         surf.fill(BLACK, rect)
         super().hide()
         if not self.is_main_settings_gui:

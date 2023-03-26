@@ -20,6 +20,8 @@ from pypastator.constants import (
     NOTEOFF,
     NOTEON,
     PLAY,
+    SCR_HEIGHT,
+    SCR_WIDTH,
     STOP,
 )
 from pypastator.engine.session import Session
@@ -40,8 +42,8 @@ class Pastator:
         }
         self.ticks = 0
         self.running = False
-        screen_width = 1024
-        screen_height = 768
+        screen_width = SCR_WIDTH
+        screen_height = SCR_HEIGHT
         self.screen = pygame.display.set_mode([screen_width, screen_height])
         self.clock = pygame.time.Clock()
         self.session = Session(self)

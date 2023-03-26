@@ -2,10 +2,10 @@
 Helper functions to build rows (and tables).
 """
 
-from pypastator.constants import WIDGETS_MARGIN
+from pypastator.constants import SCR_WIDTH, WIDGETS_MARGIN
 
 
-def make_row(widgets, pos_x=0, pos_y=0, width=1024, debug=False):
+def make_row(widgets, pos_x=0, pos_y=0, width=SCR_WIDTH, debug=False):
     """
     Make a row with given widgets.
     """

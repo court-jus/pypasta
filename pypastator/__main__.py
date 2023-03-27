@@ -46,6 +46,7 @@ class Pastator:
         self.screen_width = SCR_WIDTH
         self.screen_height = SCR_HEIGHT
         self.fullscreen = FULLSCREEN
+        self.song_filename = None
         self.load_settings()
         flags = 0
         if self.fullscreen:
@@ -145,6 +146,7 @@ class Pastator:
                 "height", self.screen_height
             )
             self.fullscreen = data.get("display", {}).get("fullscreen", self.fullscreen)
+            self.song_filename = data.get("song")
             for key, value in data.get("devices", {}).items():
                 if key not in self.devices:
                     continue
@@ -196,11 +198,15 @@ class Pastator:
         with open("settings.json", "w", encoding="utf8") as file_pointer:
             json.dump(data, file_pointer, indent=2)
 
-    def load(self, filename):
+    def load(self, filename=None):
         """
         Load a song.
         """
-        self.session.load(filename)
+        if filename is not None:
+            self.session.load(filename)
+            return
+        if self.song_filename is not None:
+            self.session.load(self.song_filename)
 
     def handle_clock_in_event(self, evt):
         """
@@ -332,7 +338,7 @@ def main():
 
     pasta = Pastator()
     pasta.all_sound_off()
-    pasta.load("default.json")
+    pasta.load()
     pasta.run()
 
 

@@ -241,6 +241,12 @@ class Session(Harmony, WithMenu):
             os.path.join("songs", filename), "w", encoding="utf8"
         ) as file_pointer:
             json.dump(data, file_pointer, indent=2)
+        settings = {}
+        with open("settings.json", "r", encoding="utf8") as file_pointer:
+            settings = json.load(file_pointer)
+        settings["song"] = filename
+        with open("settings.json", "w", encoding="utf8") as file_pointer:
+            json.dump(settings, file_pointer, indent=2)
         self.message.say(f"Song [{data['title']}] saved as [{filename}]")
 
     def get_title(self, generate_new=False):

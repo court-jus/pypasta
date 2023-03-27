@@ -9,7 +9,14 @@ import pygame.midi
 from faker import Faker
 from slugify import slugify
 
-from pypastator.constants import BAR, CHORDS, SCALE_NAMES, SCALES
+from pypastator.constants import (
+    BAR,
+    BASE_WIDGET_HEIGHT,
+    CHORDS,
+    SCALE_NAMES,
+    SCALES,
+    WIDGETS_MARGIN,
+)
 from pypastator.engine.field import EnumField, Field, ListField
 from pypastator.engine.track import Track
 from pypastator.engine.utils import int_to_roman
@@ -146,7 +153,10 @@ class Session(Harmony, WithMenu):
         self.mouse_menu = None
         self.cc_controls = {}
         if "pytest" not in sys.modules:
-            self.message = Message()
+            self.message = Message(
+                pos_y=self.pasta.screen_height - BASE_WIDGET_HEIGHT - WIDGETS_MARGIN,
+                width=self.pasta.screen_width - 2 * WIDGETS_MARGIN,
+            )
             self.main_menu = SessionGUI(self, 300)
             self.main_menu.show()
             self.main_menu.activate_widget(self.main_menu.default_widget)

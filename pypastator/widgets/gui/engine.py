@@ -22,7 +22,6 @@ from pypastator.constants import (
     WIDGETS_MARGIN,
 )
 from pypastator.widgets.gui.base import GUI
-from pypastator.widgets.gui.row import make_row
 from pypastator.widgets.knob import Knob
 from pypastator.widgets.label import Label
 from pypastator.widgets.led import Led
@@ -31,7 +30,17 @@ from pypastator.widgets.slider import Slider
 from pypastator.widgets.vertslider import VertSlider
 
 
-class MainEngineGUI(GUI):
+class EngineGUI(GUI):
+    """
+    All GUIs that have an engine as model.
+    """
+
+    def make_row(self, *a, **kw):
+        kw["width"] = self.model.track.session.pasta.screen_width
+        super().make_row(*a, **kw)
+
+
+class MainEngineGUI(EngineGUI):
     """
     GUI containing the main engine controls.
     """
@@ -79,7 +88,7 @@ class MainEngineGUI(GUI):
         self.widgets["basevel"].on_click = lambda v, _b: self.model.basevel.set_value(
             v, force=True
         )
-        make_row(
+        self.make_row(
             [
                 self.widgets[widget_name]
                 for widget_name in (
@@ -129,7 +138,7 @@ class MainEngineGUI(GUI):
             self.model.track.session.select_track(self.model.track.track_id)
 
 
-class EngineDetailsGUI(GUI):
+class EngineDetailsGUI(EngineGUI):
     """
     First detailed GUI for the engine model.
     """
@@ -150,7 +159,10 @@ class EngineDetailsGUI(GUI):
         """
         pos_y = self.pos_y
         self.widgets["separator"] = Separator(
-            text="Track details", pos_y=pos_y, visible=False
+            text="Track details",
+            pos_y=pos_y,
+            visible=False,
+            width=self.model.track.session.pasta.screen_width,
         )
         pos_y += WIDGET_LINE + WIDGETS_MARGIN
         # First row: track id, midi_channel, engine_type, related_to and ponctuation
@@ -197,7 +209,7 @@ class EngineDetailsGUI(GUI):
         self.widgets[
             "do_ponctuation"
         ].on_click = lambda _v, _b: self.model.do_ponctuation.increment()
-        make_row(
+        self.make_row(
             [
                 self.widgets[widget_name]
                 for widget_name in (
@@ -264,7 +276,7 @@ class EngineDetailsGUI(GUI):
             set_text=True,
             value_getter=lambda: self.model.pattern_str,
         )
-        make_row(
+        self.make_row(
             [
                 self.widgets[widget_name]
                 for widget_name in (
@@ -288,7 +300,7 @@ class EngineDetailsGUI(GUI):
             set_text=True,
             value_getter=lambda: self.model.rythm_str,
         )
-        make_row(
+        self.make_row(
             [
                 self.widgets[widget_name]
                 for widget_name in (
@@ -311,7 +323,7 @@ class EngineDetailsGUI(GUI):
             super().increment(increment=increment)
 
 
-class LFOGUI(GUI):
+class LFOGUI(EngineGUI):
     """
     GUI to manage LFOs.
     """
@@ -328,7 +340,10 @@ class LFOGUI(GUI):
         Initialize widgets.
         """
         self.widgets["separator"] = Separator(
-            text="Low Frequency Oscillators", pos_y=self.pos_y, visible=False
+            text="Low Frequency Oscillators",
+            pos_y=self.pos_y,
+            visible=False,
+            width=self.model.track.session.pasta.screen_width,
         )
         self.pos_y += WIDGET_LINE + WIDGETS_MARGIN
         self.widgets["add_lfo"] = Label(
@@ -365,7 +380,7 @@ class LFOGUI(GUI):
         self.widgets["label_smooth"] = Label(
             text="Smooth", visible=False, bcolor=BLACK, bcolor_selected=BLACK
         )
-        make_row(
+        self.make_row(
             [
                 self.widgets["label_placeholder"],
                 self.widgets["label_waveform"],
@@ -432,7 +447,7 @@ class LFOGUI(GUI):
             self.widgets[widget_key].hook(lfo, "smoothness", "lfo_menu", set_text=True)
             self.widgets[widget_key].on_click = self.make_callback(key, "smoothness")
             self.activable_widgets.append(widget_key)
-            make_row(
+            self.make_row(
                 [
                     self.widgets[f"lfo:{key}:{attrname}"]
                     for attrname in (
@@ -447,7 +462,7 @@ class LFOGUI(GUI):
                 pos_y=pos_y,
             )
             pos_y += WIDGET_LINE
-        make_row([self.widgets["add_lfo"]], pos_y=pos_y)
+        self.make_row([self.widgets["add_lfo"]], pos_y=pos_y)
 
     def show(self):
         self.update_lfo_widgets()
@@ -505,7 +520,7 @@ class LFOGUI(GUI):
             self.apply_increment(lfo_number, attrname, increment)
 
 
-class MelotorGUI(GUI):
+class MelotorGUI(EngineGUI):
     """
     GUI to manage Melotor.
     """
@@ -522,7 +537,10 @@ class MelotorGUI(GUI):
             return
         pos_y = self.pos_y
         self.widgets["separator"] = Separator(
-            text="Melotor", pos_y=pos_y, visible=False
+            text="Melotor",
+            pos_y=pos_y,
+            visible=False,
+            width=self.model.track.session.pasta.screen_width,
         )
         pos_y += WIDGET_LINE + WIDGETS_MARGIN
         row1 = []
@@ -544,9 +562,9 @@ class MelotorGUI(GUI):
             self.activable_widgets.append(f"value:{degree}")
             row1.append(label_widget)
             row2.append(value_widget)
-        make_row(row1, pos_y=pos_y)
+        self.make_row(row1, pos_y=pos_y)
         pos_y += WIDGET_LINE + WIDGETS_MARGIN
-        make_row(row2, pos_y=pos_y)
+        self.make_row(row2, pos_y=pos_y)
         pos_y += VERT_SLIDER_HEIGHT + WIDGETS_MARGIN
         row = []
         self.widgets["chord_influence"] = Knob(label="Chord.I", visible=False)
@@ -588,7 +606,7 @@ class MelotorGUI(GUI):
             "change_intensity"
         ].on_click = self.model.change_intensity.set_value
         row.append(self.widgets["change_intensity"])
-        make_row(row, pos_y=pos_y)
+        self.make_row(row, pos_y=pos_y)
         pos_y += VERT_SLIDER_HEIGHT + WIDGETS_MARGIN
         self.widgets["melo_reset"] = Label(text="Reset", visible=False)
         self.widgets["melo_reset"].on_click = lambda _v, _b: self.model.reset_melo()
@@ -602,7 +620,7 @@ class MelotorGUI(GUI):
             set_text=True,
             value_getter=lambda: self.model.current_melo_str,
         )
-        make_row(
+        self.make_row(
             [self.widgets["melo_reset"], self.widgets["current_melo"]], pos_y=pos_y
         )
 
@@ -649,7 +667,7 @@ class MelotorGUI(GUI):
         field.increment(increment=increment, index=degree, min_value=0, max_value=19)
 
 
-class MelostepGUI(GUI):
+class MelostepGUI(EngineGUI):
     """
     GUI to manage melostep engine.
     """
@@ -666,7 +684,10 @@ class MelostepGUI(GUI):
             return
         pos_y = self.pos_y
         self.widgets["separator"] = Separator(
-            text="Melostep", pos_y=pos_y, visible=False
+            text="Melostep",
+            pos_y=pos_y,
+            visible=False,
+            width=self.model.track.session.pasta.screen_width,
         )
         pos_y += WIDGET_LINE + WIDGETS_MARGIN
         row = []
@@ -691,7 +712,7 @@ class MelostepGUI(GUI):
         self.widgets["steps"] = widget
         self.activable_widgets.append("steps")
         row.append(widget)
-        make_row(row, pos_y=pos_y)
+        self.make_row(row, pos_y=pos_y)
         pos_y += WIDGET_LINE
         row = []
         widget = Label(text="Melo")
@@ -714,4 +735,4 @@ class MelostepGUI(GUI):
         )
         self.widgets["melo"] = widget
         row.append(widget)
-        make_row(row, pos_y=pos_y)
+        self.make_row(row, pos_y=pos_y)

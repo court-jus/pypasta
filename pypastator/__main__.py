@@ -43,13 +43,16 @@ class Pastator:
         }
         self.ticks = 0
         self.running = False
-        screen_width = SCR_WIDTH
-        screen_height = SCR_HEIGHT
+        self.screen_width = SCR_WIDTH
+        self.screen_height = SCR_HEIGHT
+        self.fullscreen = FULLSCREEN
+        self.load_settings()
         flags = 0
-        if FULLSCREEN:
+        if self.fullscreen:
             flags |= pygame.FULLSCREEN
         self.screen = pygame.display.set_mode(
-            [screen_width, screen_height], flags=flags,
+            [self.screen_width, self.screen_height],
+            flags=flags,
         )
         self.clock = pygame.time.Clock()
         self.session = Session(self)
@@ -84,9 +87,7 @@ class Pastator:
                 print(f"INFO: clock device [{dev_id}] selected.")
             elif dev_name in available_devices["input"]:
                 for matching_device in available_devices["input"][dev_name]:
-                    self.devices["clock"] = pygame.midi.Input(
-                        matching_device
-                    )
+                    self.devices["clock"] = pygame.midi.Input(matching_device)
                     print(f"INFO: clock device [{dev_name}] selected.")
             else:
                 print(f"WARN: clock device [{dev_name}] is not available.")
@@ -111,10 +112,10 @@ class Pastator:
                 print(f"INFO: {direction} device [{dev_id}] added for {device_type}.")
             elif dev_name in available_devices[direction]:
                 for matching_device in available_devices[direction][dev_name]:
-                    self.devices[device_type].append(
-                        device_class(matching_device)
+                    self.devices[device_type].append(device_class(matching_device))
+                    print(
+                        f"INFO: {direction} device [{dev_name}] added for {device_type}."
                     )
-                    print(f"INFO: {direction} device [{dev_name}] added for {device_type}.")
             else:
                 print(f"WARN: {direction} device [{dev_name}] is not available.")
         except:
@@ -132,6 +133,11 @@ class Pastator:
             return
         with open("settings.json", "r", encoding="utf8") as file_pointer:
             data = json.load(file_pointer)
+            self.screen_width = data.get("display", {}).get("width", self.screen_width)
+            self.screen_height = data.get("display", {}).get(
+                "height", self.screen_height
+            )
+            self.fullscreen = data.get("display", {}).get("fullscreen", self.fullscreen)
             for key, value in data.get("devices", {}).items():
                 if key not in self.devices:
                     continue
@@ -156,7 +162,12 @@ class Pastator:
                 "ctrl": [],
                 "note_in": [],
                 "output": [],
-            }
+            },
+            "display": {
+                "fullscreen": self.fullscreen,
+                "width": self.screen_width,
+                "height": self.screen_height,
+            },
         }
         for device_type, devices in self.devices.items():
             if device_type == "clock":
@@ -302,7 +313,6 @@ def main():
     pygame.font.init()
 
     pasta = Pastator()
-    pasta.load_settings()
     pasta.all_sound_off()
     pasta.load("default.json")
     pasta.run()

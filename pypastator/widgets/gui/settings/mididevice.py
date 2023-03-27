@@ -4,17 +4,13 @@ Generic GUI to choose a MIDI device.
 import pygame.midi
 
 from pypastator.constants import WIDGET_LINE, WIDGETS_MARGIN
-from pypastator.widgets.gui.row import make_row
-from pypastator.widgets.gui.settings.modalgui import (
-    MODAL_ROW_WIDTH,
-    TOTAL_MODAL_MARGIN,
-    ModalGUI,
-)
+from pypastator.widgets.gui.session import BaseSessionGUI
+from pypastator.widgets.gui.settings.modalgui import ModalGUI
 from pypastator.widgets.label import Label
 from pypastator.widgets.separator import Separator
 
 
-class MidiDeviceGUI(ModalGUI):
+class MidiDeviceGUI(ModalGUI, BaseSessionGUI):
     """
     Choose a MIDI device.
     """
@@ -28,14 +24,13 @@ class MidiDeviceGUI(ModalGUI):
         """
         List songs.
         """
-        pos_y = TOTAL_MODAL_MARGIN
-        pos_x = TOTAL_MODAL_MARGIN
+        pos_x, pos_y = self.get_base_xy()
         self.widgets["header"] = Separator(
             text="Select MIDI Device" if self.header is None else self.header,
             pos_x=pos_x,
             pos_y=pos_y,
             visible=False,
-            width=MODAL_ROW_WIDTH,
+            width=self.get_row_width(),
         )
         pos_y += WIDGET_LINE + WIDGETS_MARGIN
         for i in range(pygame.midi.get_count()):
@@ -58,14 +53,14 @@ class MidiDeviceGUI(ModalGUI):
         widget = Label(
             text=device_name,
             visible=False,
-            width=MODAL_ROW_WIDTH,
+            width=self.get_row_width(),
         )
         widget.on_click = self.select_device(widget_name)
-        make_row(
+        self.make_row(
             [widget],
-            pos_x=TOTAL_MODAL_MARGIN,
+            pos_x=self.get_base_xy()[0],
             pos_y=pos_y,
-            width=MODAL_ROW_WIDTH,
+            width=self.get_row_width(),
         )
         self.widgets[widget_name] = widget
         self.activable_widgets.append(widget_name)

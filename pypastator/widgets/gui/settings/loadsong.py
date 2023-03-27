@@ -5,17 +5,13 @@ import json
 import os
 
 from pypastator.constants import WIDGET_LINE, WIDGETS_MARGIN
-from pypastator.widgets.gui.row import make_row
-from pypastator.widgets.gui.settings.modalgui import (
-    MODAL_ROW_WIDTH,
-    TOTAL_MODAL_MARGIN,
-    ModalGUI,
-)
+from pypastator.widgets.gui.session import BaseSessionGUI
+from pypastator.widgets.gui.settings.modalgui import ModalGUI
 from pypastator.widgets.label import Label
 from pypastator.widgets.separator import Separator
 
 
-class LoadSongGUI(ModalGUI):
+class LoadSongGUI(ModalGUI, BaseSessionGUI):
     """
     List the saved songs and allow to load one.
     """
@@ -24,14 +20,13 @@ class LoadSongGUI(ModalGUI):
         """
         List songs.
         """
-        pos_y = TOTAL_MODAL_MARGIN
-        pos_x = TOTAL_MODAL_MARGIN
+        pos_x, pos_y = self.get_base_xy()
         self.widgets["songs_header"] = Separator(
             text="Load song",
             pos_x=pos_x,
             pos_y=pos_y,
             visible=False,
-            width=MODAL_ROW_WIDTH,
+            width=self.get_row_width(),
         )
         pos_y += WIDGET_LINE + WIDGETS_MARGIN
         for fname in os.listdir("songs"):
@@ -44,14 +39,14 @@ class LoadSongGUI(ModalGUI):
                     widget = Label(
                         text=title,
                         visible=False,
-                        width=MODAL_ROW_WIDTH,
+                        width=self.get_row_width(),
                     )
                     widget.on_click = self.song_loader(fname)
-                    make_row(
+                    self.make_row(
                         [widget],
                         pos_x=pos_x,
                         pos_y=pos_y,
-                        width=MODAL_ROW_WIDTH,
+                        width=self.get_row_width(),
                     )
                     self.widgets[fname] = widget
                     self.activable_widgets.append(fname)

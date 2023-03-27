@@ -5,7 +5,6 @@ import time
 
 from pypastator.constants import BLUE, LED_SIZE, WIDGET_LINE, WIDGETS_MARGIN
 from pypastator.widgets.gui.base import GUI
-from pypastator.widgets.gui.row import make_row
 from pypastator.widgets.led import Led
 
 MOUSE_GUI_DURATION = 1
@@ -41,7 +40,7 @@ class MouseGUI(GUI):
         """
         Update widgets position or details.
         """
-        make_row(
+        self.make_row(
             self.widgets.values(),
             0,
             pos_y=WIDGET_LINE * (len(self.model.tracks.keys())) + WIDGETS_MARGIN,

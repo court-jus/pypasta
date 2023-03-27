@@ -4,17 +4,13 @@ GUI allowing to rename a song.
 from faker import Faker
 
 from pypastator.constants import BLUE, WIDGET_LINE, WIDGETS_MARGIN
-from pypastator.widgets.gui.row import make_row
-from pypastator.widgets.gui.settings.modalgui import (
-    MODAL_ROW_WIDTH,
-    TOTAL_MODAL_MARGIN,
-    ModalGUI,
-)
+from pypastator.widgets.gui.session import BaseSessionGUI
+from pypastator.widgets.gui.settings.modalgui import ModalGUI
 from pypastator.widgets.label import Label
 from pypastator.widgets.separator import Separator
 
 
-class RenameSongGUI(ModalGUI):
+class RenameSongGUI(ModalGUI, BaseSessionGUI):
     """
     Allow choosing a title for the song.
     """
@@ -23,27 +19,26 @@ class RenameSongGUI(ModalGUI):
         """
         List songs.
         """
-        pos_y = TOTAL_MODAL_MARGIN
-        pos_x = TOTAL_MODAL_MARGIN
+        pos_x, pos_y = self.get_base_xy()
         self.widgets["header"] = Separator(
             text="Current song title",
             pos_x=pos_x,
             pos_y=pos_y,
             visible=False,
-            width=MODAL_ROW_WIDTH,
+            width=self.get_row_width(),
         )
         pos_y += WIDGET_LINE + WIDGETS_MARGIN
         self.widgets["song_title"] = Label(
             text=self.model.get_title(),
             visible=False,
-            width=MODAL_ROW_WIDTH,
+            width=self.get_row_width(),
             bcolor=BLUE,
         )
-        make_row(
+        self.make_row(
             [self.widgets["song_title"]],
             pos_x=pos_x,
             pos_y=pos_y,
-            width=MODAL_ROW_WIDTH,
+            width=self.get_row_width(),
         )
         pos_y += WIDGET_LINE + WIDGETS_MARGIN
         self.widgets["header2"] = Separator(
@@ -51,7 +46,7 @@ class RenameSongGUI(ModalGUI):
             pos_x=pos_x,
             pos_y=pos_y,
             visible=False,
-            width=MODAL_ROW_WIDTH,
+            width=self.get_row_width(),
         )
         pos_y += WIDGET_LINE + WIDGETS_MARGIN
         fake = Faker()
@@ -66,14 +61,14 @@ class RenameSongGUI(ModalGUI):
             self.widgets[widget_name] = Label(
                 text=value,
                 visible=False,
-                width=MODAL_ROW_WIDTH,
+                width=self.get_row_width(),
             )
             self.widgets[widget_name].on_click = self.title_setter(widget_name)
-            make_row(
+            self.make_row(
                 [self.widgets[widget_name]],
                 pos_x=pos_x,
                 pos_y=pos_y,
-                width=MODAL_ROW_WIDTH,
+                width=self.get_row_width(),
             )
             self.activable_widgets.append(widget_name)
             pos_y += WIDGET_LINE + WIDGETS_MARGIN

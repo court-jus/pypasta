@@ -3,24 +3,20 @@ GUI allowing to edit settings, load songs...
 """
 
 from pypastator.constants import BLUE, WIDGET_LINE, WIDGETS_MARGIN
-from pypastator.widgets.gui.row import make_row
+from pypastator.widgets.gui.session import BaseSessionGUI
 from pypastator.widgets.gui.settings.loadsong import LoadSongGUI
 from pypastator.widgets.gui.settings.mididevice import (
     AddMidiCtrlDevice,
     AddMidiOutputDevice,
     SetMidiClockDevice,
 )
-from pypastator.widgets.gui.settings.modalgui import (
-    MODAL_ROW_WIDTH,
-    TOTAL_MODAL_MARGIN,
-    ModalGUI,
-)
+from pypastator.widgets.gui.settings.modalgui import ModalGUI
 from pypastator.widgets.gui.settings.renamesong import RenameSongGUI
 from pypastator.widgets.label import Label
 from pypastator.widgets.separator import Separator
 
 
-class SettingsGUI(ModalGUI):
+class SettingsGUI(ModalGUI, BaseSessionGUI):
     """
     Settings GUI (to select MIDI devices, load songs...)
     """
@@ -59,31 +55,30 @@ class SettingsGUI(ModalGUI):
         """
         Update widgets position or details.
         """
-        pos_y = TOTAL_MODAL_MARGIN
-        pos_x = TOTAL_MODAL_MARGIN
+        pos_x, pos_y = self.get_base_xy()
         line_height = WIDGET_LINE + WIDGETS_MARGIN
         self.widgets["songs_header"] = Separator(
             text="Songs",
             pos_x=pos_x,
             pos_y=pos_y,
             visible=False,
-            width=MODAL_ROW_WIDTH,
+            width=self.get_row_width(),
         )
         pos_y += line_height
         self.widgets["song_title"] = Label(
             text=self.model.get_title(),
             visible=False,
-            width=MODAL_ROW_WIDTH,
+            width=self.get_row_width(),
             bcolor=BLUE,
         )
-        make_row(
+        self.make_row(
             [self.widgets["song_title"]],
             pos_x=pos_x,
             pos_y=pos_y,
-            width=MODAL_ROW_WIDTH,
+            width=self.get_row_width(),
         )
         pos_y += line_height
-        make_row(
+        self.make_row(
             [
                 self.widgets["new_song"],
                 self.widgets["load_song"],
@@ -92,7 +87,7 @@ class SettingsGUI(ModalGUI):
             ],
             pos_x=pos_x,
             pos_y=pos_y,
-            width=MODAL_ROW_WIDTH,
+            width=self.get_row_width(),
         )
         pos_y += line_height
         self.widgets["settings_header"] = Separator(
@@ -100,7 +95,7 @@ class SettingsGUI(ModalGUI):
             pos_x=pos_x,
             pos_y=pos_y,
             visible=False,
-            width=MODAL_ROW_WIDTH,
+            width=self.get_row_width(),
         )
         pos_y += line_height
         row = []
@@ -116,11 +111,11 @@ class SettingsGUI(ModalGUI):
             self.widgets[widget_name].on_click = self.click_callback_maker(widget_name)
             self.activable_widgets.append(widget_name)
             row.append(widget_name)
-        make_row(
+        self.make_row(
             [self.widgets[widget_name] for widget_name in row],
             pos_x=pos_x,
             pos_y=pos_y,
-            width=MODAL_ROW_WIDTH,
+            width=self.get_row_width(),
         )
         pos_y += line_height
 

@@ -3,7 +3,7 @@ Separator with optional text.
 """
 import pygame
 
-from pypastator.constants import BLACK, FONT_SIZE, SCR_WIDTH, WHITE, WIDGET_LINE
+from pypastator.constants import BLACK, FONT_SIZE, WHITE, WIDGET_LINE
 from pypastator.widgets.label import Label
 
 
@@ -18,7 +18,7 @@ class Separator(Label):
         self.bcolor_selected = None
         kw.setdefault("font_size", FONT_SIZE)
         kw.setdefault("pos_x", 0)
-        kw.setdefault("width", SCR_WIDTH)
+        kw.setdefault("width", 200)
         kw.setdefault("height", WIDGET_LINE + 1 if kw.get("text") else 1)
         kw.setdefault("fcolor", WHITE)
         kw.setdefault("bcolor", BLACK)

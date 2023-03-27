@@ -6,17 +6,26 @@ from pypastator.constants import (
     BEAT,
     DARK_GRAY,
     GREEN,
-    SCR_WIDTH,
     WIDGET_LINE,
     WIDGETS_MARGIN,
 )
 from pypastator.widgets.gui.base import GUI
-from pypastator.widgets.gui.row import make_row
 from pypastator.widgets.label import Label
 from pypastator.widgets.separator import Separator
 
 
-class SessionGUI(GUI):
+class BaseSessionGUI(GUI):
+    """
+    All GUIs that have a session as model.
+    """
+
+    def make_row(self, *a, **kw):
+        if "width" not in kw:
+            kw["width"] = self.model.pasta.screen_width
+        super().make_row(*a, **kw)
+
+
+class SessionGUI(BaseSessionGUI):
     """
     GUI for the Session model.
     """
@@ -31,9 +40,13 @@ class SessionGUI(GUI):
         Initialize GUI's widgets.
         """
         pos_y = self.pos_y
-        rows_size = SCR_WIDTH - 48
+        rows_size = self.model.pasta.screen_width - 48
         self.hideable = False
-        self.widgets["separator"] = Separator(pos_y=pos_y, visible=False)
+        self.widgets["separator"] = Separator(
+            pos_y=pos_y,
+            visible=False,
+            width=self.model.pasta.screen_width,
+        )
         pos_y += WIDGETS_MARGIN
         # Metronome
         self.widgets["metronome"] = Label(
@@ -74,7 +87,7 @@ class SessionGUI(GUI):
             self.activate_widget("scale"),
             self.model.scale.increment(),
         )
-        make_row(
+        self.make_row(
             [
                 self.widgets[widget_name]
                 for widget_name in (
@@ -109,7 +122,7 @@ class SessionGUI(GUI):
             self.activate_widget("chord"),
             self.increment(),
         )
-        make_row(
+        self.make_row(
             [
                 self.widgets[widget_name]
                 for widget_name in (

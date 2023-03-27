@@ -11,6 +11,7 @@ from pypastator.constants import (
     MENU_CC_NEXT_WIDGET,
 )
 from pypastator.engine.field import Field
+from pypastator.widgets.gui.row import make_row
 
 
 class GUI:
@@ -153,6 +154,12 @@ class GUI:
             self.increment()
         elif cc_number == CC_DOWN_ARROW:
             self.increment(-1)
+
+    def make_row(self, *a, **kw):
+        """
+        Wrapper around make_row for this specific GUI.
+        """
+        make_row(*a, **kw)
 
 
 class WithMenu:

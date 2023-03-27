@@ -74,7 +74,7 @@ class Pastator:
                 available_devices["output"].setdefault(name.decode(), []).append(i)
         return available_devices
 
-    def set_clock_device(self, dev_name=None, dev_id=None):
+    def set_clock_device(self, dev_name=None, dev_id=None, save=True):
         """
         Set the MIDI clock device.
         """
@@ -94,10 +94,16 @@ class Pastator:
         except:
             print(f"ERROR: Cannot open clock device [{dev_name or dev_id}].")
             traceback.print_exc()
-        self.save_settings()
+        if save:
+            self.save_settings()
 
     def add_input_output_device(
-        self, dev_name=None, dev_id=None, device_type="ctrl", direction="input"
+        self,
+        dev_name=None,
+        dev_id=None,
+        device_type="ctrl",
+        direction="input",
+        save=True,
     ):
         """
         Add an input or output device (input for ctrl or note_in, output for note_out).
@@ -121,7 +127,8 @@ class Pastator:
         except:
             print(f"ERROR: Cannot open {direction} device [{dev_name or dev_id}].")
             traceback.print_exc()
-        self.save_settings()
+        if save:
+            self.save_settings()
 
     def load_settings(self):
         """
@@ -142,14 +149,19 @@ class Pastator:
                 if key not in self.devices:
                     continue
                 if key == "clock":
-                    self.set_clock_device(value)
+                    self.set_clock_device(value, save=False)
                 elif key in ("ctrl", "note_in"):
                     for dev_name in value:
-                        self.add_input_output_device(dev_name=dev_name, device_type=key)
+                        self.add_input_output_device(
+                            dev_name=dev_name, device_type=key, save=False
+                        )
                 elif key == "output":
                     for dev_name in value:
                         self.add_input_output_device(
-                            dev_name=dev_name, device_type=key, direction="output"
+                            dev_name=dev_name,
+                            device_type=key,
+                            direction="output",
+                            save=False,
                         )
 
     def save_settings(self):

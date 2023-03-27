@@ -17,6 +17,7 @@ from pypastator.constants import (
     CCMAX,
     CCMIN,
     CLOCK,
+    FULLSCREEN,
     NOTEOFF,
     NOTEON,
     PLAY,
@@ -44,8 +45,11 @@ class Pastator:
         self.running = False
         screen_width = SCR_WIDTH
         screen_height = SCR_HEIGHT
+        flags = 0
+        if FULLSCREEN:
+            flags |= pygame.FULLSCREEN
         self.screen = pygame.display.set_mode(
-            [screen_width, screen_height], flags=pygame.FULLSCREEN
+            [screen_width, screen_height], flags=flags,
         )
         self.clock = pygame.time.Clock()
         self.session = Session(self)

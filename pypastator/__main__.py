@@ -62,9 +62,9 @@ class Pastator:
             device_info = pygame.midi.get_device_info(i)
             name, is_input, is_output = device_info[1:4]
             if is_input:
-                available_devices["input"][name.decode()] = i
+                available_devices["input"].setdefault(name.decode(), []).append(i)
             elif is_output:
-                available_devices["output"][name.decode()] = i
+                available_devices["output"].setdefault(name.decode(), []).append(i)
         return available_devices
 
     def set_clock_device(self, dev_name=None, dev_id=None):
@@ -79,10 +79,11 @@ class Pastator:
                 self.devices["clock"] = pygame.midi.Input(dev_id)
                 print(f"INFO: clock device [{dev_id}] selected.")
             elif dev_name in available_devices["input"]:
-                self.devices["clock"] = pygame.midi.Input(
-                    available_devices["input"][dev_name]
-                )
-                print(f"INFO: clock device [{dev_name}] selected.")
+                for matching_device in available_devices["input"][dev_name]:
+                    self.devices["clock"] = pygame.midi.Input(
+                        matching_device
+                    )
+                    print(f"INFO: clock device [{dev_name}] selected.")
             else:
                 print(f"WARN: clock device [{dev_name}] is not available.")
         except:
@@ -105,10 +106,11 @@ class Pastator:
                 self.devices[device_type].append(device_class(dev_id))
                 print(f"INFO: {direction} device [{dev_id}] added for {device_type}.")
             elif dev_name in available_devices[direction]:
-                self.devices[device_type].append(
-                    device_class(available_devices[direction][dev_name])
-                )
-                print(f"INFO: {direction} device [{dev_name}] added for {device_type}.")
+                for matching_device in available_devices[direction][dev_name]:
+                    self.devices[device_type].append(
+                        device_class(matching_device)
+                    )
+                    print(f"INFO: {direction} device [{dev_name}] added for {device_type}.")
             else:
                 print(f"WARN: {direction} device [{dev_name}] is not available.")
         except:

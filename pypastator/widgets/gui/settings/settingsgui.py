@@ -35,6 +35,7 @@ class SettingsGUI(ModalGUI, BaseSessionGUI):
             "load_song": "Load...",
             "save_song": "Save",
             "rename_song": "Name...",
+            "quit": "Quit",
         }.items():
             self.widgets[btn_id] = Label(text=btn_label, **kwargs)
             self.widgets[btn_id].on_click = self.click_callback_maker(btn_id)
@@ -84,6 +85,7 @@ class SettingsGUI(ModalGUI, BaseSessionGUI):
                 self.widgets["load_song"],
                 self.widgets["save_song"],
                 self.widgets["rename_song"],
+                self.widgets["quit"],
             ],
             pos_x=pos_x,
             pos_y=pos_y,
@@ -109,7 +111,8 @@ class SettingsGUI(ModalGUI, BaseSessionGUI):
                 visible=False,
             )
             self.widgets[widget_name].on_click = self.click_callback_maker(widget_name)
-            self.activable_widgets.append(widget_name)
+            if widget_name not in self.activable_widgets:
+                self.activable_widgets.append(widget_name)
             row.append(widget_name)
         self.make_row(
             [self.widgets[widget_name] for widget_name in row],
@@ -133,7 +136,9 @@ class SettingsGUI(ModalGUI, BaseSessionGUI):
     def increment(self, *_a, widget_name=None, **_kw):
         if widget_name is not None:
             self.activate_widget(widget_name)
-        if self.active_widget == "new_song":
+        if self.active_widget == "quit":
+            self.model.pasta.quit()
+        elif self.active_widget == "new_song":
             self.hide()
             self.model.new_song()
         elif self.active_widget == "save_song":

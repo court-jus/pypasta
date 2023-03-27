@@ -40,7 +40,6 @@ class ModalGUI(GUI):
     def redraw(self):
         surf = pygame.display.get_surface()
         pos_x, pos_y = self.get_base_xy()
-        print(pos_x, pos_y)
         surf.fill(
             WHITE,
             (

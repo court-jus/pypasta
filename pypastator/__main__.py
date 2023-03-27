@@ -238,6 +238,12 @@ class Pastator:
         elif ui_evt.type == pygame.MOUSEMOTION:
             self.session.handle_mouse_move(ui_evt.pos)
 
+    def quit(self):
+        """
+        Stop running.
+        """
+        self.running = False
+
     def run(self):
         """
         Main loop.

@@ -9,7 +9,7 @@ readme = "README.md"
 python = "^3.7"
 pygame = "^2.3.0"
 faker = "^18.3.1"
-slugify = "^0.0.1"
+python-slugify = "^8.0.1"
 
 
 [build-system]

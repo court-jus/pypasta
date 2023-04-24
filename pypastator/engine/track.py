@@ -73,7 +73,7 @@ class Track(WithMenu):
         """
         if self.engine is None:
             return
-        if self.chords_mode in CHORDS_MODE_MANUAL:
+        if new_mode in CHORDS_MODE_MANUAL:
             self.engine.main_menu.widgets["menu"].hide()
             self.engine.main_menu.widgets["chord"].show()
         else:

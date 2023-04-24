@@ -230,15 +230,20 @@ class ListField(Field):
             **kw
         )
 
-    def get_value(self, index=None):
+    def get_value(self, index=None, default=None):
         """
         Get value.
 
         If index is specified, return the value in the list at this index.
         """
+        if default is None:
+            default = []
         if index is not None:
-            return self.value[index]
-        return self.value
+            try:
+                return self.value[index]
+            except IndexError:
+                return default
+        return self.value if self.value else default
 
     def increment(self, increment=1, index=None, min_value=None, max_value=None):
         """

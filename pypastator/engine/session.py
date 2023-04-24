@@ -53,10 +53,11 @@ class Harmony:
     """
 
     def __init__(self):
+        self.chords_mode = CHORDS_MODE_PROGRESSION
         super().__init__()
         self.root_note = Field(max_value=11)
         self.chord_progression = ListField()
-        self.chord_progression.set_value([1])
+        self.chord_progression.set_value([])
         self.progression_pos = 0
         self.next_chord = Field()
         self.scale_name = "major"
@@ -67,12 +68,12 @@ class Harmony:
         self.current_chord.set_value(
             [
                 degree_in_chord
-                + self.chord_progression.get_value(self.progression_pos)
+                + self.chord_progression.get_value(self.progression_pos, default=1)
                 - 1
                 for degree_in_chord in self.chord_type.get_value()
             ]
         )
-        self.set_chords_mode(CHORDS_MODE_PROGRESSION)
+        self.set_chords_mode(self.chords_mode)
 
     @property
     def scale_str(self):
@@ -115,7 +116,7 @@ class Harmony:
             chord_name = ", ".join(map(str, chord_notes))
         else:
             chord_name = int_to_roman(
-                self.chord_progression.get_value(self.progression_pos)
+                self.chord_progression.get_value(self.progression_pos, default=1)
             )
 
         result = f"[{chord_name}]: " + ", ".join(
@@ -185,7 +186,7 @@ class Session(Harmony, WithMenu):
         self.tracks = {}
         self.selected_track = None
         self.current_chord.set_value([], force=True)
-        self.chord_progression.set_value([1], force=True)
+        self.chord_progression.set_value([], force=True)
         self.progression_pos = 0
         self.next_chord.set_value(0, force=True)
         self.title = self.get_title(generate_new=True)
@@ -218,7 +219,7 @@ class Session(Harmony, WithMenu):
         self.current_chord.set_value(
             [
                 degree_in_chord
-                + self.chord_progression.get_value(self.progression_pos)
+                + self.chord_progression.get_value(self.progression_pos, default=1)
                 - 1
                 for degree_in_chord in self.chord_type.get_value()
             ]
@@ -345,7 +346,11 @@ class Session(Harmony, WithMenu):
         """
         Change the chords mode to {new_mode}.
         """
+        if new_mode == self.chords_mode:
+            return
         self.chords_mode = new_mode
+        if self.chords_mode == CHORDS_MODE_MANUAL_RECORD:
+            self.chord_progression.set_value([], force=True)
         if self.message:
             self.message.say(f"[{self.chords_mode}] chords mode")
         for track in self.tracks.values():
@@ -386,12 +391,12 @@ class Session(Harmony, WithMenu):
                 self.next_chord.set_value(0, force=True)
             elif self.chords_mode == CHORDS_MODE_PROGRESSION:
                 self.progression_pos = int(relative_ticks / BAR) % len(
-                    self.chord_progression.get_value()
+                    self.chord_progression.get_value() or [1]
                 )
                 self.current_chord.set_value(
                     [
                         degree_in_chord
-                        + self.chord_progression.get_value(self.progression_pos)
+                        + self.chord_progression.get_value(self.progression_pos, default=1)
                         - 1
                         for degree_in_chord in self.chord_type.get_value()
                     ]
@@ -402,7 +407,7 @@ class Session(Harmony, WithMenu):
                 track.midi_tick(
                     relative_ticks,
                     timestamp,
-                    self.chord_progression.get_value(self.progression_pos),
+                    self.chord_progression.get_value(self.progression_pos, default=1),
                 )
             )
         return out_evts

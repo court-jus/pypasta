@@ -280,3 +280,9 @@ class ListField(Field):
         Get a str representation of this field's value.
         """
         return ", ".join([str(v) for v in self.value])
+
+    def add(self, value):
+        """
+        Add new value at the end of the list.
+        """
+        self.value.append(value)

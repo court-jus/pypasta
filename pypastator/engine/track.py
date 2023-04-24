@@ -2,6 +2,7 @@
 Track holds the details about the musical engine of a particular track.
 """
 from pypastator.constants import (
+    CHORDS_MODE_MANUAL,
     ENGINE_TYPE_ARP,
     ENGINE_TYPE_CHORD,
     ENGINE_TYPE_MELOSTEP,
@@ -65,6 +66,19 @@ class Track(WithMenu):
             self.engine = Melostep(self)
         if change:
             self.engine.load(data)
+
+    def set_chords_mode(self, new_mode):
+        """
+        Hide/show widgets based on chords mode.
+        """
+        if self.engine is None:
+            return
+        if self.chords_mode in CHORDS_MODE_MANUAL:
+            self.engine.main_menu.widgets["menu"].hide()
+            self.engine.main_menu.widgets["chord"].show()
+        else:
+            self.engine.main_menu.widgets["menu"].show()
+            self.engine.main_menu.widgets["chord"].hide()
 
     def load(self, data):
         """

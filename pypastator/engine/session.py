@@ -283,14 +283,7 @@ class Session(Harmony, WithMenu):
         self.tracks[new_track_id] = track
         self.message.say(f"Track [{new_track_id}] added")
         self.select_track(new_track_id)
-        if self.chords_mode in CHORDS_MODE_MANUAL:
-            if track.engine and track.engine.main_menu is not None:
-                track.engine.main_menu.widgets["menu"].hide()
-                track.engine.main_menu.widgets["chord"].show()
-        else:
-            if track.engine and track.engine.main_menu is not None:
-                track.engine.main_menu.widgets["menu"].show()
-                track.engine.main_menu.widgets["chord"].hide()
+        track.set_chords_mode(self.chords_mode)
 
     def select_track(self, track_id):
         """
@@ -355,16 +348,8 @@ class Session(Harmony, WithMenu):
         self.chords_mode = new_mode
         if self.message:
             self.message.say(f"[{self.chords_mode}] chords mode")
-        if self.chords_mode in CHORDS_MODE_MANUAL:
-            for track in self.tracks.values():
-                if track.engine and track.engine.main_menu is not None:
-                    track.engine.main_menu.widgets["menu"].hide()
-                    track.engine.main_menu.widgets["chord"].show()
-        else:
-            for track in self.tracks.values():
-                if track.engine and track.engine.main_menu is not None:
-                    track.engine.main_menu.widgets["menu"].show()
-                    track.engine.main_menu.widgets["chord"].hide()
+        for track in self.tracks.values():
+            track.set_chords_mode(self.chords_mode)
 
     def toggle_chords_mode(self):
         """

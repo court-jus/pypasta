@@ -3,7 +3,7 @@ GUI that appear when the mouse moves.
 """
 import time
 
-from pypastator.constants import BLUE, LED_SIZE, WIDGET_LINE, WIDGETS_MARGIN
+from pypastator.constants import BLUE, CHORDS_MODE_MANUAL_RECORD, CHORDS_MODE_PROGRESSION, LED_SIZE, WIDGET_LINE, WIDGETS_MARGIN
 from pypastator.widgets.gui.base import GUI
 from pypastator.widgets.led import Led
 
@@ -28,6 +28,10 @@ class MouseGUI(GUI):
         self.widgets["add_track"].on_click = lambda _v, _b: self.add_track_callback()
         self.widgets["save"] = Led(emoji="⚙️", **kwargs)
         self.widgets["save"].on_click = lambda _v, _b: self.model.settings_menu.show()
+        self.widgets["record"] = Led(emoji="⏺️", **kwargs)
+        self.widgets["record"].on_click = lambda _v, _b: self.model.set_chords_mode(CHORDS_MODE_MANUAL_RECORD)
+        self.widgets["stop_record"] = Led(emoji="⏹️", **kwargs)
+        self.widgets["stop_record"].on_click = lambda _v, _b: self.model.set_chords_mode(CHORDS_MODE_PROGRESSION)
 
     def add_track_callback(self):
         """

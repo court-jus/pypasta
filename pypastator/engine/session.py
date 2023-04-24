@@ -390,6 +390,8 @@ class Session(Harmony, WithMenu):
             return []
         if relative_ticks % BAR == 0:
             if self.next_chord.get_value():
+                if self.chords_mode == CHORDS_MODE_MANUAL_RECORD:
+                    self.chord_progression.add(self.next_chord.get_value())
                 self.current_chord.set_value(
                     [
                         degree_in_chord + self.next_chord.get_value() - 1

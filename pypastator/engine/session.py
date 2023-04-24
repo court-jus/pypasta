@@ -72,7 +72,7 @@ class Harmony:
                 for degree_in_chord in self.chord_type.get_value()
             ]
         )
-        self.chords_mode = CHORDS_MODE_PROGRESSION
+        self.set_chords_mode(CHORDS_MODE_PROGRESSION)
 
     @property
     def scale_str(self):
@@ -151,7 +151,7 @@ class Session(Harmony, WithMenu):
     """
 
     def __init__(self, pasta):
-        super().__init__()
+        self.message = None
         self.pasta = pasta
         self.title = ""
         self.tracks = {}
@@ -159,6 +159,7 @@ class Session(Harmony, WithMenu):
         self.playing = True
         self.mouse_menu = None
         self.cc_controls = {}
+        super().__init__()
         if "pytest" not in sys.modules:
             self.message = Message(
                 pos_y=self.pasta.screen_height - BASE_WIDGET_HEIGHT - WIDGETS_MARGIN,
@@ -190,7 +191,7 @@ class Session(Harmony, WithMenu):
         self.title = self.get_title(generate_new=True)
         self.scale_name = "major"
         self.root_note.set_value(0, force=True)
-        self.chords_mode = CHORDS_MODE_PROGRESSION
+        self.set_chords_mode(CHORDS_MODE_PROGRESSION)
 
     def load(self, filename):
         """
@@ -282,6 +283,14 @@ class Session(Harmony, WithMenu):
         self.tracks[new_track_id] = track
         self.message.say(f"Track [{new_track_id}] added")
         self.select_track(new_track_id)
+        if self.chords_mode in CHORDS_MODE_MANUAL:
+            if track.engine and track.engine.main_menu is not None:
+                track.engine.main_menu.widgets["menu"].hide()
+                track.engine.main_menu.widgets["chord"].show()
+        else:
+            if track.engine and track.engine.main_menu is not None:
+                track.engine.main_menu.widgets["menu"].show()
+                track.engine.main_menu.widgets["chord"].hide()
 
     def select_track(self, track_id):
         """
@@ -339,6 +348,24 @@ class Session(Harmony, WithMenu):
             self.main_menu.show()
             self.main_menu.activate_widget(self.main_menu.default_widget)
 
+    def set_chords_mode(self, new_mode):
+        """
+        Change the chords mode to {new_mode}.
+        """
+        self.chords_mode = new_mode
+        if self.message:
+            self.message.say(f"[{self.chords_mode}] chords mode")
+        if self.chords_mode in CHORDS_MODE_MANUAL:
+            for track in self.tracks.values():
+                if track.engine and track.engine.main_menu is not None:
+                    track.engine.main_menu.widgets["menu"].hide()
+                    track.engine.main_menu.widgets["chord"].show()
+        else:
+            for track in self.tracks.values():
+                if track.engine and track.engine.main_menu is not None:
+                    track.engine.main_menu.widgets["menu"].show()
+                    track.engine.main_menu.widgets["chord"].hide()
+
     def toggle_chords_mode(self):
         """
         Switch chords mode.
@@ -346,20 +373,11 @@ class Session(Harmony, WithMenu):
         In manual mode, the user plays chords with 'menu' buttons.
         In progression mode, the song's chord progression is followed.
         """
-        self.chords_mode = {
+        self.set_chords_mode({
             CHORDS_MODE_PROGRESSION: CHORDS_MODE_MANUAL_PLAY,
             CHORDS_MODE_MANUAL_PLAY: CHORDS_MODE_PROGRESSION,
             CHORDS_MODE_MANUAL_RECORD: CHORDS_MODE_PROGRESSION,
-        }[self.chords_mode]
-        self.message.say(f"[{self.chords_mode}] chords mode")
-        if self.chords_mode in CHORDS_MODE_MANUAL:
-            for track in self.tracks.values():
-                if track.engine and track.engine.main_menu is not None:
-                    track.engine.main_menu.widgets["menu"].hide()
-        else:
-            for track in self.tracks.values():
-                if track.engine and track.engine.main_menu is not None:
-                    track.engine.main_menu.widgets["menu"].show()
+        }[self.chords_mode])
 
     def midi_tick(self, ticks, timestamp):
         """
@@ -449,9 +467,9 @@ class Session(Harmony, WithMenu):
         if 48 <= cc_number < 56:
             self.next_chord.set_value(cc_number - 48 + 1, force=True)
         elif cc_number == MENU_CC_START_RECORD:
-            self.chords_mode = CHORDS_MODE_MANUAL_RECORD
+            self.set_chords_mode(CHORDS_MODE_MANUAL_RECORD)
         elif cc_number == MENU_CC_STOP_RECORD:
-            self.chords_mode = CHORDS_MODE_MANUAL_PLAY
+            self.set_chords_mode(CHORDS_MODE_MANUAL_PLAY)
 
     def handle_cc(self, cc_channel, cc_number, cc_value):
         """

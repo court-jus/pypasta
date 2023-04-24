@@ -61,6 +61,13 @@ class MainEngineGUI(EngineGUI):
         ].on_click = lambda _v, _b: self.model.track.session.select_track(
             self.model.track.track_id
         )
+        # Chords play Led
+        self.widgets["chord"] = Led(emoji="🎵", visible=False)
+        self.widgets[
+            "chord"
+        ].on_click = lambda _v, _b: self.model.track.session.next_chord.set_value(
+            self.model.track.track_id + 1, force=True,
+        )
         # Active Led
         self.widgets["mute"] = Led(emoji="🔈")
         self.widgets["mute"].hook(self.model, "active", "engine_to_controls")
@@ -103,6 +110,10 @@ class MainEngineGUI(EngineGUI):
                 )
             ],
             pos_y=pos_y,
+        )
+        self.widgets["chord"].move_to(
+            self.widgets["menu"].pos_x + LED_SIZE / 2,
+            self.widgets["menu"].pos_y,
         )
 
     def handle_cc(self, cc_channel, cc_number, cc_value):

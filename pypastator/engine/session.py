@@ -13,6 +13,13 @@ from pypastator.constants import (
     BAR,
     BASE_WIDGET_HEIGHT,
     CHORDS,
+    CHORDS_MODE_MANUAL,
+    CHORDS_MODE_MANUAL_PLAY,
+    CHORDS_MODE_MANUAL_RECORD,
+    CHORDS_MODE_PROGRESSION,
+    MENU_CC_OPEN_MENU,
+    MENU_CC_START_RECORD,
+    MENU_CC_STOP_RECORD,
     SCALE_NAMES,
     SCALES,
     WIDGETS_MARGIN,
@@ -65,7 +72,7 @@ class Harmony:
                 for degree_in_chord in self.chord_type.get_value()
             ]
         )
-        self.chords_mode = "progression"
+        self.chords_mode = CHORDS_MODE_PROGRESSION
 
     @property
     def scale_str(self):
@@ -104,7 +111,7 @@ class Harmony:
             scale_degree = degree % len(scale_notes)
             note = scale_notes[scale_degree] + 12
             notes.append(note)
-        if self.chords_mode == "manual":
+        if self.chords_mode in CHORDS_MODE_MANUAL:
             chord_name = ", ".join(map(str, chord_notes))
         else:
             chord_name = int_to_roman(
@@ -183,7 +190,7 @@ class Session(Harmony, WithMenu):
         self.title = self.get_title(generate_new=True)
         self.scale_name = "major"
         self.root_note.set_value(0, force=True)
-        self.chords_mode = "progression"
+        self.chords_mode = CHORDS_MODE_PROGRESSION
 
     def load(self, filename):
         """
@@ -340,11 +347,12 @@ class Session(Harmony, WithMenu):
         In progression mode, the song's chord progression is followed.
         """
         self.chords_mode = {
-            "progression": "manual",
-            "manual": "progression",
+            CHORDS_MODE_PROGRESSION: CHORDS_MODE_MANUAL_PLAY,
+            CHORDS_MODE_MANUAL_PLAY: CHORDS_MODE_PROGRESSION,
+            CHORDS_MODE_MANUAL_RECORD: CHORDS_MODE_PROGRESSION,
         }[self.chords_mode]
         self.message.say(f"[{self.chords_mode}] chords mode")
-        if self.chords_mode == "manual":
+        if self.chords_mode in CHORDS_MODE_MANUAL:
             for track in self.tracks.values():
                 if track.engine and track.engine.main_menu is not None:
                     track.engine.main_menu.widgets["menu"].hide()
@@ -371,7 +379,7 @@ class Session(Harmony, WithMenu):
                     ]
                 )
                 self.next_chord.set_value(0, force=True)
-            elif self.chords_mode == "progression":
+            elif self.chords_mode == CHORDS_MODE_PROGRESSION:
                 self.progression_pos = int(relative_ticks / BAR) % len(
                     self.chord_progression.get_value()
                 )
@@ -416,13 +424,13 @@ class Session(Harmony, WithMenu):
         if value != 127:
             return
 
-        if cc_number == 7:
+        if cc_number == MENU_CC_OPEN_MENU:
             if self.settings_menu is not None and not self.settings_menu.any_visible():
                 self.settings_menu.show()
                 self.settings_menu.activate_next()
-        elif self.chords_mode == "progression":
+        elif self.chords_mode == CHORDS_MODE_PROGRESSION:
             self._handle_menu_cc(cc_number)
-        elif self.chords_mode == "manual":
+        elif self.chords_mode in CHORDS_MODE_MANUAL:
             self._handle_chords_cc(cc_number)
 
     def _handle_menu_cc(self, cc_number):
@@ -440,6 +448,10 @@ class Session(Harmony, WithMenu):
         """
         if 48 <= cc_number < 56:
             self.next_chord.set_value(cc_number - 48 + 1, force=True)
+        elif cc_number == MENU_CC_START_RECORD:
+            self.chords_mode = CHORDS_MODE_MANUAL_RECORD
+        elif cc_number == MENU_CC_STOP_RECORD:
+            self.chords_mode = CHORDS_MODE_MANUAL_PLAY
 
     def handle_cc(self, cc_channel, cc_number, cc_value):
         """

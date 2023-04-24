@@ -5,12 +5,14 @@ from pypastator.constants import (
     BIG_LABEL_W,
     BLACK,
     BUTTON_WIDTH,
+    CHORDS_MODE_MANUAL,
     ENGINE_CC_BASEVEL,
     ENGINE_CC_MUTE,
     ENGINE_CC_PATTERN,
     ENGINE_CC_PITCH,
     ENGINE_CC_RYTHM,
     ENGINE_CC_SELECT,
+    LED_SIZE,
     MED_LABEL_W,
     MOUSE_WHEEL_DOWN,
     MOUSE_WHEEL_UP,
@@ -133,7 +135,7 @@ class MainEngineGUI(EngineGUI):
         elif (
             ctrl == ENGINE_CC_SELECT
             and cc_value == 127
-            and self.model.track.session.chords_mode != "manual"
+            and self.model.track.session.chords_mode not in CHORDS_MODE_MANUAL
         ):
             self.model.track.session.select_track(self.model.track.track_id)
 

@@ -3,7 +3,7 @@ Helper for settings GUI.
 """
 import pygame.display
 
-from pypastator.constants import BLACK, DARKEST_GRAY, MOUSE_RIGHT_CLICK, WHITE
+from pypastator.constants import BLACK, DARKEST_GRAY, MENU_CC_OPEN_MENU, MOUSE_RIGHT_CLICK, WHITE
 from pypastator.widgets.gui.base import GUI
 
 MODAL_BORDER = 3
@@ -107,7 +107,7 @@ class ModalGUI(GUI):
     def handle_cc(self, cc_channel, cc_number, cc_value):
         if cc_value != 127:
             return
-        if cc_number == 7:
+        if cc_number == MENU_CC_OPEN_MENU:
             if self.visible:
                 self.hide()
         if self.visible:

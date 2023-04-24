@@ -107,6 +107,7 @@ class BaseWidget:
             or self.rect is None
             or self.on_click is None
             or not self.rect.collidepoint(pos)
+            or not self.visible
         ):
             return
         val = self.get_click_value(pos)

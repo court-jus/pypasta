@@ -206,14 +206,17 @@ class BaseWidget:
         """
         Move widget to another position.
         """
-        self.hide()
+        was_visible = False
+        if self.visible:
+            was_visible = True
+            self.hide()
         self.pos_x = new_x
         self.pos_y = new_y
         if new_width is not None:
             self.width = new_width
-        self.apply_new_pos()
+        self.apply_new_pos(was_visible)
 
-    def apply_new_pos(self):
+    def apply_new_pos(self, was_visible=True):
         """
         Apply move_to result.
         """
@@ -222,7 +225,8 @@ class BaseWidget:
             self.pos_x + int(self.width / 2),
             self.pos_y + int(self.height / 2),
         )
-        self.show()
+        if was_visible:
+            self.show()
 
     def redraw(self):
         """

@@ -10,6 +10,7 @@ python = "^3.7"
 pygame = "^2.3.0"
 faker = "^18.3.1"
 python-slugify = "^8.0.1"
+pytest-watch = "^4.2.0"
 
 
 [build-system]

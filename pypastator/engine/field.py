@@ -4,6 +4,8 @@ Attribute field.
 Should be used when a specific attribute can be hooked to a widget.
 Field handles the "model to view" part through callbacks.
 """
+import json
+
 
 SMOOTH_SMALL_LEAP = 0.05
 SMOOTH_BIG_LEAP = 0.1
@@ -280,3 +282,64 @@ class ListField(Field):
         Get a str representation of this field's value.
         """
         return ", ".join([str(v) for v in self.value])
+
+
+
+class DictField(Field):
+    """
+    A field that holds a dictionary.
+    """
+
+    def __init__(self, *a, default=None, **kw):
+        super().__init__(
+            *a,
+            default=default if default is not None else {},
+            min_value=None,
+            max_value=None,
+            **kw
+        )
+
+    def get_value(self, key=None):
+        """
+        Get value.
+
+        If key is specified, return the value associated with this key.
+        """
+        if key is not None:
+            return self.value.get(key)
+        return self.value
+
+    def increment(self, increment=1, key=None, min_value=None, max_value=None):
+        """
+        Increment the value at key.
+        """
+        if key is None:
+            return
+        new_value = self.value[:]
+        if key not in new_value:
+            new_value[key] = 1
+        if isinstance(new_value[key], (int, float)):
+            new_value[key] += increment
+            if min_value is not None and new_value[key] < min_value:
+                new_value[key] = min_value
+            if max_value is not None and new_value[key] > max_value:
+                new_value[key] = max_value
+            self.set_value(new_value)
+
+    def set_key_value(self, value, key=None, min_value=None, max_value=None):
+        """
+        Set the value at index
+        """
+        new_value = self.value[:]
+        new_value[key] = value
+        if min_value is not None and new_value[key] < min_value:
+            new_value[key] = min_value
+        if max_value is not None and new_value[key] > max_value:
+            new_value[key] = max_value
+        self.set_value(new_value)
+
+    def str_value(self):
+        """
+        Get a str representation of this field's value.
+        """
+        return json.dumps(self.value)

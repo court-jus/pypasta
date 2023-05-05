@@ -674,13 +674,13 @@ class MelostepGUI(EngineGUI):
 
     def __init__(self, *a, **kw):
         super().__init__(*a, **kw)
-        self.default_widget = "steps"
+        self.default_widget = "markov"
 
     def init_widgets(self):
         """
         Initialize widgets.
         """
-        if not hasattr(self.model, "steps"):
+        if not hasattr(self.model, "markov"):
             return
         pos_y = self.pos_y
         self.widgets["separator"] = Separator(
@@ -697,20 +697,20 @@ class MelostepGUI(EngineGUI):
         widget = Label(text="uUdD", width=BIG_LABEL_W)
         widget.hook(
             self.model,
-            "steps",
-            "steps",
+            "markov",
+            "markov",
             set_text=True,
-            value_getter=self.model.steps_str,
+            value_getter=self.model.markov_str,
         )
         widget.hook(
             self.model,
             "rythm",
             "rythm_to_steps",
             set_text=True,
-            value_getter=self.model.steps_str,
+            value_getter=self.model.markov_str,
         )
-        self.widgets["steps"] = widget
-        self.activable_widgets.append("steps")
+        self.widgets["markov"] = widget
+        self.activable_widgets.append("markov")
         row.append(widget)
         self.make_row(row, pos_y=pos_y)
         pos_y += WIDGET_LINE

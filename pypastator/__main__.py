@@ -216,8 +216,10 @@ class Pastator:
         if typ == CLOCK:
             self.midi_tick()
         elif typ == PLAY:
+            print("PLAY")
             self.session.playing = self.ticks
         elif typ == STOP:
+            print("STOP")
             self.session.stop()
             self.all_sound_off()
 

@@ -288,7 +288,7 @@ class BaseEngine(WithMenu):
         if not self.do_ponctuation.get_value():
             return PONCTUATION_NOT
         progression_length = len(self.track.session.chord_progression.get_value())
-        progression_pos = self.track.session.progression_pos
+        progression_pos = self.track.session.progression_pos.get_value()
         if progression_length < 2:
             # No ponctuation when there is no chord progression (only one chord)
             return PONCTUATION_NOT

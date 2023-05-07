@@ -290,4 +290,5 @@ class ListField(Field):
         """
         Add new value at the end of the list.
         """
-        self.value.append(value)
+        new_value = self.value[:] + [value]
+        self.set_value(new_value)

@@ -60,8 +60,7 @@ class SessionGUI(BaseSessionGUI):
             pos_x=rows_size,
         )
         # Rows
-        self.widgets["root_label"] = Label(text="Root", visible=False)
-        self.widgets["root_note"] = Label(text="", visible=False)
+        self.widgets["root_note"] = Label(text="", visible=False, width=1)
         self.widgets["root_note"].hook(
             self.model,
             "root_note",
@@ -73,37 +72,7 @@ class SessionGUI(BaseSessionGUI):
             self.activate_widget("root_note"),
             self.model.scale.increment(),
         )
-        self.widgets["scale_label"] = Label(text="Scale", visible=False)
-        self.widgets["scale"] = Label(text="", visible=False)
-        for fieldname in ("scale", "root_note"):
-            self.widgets["scale"].hook(
-                self.model,
-                fieldname,
-                f"{fieldname}_to_scale",
-                set_text=True,
-                value_getter=lambda: self.model.scale_str,
-            )
-        self.widgets["scale"].on_click = lambda _v, _b: (
-            self.activate_widget("scale"),
-            self.model.scale.increment(),
-        )
-        self.make_row(
-            [
-                self.widgets[widget_name]
-                for widget_name in (
-                    "root_label",
-                    "root_note",
-                    "scale_label",
-                    "scale",
-                )
-            ],
-            pos_y=pos_y,
-            width=rows_size,
-        )
-        # Second row
-        pos_y += WIDGET_LINE
-        self.widgets["chord_label"] = Label(text="Chord", visible=False)
-        self.widgets["chord"] = Label(text="Chord", visible=False)
+        self.widgets["chord"] = Label(text="Chord", visible=False, width=3)
         for fieldname in (
             "scale",
             "chord_type",
@@ -126,8 +95,43 @@ class SessionGUI(BaseSessionGUI):
             [
                 self.widgets[widget_name]
                 for widget_name in (
-                    "chord_label",
+                    "root_note",
                     "chord",
+                )
+            ],
+            pos_y=pos_y,
+            width=rows_size,
+        )
+        # Second row
+        pos_y += WIDGET_LINE
+        self.widgets["scale"] = Label(text="", visible=False, width=1)
+        for fieldname in ("scale", "root_note"):
+            self.widgets["scale"].hook(
+                self.model,
+                fieldname,
+                f"{fieldname}_to_scale",
+                set_text=True,
+                value_getter=lambda: self.model.scale_str,
+            )
+        self.widgets["scale"].on_click = lambda _v, _b: (
+            self.activate_widget("scale"),
+            self.model.scale.increment(),
+        )
+        self.widgets["progression"] = Label(text="Ch. Prg.", visible=False, width=3)
+        for fieldname in ("chord_progression", "progression_pos", "chords_mode"):
+            self.widgets["progression"].hook(
+                self.model,
+                fieldname,
+                f"{fieldname}_to_progression",
+                set_text=True,
+                value_getter=lambda: self.model.progression_str,
+            )
+        self.make_row(
+            [
+                self.widgets[widget_name]
+                for widget_name in (
+                    "scale",
+                    "progression",
                 )
             ],
             pos_y=pos_y,
@@ -156,10 +160,10 @@ class SessionGUI(BaseSessionGUI):
             if ticks % BEAT == 0:
                 counting = int((ticks % BAR) / BEAT) + 1
                 metro_label = str(counting)
-            if metro_label and not playing:
+            if metro_label and playing is None:
                 metro_label = "."
             metronome.set_text(metro_label)
-            if counting == 1 and playing:
+            if counting == 1 and playing is not None:
                 metronome.highlight()
             else:
                 metronome.shade()

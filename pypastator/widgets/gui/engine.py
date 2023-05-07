@@ -146,7 +146,7 @@ class MainEngineGUI(EngineGUI):
         elif (
             ctrl == ENGINE_CC_SELECT
             and cc_value == 127
-            and self.model.track.session.chords_mode not in CHORDS_MODE_MANUAL
+            and self.model.track.session.chords_mode.get_value() not in CHORDS_MODE_MANUAL
         ):
             self.model.track.session.select_track(self.model.track.track_id)
 

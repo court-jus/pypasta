@@ -94,7 +94,7 @@ class Field:
             new_value = self.min_value
         self.set_value(new_value)
 
-    def str_value(self):
+    def __str__(self):
         """
         Get the str representation of this field's value.
         """
@@ -211,7 +211,7 @@ class EnumField(Field):
         """
         return self.choices[self.value]
 
-    def str_value(self):
+    def __str__(self):
         """
         Get the str representation of the field's value.
         """
@@ -277,7 +277,7 @@ class ListField(Field):
             new_value[index] = max_value
         self.set_value(new_value)
 
-    def str_value(self):
+    def __str__(self):
         """
         Get a str representation of this field's value.
         """
@@ -338,7 +338,7 @@ class DictField(Field):
             new_value[key] = max_value
         self.set_value(new_value)
 
-    def str_value(self):
+    def __str__(self):
         """
         Get a str representation of this field's value.
         """

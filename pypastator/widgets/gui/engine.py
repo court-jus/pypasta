@@ -721,13 +721,6 @@ class MelostepGUI(EngineGUI):
         widget = Label(text="uUdD", width=BIG_LABEL_W)
         widget.hook(
             self.model,
-            "current_melo",
-            "current_melo",
-            set_text=True,
-            value_getter=self.model.melo_str,
-        )
-        widget.hook(
-            self.model,
             "rythm",
             "rythm_to_current_melo",
             set_text=True,

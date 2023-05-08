@@ -41,7 +41,7 @@ class Track(WithMenu):
         """
         Get the str representation of the engine type.
         """
-        return self.engine_type.str_value()
+        return str(self.engine_type)
 
     def set_type(self, engine_type=ENGINE_TYPE_ARP):
         """

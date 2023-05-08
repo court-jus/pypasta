@@ -26,16 +26,16 @@ def fixture_melostep(track):
     test_engine.pitch.set_value(60, force=True)
     test_engine.gravity.set_value(48, force=True)
     test_engine.related_to.set_value(0, force=True)
-    test_engine.melo_length.set_value(5, force=True)
     return test_engine
 
 
 @pytest.mark.parametrize(
     "chg_src, chg_dst, new_val, src, dst",
     [
-        (None, None, None, 0, 0),
-        (-3, 1, 0.5, -3, 0),
-        (-3, 1, 0, -3, -1),
+        (None, None, None, 0, -2),
+        (-3, 1, 0.5, -3, -3),
+        (-3, 1, 0, -3, -3),
+        (-3, -3, 0, -3, -2),
         (-3, 1, 0.9, -3, 1),
     ],
 )
@@ -46,7 +46,8 @@ def test_melostep_generate_new_step(melostep, chg_src, chg_dst, new_val, src, ds
     random.seed(1)
     melostep.adapt_value(chg_src, chg_dst, new_val)
     melostep.prev_step.set_value(src, force=True)
-    assert melostep.generate_next_step() == dst
+    melostep.generate_next_step()
+    assert melostep.next_step.get_value() == dst
 
 
 def test_default_value():

@@ -208,7 +208,7 @@ class BaseEngine(WithMenu):
         """
         Get str representation of the 'related_to' attribute.
         """
-        return self.related_to.str_value()
+        return str(self.related_to)
 
     def midi_tick(self, ticks, timestamp, chord_number):
         """
